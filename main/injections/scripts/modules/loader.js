@@ -1,64 +1,83 @@
-debugger
 function Loader(fairy) {
   this.fairy = fairy
 
   this.postConfig = {
-    JSONGetUserInfoByUserId: {
+    common: {
       type: "POST",
-      url: "JSONGetUserInfoByUserId.html",
       dataType: 'json'
     },
+    user: {
+      url: 'JSONGetUserInfoByUserId.html'
+    },
+    limit: {
+      url: 'JSONGetBuyLimitById.html',
+      dataType: 'html'
+    },
+    message: {
+      url: "JSONGetMessage.html"
+    }
   }
 }
 
 Stamp.$.extend(Loader.prototype, {
-  post: function () {
+  post: function (prop, params) {
+    var self = this
+
+    var common = self.postConfig.common
+    var private = self.postConfig[prop]
+
+    return new Promise(function (resolve, rejected) {
+      var config = {
+        type: private.type || common.type,
+        url: private.url,
+        success: resolve,
+        error: rejected,
+        dataType: private.dataType || common.dataType,
+      }
+
+      params !== undefined && (config.data = params)
+
+      Stamp.$.ajax(config)
+    })
   },
 
   init: function () {
     var self = this
+    var cache = self.fairy.cache
+    var details = self.fairy.details
 
-    Stamp.$.ajax({
-      type: "POST",
-      url: "JSONGetUserInfoByUserId.html",
-      success: function (result) {
-        if (result == null) {
+    self.post('user')
+      .then(function (data) {
+        if (data == null) {
           return null
         }
 
-        self.fairy.cache.userType = result.userType
-        self.fairy.cache.userId = result.userId
+        cache.userType = data.userType
+        cache.userId = data.userId
 
-        self.admen()
-      },
-      dataType: 'json'
-    })
-  },
+        var params = {
+          ticketAttr: details.goodsAttrList[0].id,
+          userId: cache.userId,
+          ticketId: details.goodsShowInfo.id
+        }
 
-  admen: function () {
-    var self = this
-    var details = self.fairy.details
-
-    var params = {
-      ticketAttr: details.goodsAttrList[0].id,
-      userId: self.fairy.cache.userId,
-      ticketId: details.goodsShowInfo.id
-    }
-
-    Stamp.$.post('JSONGetBuyLimitById.html', params, function (result) {
-      var result = JSON.parse(result)
-      self.fairy.details.goodsAttrList[0].buyLimit = result.buyLimit
-
-      Stamp.$.ajax({
-        type: "POST",
-        url: "JSONGetMessage.html",
-        data: "ticketAttr=" + details.goodsAttrList[0].id + "&goodsNum=1",
-        success: function (object) {
-          self.fairy.panel.render(object)
-        },
-        dataType: 'json'
+        return self.post('limit', params)
       })
-    })
+      .then(function (result) {
+        var result = JSON.parse(result)
+
+        details.goodsAttrList[0].buyLimit = result.buyLimit
+
+        var params = {
+          ticketAttr: details.goodsAttrList[0].id,
+          goodsNum: 1
+        }
+
+        return self.post('message', params)
+      })
+      .then(function (state) {
+        self.fairy.panel.render(state)
+      })
   },
 
   getSid: function () {

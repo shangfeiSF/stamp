@@ -4,12 +4,17 @@ var Loader = require('loader')
 
 var fairy = {
   details: {
+    /* set by dig.js  */
     _href: '',
     _parts: [],
     goodsId: ''
   },
   cache: {
+    /* set by dig.js  */
     goodsId: '',
+    /* set by loader.js  */
+    userType: '',
+    userId: '',
     html: '',
     count: '',
     mobile: '',
