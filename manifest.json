@@ -1,0 +1,24 @@
+{
+  "name": "Stamp",
+  "version": "1.0.1",
+  "description": "Stamp for emmammon",
+  "background": {
+    "page": "build/background.html",
+    "persistent": true
+  },
+  "browser_action": {
+    "default_icon": "build/icon.png",
+    "default_popup": "build/popup/popup.html"
+  },
+  "content_security_policy": "script-src 'self' http://127.0.0.1 http://localhost; object-src 'self'",
+  "permissions": [
+    "contextMenus",
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking",
+    "tabs",
+    "http://jiyou.11185.cn/",
+    "http://jiyou.biz.11185.cn/retail/*"
+  ],
+  "manifest_version": 2
+}
