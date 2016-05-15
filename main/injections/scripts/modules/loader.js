@@ -41,7 +41,8 @@ function Loader(fairy) {
       dataType: 'html'
     },
     book: {
-      url: '/book/tradesSubmit.html'
+      url: '/book/tradesSubmit.html',
+      dataType: 'html'
     }
   }
 
@@ -59,8 +60,20 @@ Stamp.$.extend(Loader.prototype, {
       var config = {
         type: private.type || common.type,
         url: private.url,
-        success: resolve,
-        error: rejected,
+        success: function () {
+          var args = Array.prototype.slice.call(arguments)
+          resolve({
+            result: args[0],
+            textStatus: args[1]
+          })
+        },
+        error: function () {
+          var args = Array.prototype.slice.call(arguments)
+          rejected({
+            result: args[0],
+            textStatus: args[1]
+          })
+        },
         dataType: private.dataType || common.dataType,
       }
 
@@ -77,12 +90,10 @@ Stamp.$.extend(Loader.prototype, {
 
     self.post('user')
       .asCallback(function (error, data) {
-        if (data == null) {
-          return null
+        if (data.textStatus === 'success') {
+          cache.userType = data.result.userType
+          cache.userId = data.result.userId
         }
-
-        cache.userType = data.userType
-        cache.userId = data.userId
       })
       .then(function () {
         var params = {
@@ -93,10 +104,12 @@ Stamp.$.extend(Loader.prototype, {
 
         return self.post('limit', params)
       })
-      .asCallback(function (error, result) {
-        var result = JSON.parse(result)
+      .asCallback(function (error, data) {
+        if (data.textStatus === 'success') {
+          var result = JSON.parse(data.result)
 
-        details.goodsAttrList[0].buyLimit = result.buyLimit
+          details.goodsAttrList[0].buyLimit = result.buyLimit
+        }
       })
       .then(function () {
         var params = {
@@ -106,8 +119,10 @@ Stamp.$.extend(Loader.prototype, {
 
         return self.post('message', params)
       })
-      .asCallback(function (error, state) {
-        self.fairy.panel.render(state)
+      .asCallback(function (error, data) {
+        if (data.textStatus === 'success') {
+          self.fairy.panel.render(data.result)
+        }
       })
   },
 
@@ -195,10 +210,9 @@ Stamp.$.extend(Loader.prototype, {
     }
 
     self.post('address', params)
-      .then(function (result, textStatus) {
-        debugger
-        if (textStatus === 'success') {
-          result = result.sort(function (ad1, ad2) {
+      .then(function (data) {
+        if (data.textStatus === 'success') {
+          var result = data.result.sort(function (ad1, ad2) {
             return ad2.defAddress - ad1.defAddress
           })
           cache.address = result
@@ -240,7 +254,6 @@ Stamp.$.extend(Loader.prototype, {
             target.attr('checked') === 'checked' && ( cache.addressId = target.val())
             self.getFare(false)
           })
-          debugger
 
           nodes.container.find('.section:first').after(addressListSection)
           addressListSection.before(Stamp.$('<div class="title">确认收货地址</div>'))
@@ -270,9 +283,9 @@ Stamp.$.extend(Loader.prototype, {
     }
 
     self.post('fare', params)
-      .then(function (result, textStatus) {
-        if (textStatus === 'success') {
-          cache.fare = result
+      .then(function (data) {
+        if (data.textStatus === 'success') {
+          cache.fare = data.result
 
           var fareListSection = init ?
             Stamp.$('<div class="section radioSection" id="_fareList_"></div>') :
@@ -280,7 +293,7 @@ Stamp.$.extend(Loader.prototype, {
 
           !init && fareListSection.empty()
 
-          Stamp.$.each(result, function (index, fare) {
+          Stamp.$.each(data.result, function (index, fare) {
             var wrap = Stamp.$('<div class="radioWrap">')
 
             var radio = Stamp.$('<input>', {
@@ -347,8 +360,8 @@ Stamp.$.extend(Loader.prototype, {
     }
 
     self.post('fee', params)
-      .then(function (fareFee, textStatus) {
-        textStatus === 'success' && self._calculate(cache.goodsListIndex, fareFee, fareSelected.code)
+      .then(function (data) {
+        data.textStatus === 'success' && self._calculate(cache.goodsListIndex, data.result, fareSelected.code)
       })
   },
 
@@ -363,7 +376,6 @@ Stamp.$.extend(Loader.prototype, {
     original = original.toFixed(2)
 
     var price = nodes.container.find('#_price_')
-
     if (price.length === 0) {
       nodes.fareListSection.after('<div class="section" id="_price_"></div>')
       price = nodes.container.find('#_price_')
@@ -403,6 +415,7 @@ Stamp.$.extend(Loader.prototype, {
     var self = this
     var cache = self.fairy.cache
     var finalPostData = self.fairy.finalPostData
+    var nodes = self.fairy.panel.nodes
 
     var fareSelected = Stamp.$.grep(cache.fare, function (fare) {
       return fare.id === cache.fareId
@@ -414,12 +427,26 @@ Stamp.$.extend(Loader.prototype, {
     finalPostData.mobile = cache.mobile
     finalPostData.message = cache.message
     finalPostData['preTradelist[0].postageInfo.shippingType'] = fareSelected.code
-    finalPostData['preTradelist[0].mailType'] = fareSelected.code
+    finalPostData['preTradelist[0].mailType'] = fareSelected.type
 
     self.post('book', finalPostData)
-      .then(function (html) {
-        callback && callback()
-        debugger
+      .then(function (data) {
+        if (data.textStatus === 'success') {
+          callback && callback()
+
+          var dom = Stamp.$(data.result)
+          var infoWrap = Stamp.grep(dom, function (node) {
+            Stamp.$(node).hasClass('gwc') && Stamp.$(node).hasClass('gwc3')
+          })
+
+          var orderInfoSection = Stamp.$('<div class="section orderInfoSection" id="_orderInfo_">')
+
+          Stamp.$.each(infoWrap.find('.gwc3-nr h4 span'), function (index, span) {
+            orderInfoSection.append(Stamp.$('<span>').text(Stamp.$(span).text()))
+          })
+
+          nodes.container.find('.section:last').after(orderInfoSection)
+        }
       })
   }
 })

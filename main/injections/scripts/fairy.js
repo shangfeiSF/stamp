@@ -33,13 +33,9 @@ var fairy = {
 
 fairy.dig = new Dig(fairy)
 fairy.dig.init()
-console.info(fairy.cache)
-console.info(fairy.details)
 
 fairy.loader = new Loader(fairy)
 fairy.panel = new Panel(fairy)
 
 fairy.panel.init()
 fairy.loader.init()
-
-console.info(fairy)

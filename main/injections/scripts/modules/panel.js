@@ -5,36 +5,6 @@ function Panel(fairy) {
     container: '_container_'
   }
 
-  this.styles = {
-    panel: {
-      position: 'fixed',
-      display: 'block',
-      top: '2.5em',
-      left: '10em',
-      background: '#21b3c1',
-      'font-size': '20px',
-      'font-weight': 'bold',
-      'font-family': '"microsoft yahei"',
-      'z-index': '2147483647'
-    },
-    trigger: {
-      width: '100%',
-      height: '1.4em',
-      cursor: 'move',
-      padding: '0.3em 0',
-      color: '#fff',
-      'font-size': '0.8em',
-      'text-align': 'center'
-    },
-    container: {
-      position: 'relative',
-      float: 'left',
-      background: '#e8e8e8',
-      width: '15em',
-      padding: '0.5em 0 0 0.5em'
-    }
-  }
-
   this.nodes = {
     addressRadios: [],
     fareRadios: [],
@@ -52,6 +22,11 @@ function Panel(fairy) {
     [250, 120],
   ]
 
+  this.mobiles = [
+    '18612697359',
+    '17600808607'
+  ]
+
   this.fairy = fairy
 }
 
@@ -59,35 +34,16 @@ Stamp.$.extend(Panel.prototype, {
   init: function () {
     var self = this
 
-    /* create panel */
-    var panelStyle = ''
-    Stamp.$.each(self.styles.panel, function (prop, value) {
-      panelStyle += [prop, ':', value, ';'].join('')
-    })
     var panel = Stamp.$('<div>', {
-      id: self.ids.panel,
-      style: panelStyle
+      id: self.ids.panel
     })
 
-    /* create trigger */
-    var triggerStyle = ''
-    Stamp.$.each(self.styles.trigger, function (prop, value) {
-      triggerStyle += [prop, ':', value, ';'].join('')
-    })
     var trigger = Stamp.$('<div>', {
-      id: self.ids.trigger,
-      style: triggerStyle
-    })
-    trigger.text('快速下单')
+      id: self.ids.trigger
+    }).text('快速下单')
 
-    /* create container */
-    var containerStyle = ''
-    Stamp.$.each(self.styles.container, function (prop, value) {
-      containerStyle += [prop, ':', value, ';'].join('')
-    })
     var container = Stamp.$('<div>', {
-      id: self.ids.container,
-      style: containerStyle
+      id: self.ids.container
     })
 
     self.nodes.panel = panel
@@ -133,7 +89,10 @@ Stamp.$.extend(Panel.prototype, {
     var limit = details.goodsAttrList[0].buyLimit
 
     var explain = Stamp.$('<span class="tip">')
-      .css('color', '#555')
+      .css({
+        color: '#555',
+        'line-height': '150%'
+      })
       .text('提示：根据购买限制选择购买数量，生成快速订单后无法修改数量')
 
     var tip = Stamp.$('<span class="tip">')
@@ -163,11 +122,18 @@ Stamp.$.extend(Panel.prototype, {
   sendRender: function () {
     var self = this
 
-    var phone = Stamp.$('<input>', {
-      type: 'text',
+    var phone = Stamp.$('<select>', {
       id: '_phone_',
-      value: '18612697359'
+      value: '选择电话',
+      style: 'width: 10.7em;'
     })
+    Stamp.$.each(self.mobiles, function (index, mobile) {
+      phone.append(Stamp.$('<option>', {
+        selected: index === 0 ? 'selected' : '',
+        value: mobile
+      }).text(mobile))
+    })
+
     var send = Stamp.$('<input>', {
       type: 'button',
       id: '_send_',
@@ -186,7 +152,8 @@ Stamp.$.extend(Panel.prototype, {
     var code = Stamp.$('<input>', {
       type: 'text',
       id: '_code_',
-      value: ''
+      value: '',
+      style: 'width: 5em;'
     })
     var verify = Stamp.$('<input>', {
       type: 'button',
@@ -279,14 +246,14 @@ Stamp.$.extend(Panel.prototype, {
       }
 
       self.fairy.loader.post('buy', params)
-        .then(function (html) {
-          if (html.search('date_form') > -1 && html.search('gwc gwc2') > -1) {
+        .then(function (data) {
+          if (data.result.search('date_form') > -1 && data.result.search('gwc gwc2') > -1) {
             goods.off()
 
             goods.parent().hide()
             count.attr('disabled', 'disabled').hide()
 
-            cache.html = html
+            cache.html = data.result
             cache.count = count.val()
 
             self.fairy.loader.getSid()
@@ -312,11 +279,11 @@ Stamp.$.extend(Panel.prototype, {
 
       self.fairy.loader.post('code', params)
         .then(function (data) {
-          if (data == "sended") {
+          if (data.result == "sended") {
             sendState.toggleClass('fulfilled')
             cache.mobile = phone.val()
           } else {
-            alert(data)
+            alert(data.result)
           }
         })
     })
@@ -338,13 +305,13 @@ Stamp.$.extend(Panel.prototype, {
       }
 
       self.fairy.loader.post('check', params)
-        .then(function (result) {
-          if (result.status == '1') {
+        .then(function (data) {
+          if (data.result.status == '1') {
             verifyState.toggleClass('fulfilled')
-            verifyState.attr('data-show', result.random_code)
-            cache.message = result.random_code
+            verifyState.attr('data-show', data.result.random_code)
+            cache.message = data.result.random_code
           } else {
-            alert(result.msg)
+            alert(data.result.msg)
           }
         })
     })
