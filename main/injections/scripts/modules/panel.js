@@ -41,6 +41,17 @@ function Panel(fairy) {
     checkboxs: []
   }
 
+  this.mocks = [
+    [40, 40],
+    [110, 40],
+    [180, 40],
+    [250, 40],
+    [40, 120],
+    [110, 120],
+    [180, 120],
+    [250, 120],
+  ]
+
   this.fairy = fairy
 }
 
@@ -48,6 +59,7 @@ Stamp.$.extend(Panel.prototype, {
   init: function () {
     var self = this
 
+    /* create panel */
     var panelStyle = ''
     Stamp.$.each(self.styles.panel, function (prop, value) {
       panelStyle += [prop, ':', value, ';'].join('')
@@ -57,8 +69,7 @@ Stamp.$.extend(Panel.prototype, {
       style: panelStyle
     })
 
-    self.nodes.panel = panel
-
+    /* create trigger */
     var triggerStyle = ''
     Stamp.$.each(self.styles.trigger, function (prop, value) {
       triggerStyle += [prop, ':', value, ';'].join('')
@@ -69,8 +80,7 @@ Stamp.$.extend(Panel.prototype, {
     })
     trigger.text('快速下单')
 
-    self.nodes.trigger = trigger
-
+    /* create container */
     var containerStyle = ''
     Stamp.$.each(self.styles.container, function (prop, value) {
       containerStyle += [prop, ':', value, ';'].join('')
@@ -80,6 +90,8 @@ Stamp.$.extend(Panel.prototype, {
       style: containerStyle
     })
 
+    self.nodes.panel = panel
+    self.nodes.trigger = trigger
     self.nodes.container = container
 
     panel.append(trigger)
@@ -94,13 +106,21 @@ Stamp.$.extend(Panel.prototype, {
   render: function (state) {
     var self = this
 
-    self.goodsSection(state)
-    self.sendSection()
-    self.verifySection()
-    self.identifySection()
+    self.goodsRender(state)
+    self.sendRender()
+    self.verifyRender()
+    self.mockRender()
+    self.identifyRender()
+
+    self.goodsBind()
+    self.sendBind()
+    self.verifyBind()
+    self.identifyBind()
+
+    self.append()
   },
 
-  goodsSection: function (state) {
+  goodsRender: function (state) {
     var self = this
 
     state.validity = true;
@@ -113,6 +133,9 @@ Stamp.$.extend(Panel.prototype, {
     var explain = Stamp.$('<span class="tip">')
       .css('color', '#555')
       .text('提示：根据购买限制选择购买数量，生成快速订单后无法修改数量')
+
+    var tip = Stamp.$('<span class="tip">')
+    state.validity ? tip.text('最多购买' + limit + '件') : tip.text([state.message1, '/', state.message2].join(''))
 
     var count = Stamp.$('<input>', {
       type: 'number',
@@ -129,8 +152,106 @@ Stamp.$.extend(Panel.prototype, {
       value: '生成订单'
     })
 
-    var tip = Stamp.$('<span class="tip">')
-    state.validity ? tip.text('最多购买' + limit + '件') : tip.text([state.message1, '/', state.message2].join(''))
+    self.nodes.explain = explain
+    self.nodes.tip = tip
+    self.nodes.count = count
+    self.nodes.goods = goods
+  },
+
+  sendRender: function () {
+    var self = this
+
+    var phone = Stamp.$('<input>', {
+      type: 'text',
+      id: '_phone_',
+      value: '18612697359'
+    })
+    var send = Stamp.$('<input>', {
+      type: 'button',
+      id: '_send_',
+      value: '获取验证码'
+    })
+    var sendState = Stamp.$('<span class="state">')
+
+    self.nodes.phone = phone
+    self.nodes.send = send
+    self.nodes.sendState = sendState
+  },
+
+  verifyRender: function () {
+    var self = this
+
+    var code = Stamp.$('<input>', {
+      type: 'text',
+      id: '_code_',
+      value: ''
+    })
+    var verify = Stamp.$('<input>', {
+      type: 'button',
+      id: '_verify_',
+      value: '验证手机'
+    })
+    var verifyState = Stamp.$('<span class="state">')
+
+    self.nodes.code = code
+    self.nodes.verify = verify
+    self.nodes.verifyState = verifyState
+  },
+
+  mockRender: function () {
+    var self = this
+
+    var answer = Stamp.$('<div class="checkboxs">')
+    self.nodes.answer = answer
+
+    Stamp.$.each(self.mocks, function (index, config) {
+      var offsetX = Math.floor(Math.random() * 31)
+      var offsetY = Math.floor(Math.random() * 27)
+
+      var pos = [config[0] + offsetX, config[1] + offsetY]
+
+      var checkbox = Stamp.$('<input>', {
+        id: ['_pic', index].join('-'),
+        type: 'checkbox',
+        value: pos.join(',')
+      })
+
+      var label = Stamp.$('<label>', {
+        for: ['_pic', index].join('-')
+      }).text(index + 1)
+
+      var wrap = Stamp.$('<div class="position">')
+      wrap.append(checkbox)
+      wrap.append(label)
+
+      answer.append(wrap)
+
+      self.nodes.checkboxs.push(checkbox)
+    })
+  },
+
+  identifyRender: function () {
+    var self = this
+
+    var identify = Stamp.$('<input>', {
+      type: 'button',
+      id: '_identify_',
+      value: '图片验证'
+    })
+    var identifyState = Stamp.$('<span class="state">')
+
+    self.nodes.identify = identify
+    self.nodes.identifyState = identifyState
+  },
+
+  goodsBind: function () {
+    var self = this
+
+    var cache = self.fairy.cache
+    var details = self.fairy.details
+
+    var goods = self.nodes.goods
+    var count = self.nodes.count
 
     goods.on('click', function () {
       Stamp.$.ajax({
@@ -150,8 +271,8 @@ Stamp.$.extend(Panel.prototype, {
             goods.parent().hide()
             count.attr('disabled', 'disabled').hide()
 
-            self.fairy.cache.html = html
-            self.fairy.cache.count = count.val()
+            cache.html = html
+            cache.count = count.val()
 
             self.fairy.loader.getSid()
           }
@@ -159,29 +280,16 @@ Stamp.$.extend(Panel.prototype, {
         dataType: 'html'
       })
     })
-
-    self.nodes.container.append('<div class="section"></div>')
-    var section = self.nodes.container.find('.section:last')
-    section.append(explain)
-    section.append(count)
-    section.append(goods)
-    section.append(tip)
   },
 
-  sendSection: function () {
+  sendBind: function () {
     var self = this
 
-    var phone = Stamp.$('<input>', {
-      type: 'text',
-      id: '_phone_',
-      value: '18612697359'
-    })
-    var send = Stamp.$('<input>', {
-      type: 'button',
-      id: '_send_',
-      value: '获取验证码'
-    })
-    var sendState = Stamp.$('<span class="state">')
+    var cache = self.fairy.cache
+
+    var phone = self.nodes.phone
+    var send = self.nodes.send
+    var sendState = self.nodes.sendState
 
     send.on('click', function () {
       Stamp.$.ajax({
@@ -194,7 +302,7 @@ Stamp.$.extend(Panel.prototype, {
         success: function (data) {
           if (data == "sended") {
             sendState.toggleClass('fulfilled')
-            self.fairy.cache.mobile = phone.val()
+            cache.mobile = phone.val()
           } else {
             alert(data)
           }
@@ -202,42 +310,30 @@ Stamp.$.extend(Panel.prototype, {
         dataType: 'html'
       })
     })
-
-    self.nodes.container.append('<div class="section"></div>')
-    var section = self.nodes.container.find('.section:last')
-    section.append(phone)
-    section.append(send)
-    send.after(sendState)
   },
 
-  verifySection: function () {
+  verifyBind: function () {
     var self = this
 
-    var code = Stamp.$('<input>', {
-      type: 'text',
-      id: '_code_',
-      value: ''
-    })
-    var verify = Stamp.$('<input>', {
-      type: 'button',
-      id: '_verify_',
-      value: '验证手机'
-    })
-    var verifyState = Stamp.$('<span class="state">')
+    var cache = self.fairy.cache
+
+    var code = self.nodes.code
+    var verify = self.nodes.verify
+    var verifyState = self.nodes.verifyState
 
     verify.on('click', function () {
       Stamp.$.ajax({
         type: "POST",
         url: "/book/jsonCheckMobile.html",
         data: {
-          mobile: self.nodes.container.find('_phone_').val(),
+          mobile: self.nodes.phone.val(),
           message: code.val()
         },
         success: function (result) {
           if (result.status == '1') {
             verifyState.toggleClass('fulfilled')
             verifyState.attr('data-show', result.random_code)
-            self.fairy.cache.message = result.random_code
+            cache.message = result.random_code
           } else {
             alert(result.msg)
           }
@@ -245,70 +341,21 @@ Stamp.$.extend(Panel.prototype, {
         dataType: "json"
       })
     })
-
-    self.nodes.container.append('<div class="section"></div>')
-    var section = self.nodes.container.find('.section:last')
-    section.append(code)
-    section.append(verify)
-    verify.after(verifyState)
   },
 
-  identifySection: function () {
+  identifyBind: function () {
     var self = this
 
-    var mocks = [
-      [40, 40],
-      [110, 40],
-      [180, 40],
-      [250, 40],
-      [40, 120],
-      [110, 120],
-      [180, 120],
-      [250, 120],
-    ]
+    var cache = self.fairy.cache
 
-    var answer = Stamp.$('<div class="checkboxs">')
-    self.nodes.answer = answer
-
-    Stamp.$.each(mocks, function (index, config) {
-      var offsetX = Math.floor(Math.random() * 31)
-      var offsetY = Math.floor(Math.random() * 27)
-      var pos = [config[0] + offsetX, config[1] + offsetY]
-
-      var wrap = Stamp.$('<div class="position">')
-
-      var checkbox = Stamp.$('<input>', {
-        id: ['_pic', index].join('-'),
-        type: 'checkbox',
-        value: pos.join(',')
-      })
-      self.nodes.checkboxs.push(checkbox)
-
-      var label = Stamp.$('<label>', {
-        for: ['_pic', index].join('-')
-      })
-      label.text(index + 1)
-
-      wrap.append(checkbox)
-      wrap.append(label)
-      answer.append(wrap)
-    })
-
-    self.nodes.container.append('<div class="section"></div>')
-    var section = self.nodes.container.find('.section:last')
-    section.append(answer)
-
-    var identify = Stamp.$('<input>', {
-      type: 'button',
-      id: '_identify_',
-      value: '图片验证'
-    })
-    var identifyState = Stamp.$('<span class="state">')
+    var checkboxs = self.nodes.checkboxs
+    var identify = self.nodes.identify
+    var identifyState = self.nodes.identifyState
 
     identify.on('click', function () {
-      if (self.fairy.cache.sid.length === 0) return false
+      if (cache.sid.length === 0) return false
 
-      var checked = Stamp.$.grep(self.nodes.checkboxs, function (checkbox) {
+      var checked = Stamp.$.grep(checkboxs, function (checkbox) {
         return Stamp.$(checkbox).attr('checked') === 'checked'
       })
       var postions = Stamp.$.map(checked, function (checkbox) {
@@ -319,7 +366,7 @@ Stamp.$.extend(Panel.prototype, {
       var params = {
         wid: '3be16628-c630-437b-b443-c4d9f18602ed',
         answer: postions.join(','),
-        sid: self.fairy.cache.sid,
+        sid: cache.sid,
         checkCode: encodeURIComponent('user=zhangsan&stamp_id=123'),
       }
 
@@ -333,18 +380,52 @@ Stamp.$.extend(Panel.prototype, {
         if (message.data.token !== 'ERROR') {
           identifyState.toggleClass('fulfilled')
           identifyState.attr('data-show', message.data.token)
-          self.fairy.cache.token = message.data.token
+          cache.token = message.data.token
 
           self.fairy.loader.final()
         }
       }.bind(self))
     })
-
-    self.nodes.container.append('<div class="section"></div>')
-    var section = self.nodes.container.find('.section:last')
-    section.append(identify)
-    identify.after(identifyState)
   },
+
+  append: function () {
+    var self = this
+    var nodes = self.nodes
+    var container = nodes.container
+
+    var sections = ['goodsSection', 'sendSection', 'verifySection', 'mockSection', 'identifySection']
+
+    sections = Stamp.$.map(sections, function (klass) {
+      return Stamp.$('<div>', {
+        class: ['section', klass].join(' ')
+      })
+    })
+
+    sections[0].append(nodes.explain)
+    sections[0].append(nodes.count)
+    sections[0].append(nodes.goods)
+    sections[0].append(nodes.tip)
+
+    sections[1].append(nodes.phone)
+    sections[1].append(nodes.send)
+    nodes.send.after(nodes.sendState)
+
+    sections[2].append(nodes.code)
+    sections[2].append(nodes.verify)
+    nodes.verify.after(nodes.verifyState)
+
+    sections[3].append(nodes.answer)
+
+    sections[4].append(nodes.identify)
+    nodes.identify.after(nodes.identifyState)
+
+    var wrap = Stamp.$('<div class="sections"></div>')
+    Stamp.$.each(sections, function (index, section) {
+      wrap.append(section)
+    })
+
+    container.append(wrap)
+  }
 })
 
 module.exports = Panel

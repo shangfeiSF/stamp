@@ -3,9 +3,10 @@ function Loader(fairy) {
 
   this.postConfig = {
     common: {
-      type: "POST",
+      type: 'POST',
       dataType: 'json'
     },
+    
     user: {
       url: 'JSONGetUserInfoByUserId.html'
     },
@@ -14,7 +15,21 @@ function Loader(fairy) {
       dataType: 'html'
     },
     message: {
-      url: "JSONGetMessage.html"
+      url: 'JSONGetMessage.html'
+    },
+    buy: {
+      url: '/retail/initPageForBuyNow.html',
+      dataType: 'html'
+    },
+    code: {
+      url: '/v/sendMessage.html',
+      dataType: 'html'
+    },
+    check: {
+      url: '/book/jsonCheckMobile.html'
+    },
+    book: {
+      url: '/book/tradesSubmit.html'
     }
   }
 }
@@ -47,14 +62,15 @@ Stamp.$.extend(Loader.prototype, {
     var details = self.fairy.details
 
     self.post('user')
-      .then(function (data) {
+      .asCallback(function (error, data) {
         if (data == null) {
           return null
         }
 
         cache.userType = data.userType
         cache.userId = data.userId
-
+      })
+      .then(function () {
         var params = {
           ticketAttr: details.goodsAttrList[0].id,
           userId: cache.userId,
@@ -63,11 +79,12 @@ Stamp.$.extend(Loader.prototype, {
 
         return self.post('limit', params)
       })
-      .then(function (result) {
+      .asCallback(function (error, result) {
         var result = JSON.parse(result)
 
         details.goodsAttrList[0].buyLimit = result.buyLimit
-
+      })
+      .then(function () {
         var params = {
           ticketAttr: details.goodsAttrList[0].id,
           goodsNum: 1
@@ -75,7 +92,7 @@ Stamp.$.extend(Loader.prototype, {
 
         return self.post('message', params)
       })
-      .then(function (state) {
+      .asCallback(function (error, state) {
         self.fairy.panel.render(state)
       })
   },
