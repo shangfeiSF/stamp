@@ -111,11 +111,13 @@ Stamp.$.extend(Panel.prototype, {
     self.verifyRender()
     self.mockRender()
     self.identifyRender()
+    self.bookRender()
 
     self.goodsBind()
     self.sendBind()
     self.verifyBind()
     self.identifyBind()
+    self.bookBind()
 
     self.append()
   },
@@ -244,6 +246,20 @@ Stamp.$.extend(Panel.prototype, {
     self.nodes.identifyState = identifyState
   },
 
+  bookRender: function () {
+    var self = this
+
+    var book = Stamp.$('<input>', {
+      type: 'button',
+      id: '_book_',
+      value: '提交订单'
+    })
+    var bookState = Stamp.$('<span class="state">')
+
+    self.nodes.book = book
+    self.nodes.bookState = bookState
+  },
+
   goodsBind: function () {
     var self = this
 
@@ -254,17 +270,16 @@ Stamp.$.extend(Panel.prototype, {
     var count = self.nodes.count
 
     goods.on('click', function () {
-      Stamp.$.ajax({
-        type: "POST",
-        url: "/retail/initPageForBuyNow.html",
-        data: {
-          'buyGoodsNowBean.goods_id': self.fairy.cache.goodsId,
-          'buy_type': details.goodsStatus.lottery ? '3' : '2',
-          'buyGoodsNowBean.goods_attr_id': details.goodsAttrList[0].id,
-          'buyGoodsNowBean.goods_num': count.val(),
-          'goodsTicketAttr': details.goodsAttrList[0].id
-        },
-        success: function (html) {
+      var params = {
+        'buyGoodsNowBean.goods_id': self.fairy.cache.goodsId,
+        'buy_type': details.goodsStatus.lottery ? '3' : '2',
+        'buyGoodsNowBean.goods_attr_id': details.goodsAttrList[0].id,
+        'buyGoodsNowBean.goods_num': count.val(),
+        'goodsTicketAttr': details.goodsAttrList[0].id
+      }
+
+      self.fairy.loader.post('buy', params)
+        .then(function (html) {
           if (html.search('date_form') > -1 && html.search('gwc gwc2') > -1) {
             goods.off()
 
@@ -276,9 +291,7 @@ Stamp.$.extend(Panel.prototype, {
 
             self.fairy.loader.getSid()
           }
-        },
-        dataType: 'html'
-      })
+        })
     })
   },
 
@@ -292,23 +305,20 @@ Stamp.$.extend(Panel.prototype, {
     var sendState = self.nodes.sendState
 
     send.on('click', function () {
-      Stamp.$.ajax({
-        type: "POST",
-        url: "/v/sendMessage.html",
-        data: {
-          mobileNum: phone.val(),
-          smsType: '4'
-        },
-        success: function (data) {
+      var params = {
+        mobileNum: phone.val(),
+        smsType: '4'
+      }
+
+      self.fairy.loader.post('code', params)
+        .then(function (data) {
           if (data == "sended") {
             sendState.toggleClass('fulfilled')
             cache.mobile = phone.val()
           } else {
             alert(data)
           }
-        },
-        dataType: 'html'
-      })
+        })
     })
   },
 
@@ -322,14 +332,13 @@ Stamp.$.extend(Panel.prototype, {
     var verifyState = self.nodes.verifyState
 
     verify.on('click', function () {
-      Stamp.$.ajax({
-        type: "POST",
-        url: "/book/jsonCheckMobile.html",
-        data: {
-          mobile: self.nodes.phone.val(),
-          message: code.val()
-        },
-        success: function (result) {
+      var params = {
+        mobile: self.nodes.phone.val(),
+        message: code.val()
+      }
+
+      self.fairy.loader.post('check', params)
+        .then(function (result) {
           if (result.status == '1') {
             verifyState.toggleClass('fulfilled')
             verifyState.attr('data-show', result.random_code)
@@ -337,9 +346,7 @@ Stamp.$.extend(Panel.prototype, {
           } else {
             alert(result.msg)
           }
-        },
-        dataType: "json"
-      })
+        })
     })
   },
 
@@ -381,10 +388,22 @@ Stamp.$.extend(Panel.prototype, {
           identifyState.toggleClass('fulfilled')
           identifyState.attr('data-show', message.data.token)
           cache.token = message.data.token
-
-          self.fairy.loader.final()
         }
       }.bind(self))
+    })
+  },
+
+  bookBind: function () {
+    var self = this
+
+    var book = self.nodes.book
+    var bookState = self.nodes.bookState
+
+    book.on('click', function () {
+      self.fairy.loader.final(function () {
+        bookState.toggleClass('fulfilled')
+        debugger
+      })
     })
   },
 
@@ -393,7 +412,14 @@ Stamp.$.extend(Panel.prototype, {
     var nodes = self.nodes
     var container = nodes.container
 
-    var sections = ['goodsSection', 'sendSection', 'verifySection', 'mockSection', 'identifySection']
+    var sections = [
+      'goodsSection',
+      'sendSection',
+      'verifySection',
+      'mockSection',
+      'identifySection',
+      'bookSection'
+    ]
 
     sections = Stamp.$.map(sections, function (klass) {
       return Stamp.$('<div>', {
@@ -418,6 +444,9 @@ Stamp.$.extend(Panel.prototype, {
 
     sections[4].append(nodes.identify)
     nodes.identify.after(nodes.identifyState)
+
+    sections[5].append(nodes.book)
+    nodes.book.after(nodes.bookState)
 
     var wrap = Stamp.$('<div class="sections"></div>')
     Stamp.$.each(sections, function (index, section) {

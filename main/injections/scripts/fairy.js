@@ -4,19 +4,25 @@ var Loader = require('loader')
 
 var fairy = {
   details: {
-    /* set by dig.js  */
     _href: '',
     _parts: [],
     goodsId: ''
   },
   cache: {
-    /* set by dig.js  */
     goodsId: '',
-    /* set by loader.js  */
     userType: '',
     userId: '',
     html: '',
     count: '',
+    shopId: '',
+    orderTotalWeigth: '',
+    goodsListIndex: '',
+    goodPrice: '',
+    sendFlag: '',
+    canGetFare: '',
+    address: '',
+    fare: '',
+    fareId: '',
     mobile: '',
     message: '',
     sid: '',
@@ -31,7 +37,6 @@ console.info(fairy.cache)
 console.info(fairy.details)
 
 fairy.loader = new Loader(fairy)
-debugger
 fairy.panel = new Panel(fairy)
 
 fairy.panel.init()
