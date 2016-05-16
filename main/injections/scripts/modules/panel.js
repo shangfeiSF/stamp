@@ -23,8 +23,8 @@ function Panel(fairy) {
   ]
 
   this.mobiles = [
-    '18612697359',
-    '17600808607'
+    '17600808607',
+    '18612697359'
   ]
 
   this.fairy = fairy
@@ -124,14 +124,14 @@ Stamp.$.extend(Panel.prototype, {
 
     var phone = Stamp.$('<select>', {
       id: '_phone_',
-      value: '选择电话',
       style: 'width: 10.7em;'
     })
     Stamp.$.each(self.mobiles, function (index, mobile) {
-      phone.append(Stamp.$('<option>', {
-        selected: index === 0 ? 'selected' : '',
+      var optionConfig = {
         value: mobile
-      }).text(mobile))
+      }
+      index === 0 && (optionConfig.selected = 'selected')
+      phone.append(Stamp.$('<option>', optionConfig).text(mobile))
     })
 
     var send = Stamp.$('<input>', {
@@ -248,6 +248,10 @@ Stamp.$.extend(Panel.prototype, {
       self.fairy.loader.post('buy', params)
         .then(function (data) {
           if (data.result.search('date_form') > -1 && data.result.search('gwc gwc2') > -1) {
+            self.nodes.sections[2].show()
+            self.nodes.sections[3].show()
+            self.nodes.sections[4].show()
+            self.nodes.sections[5].show()
             goods.off()
 
             goods.parent().hide()
@@ -369,7 +373,6 @@ Stamp.$.extend(Panel.prototype, {
     book.on('click', function () {
       self.fairy.loader.final(function () {
         bookState.toggleClass('fulfilled')
-        debugger
       })
     })
   },
@@ -393,6 +396,7 @@ Stamp.$.extend(Panel.prototype, {
         class: ['section', klass].join(' ')
       })
     })
+    nodes.sections = sections
 
     sections[0].append(nodes.explain)
     sections[0].append(nodes.count)
@@ -406,14 +410,18 @@ Stamp.$.extend(Panel.prototype, {
     sections[2].append(nodes.code)
     sections[2].append(nodes.verify)
     nodes.verify.after(nodes.verifyState)
+    sections[2].hide()
 
     sections[3].append(nodes.answer)
+    sections[3].hide()
 
     sections[4].append(nodes.identify)
     nodes.identify.after(nodes.identifyState)
+    sections[4].hide()
 
     sections[5].append(nodes.book)
     nodes.book.after(nodes.bookState)
+    sections[5].hide()
 
     var wrap = Stamp.$('<div class="sections"></div>')
     Stamp.$.each(sections, function (index, section) {

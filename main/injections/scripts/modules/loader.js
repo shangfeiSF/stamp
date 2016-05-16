@@ -212,6 +212,15 @@ Stamp.$.extend(Loader.prototype, {
     self.post('address', params)
       .then(function (data) {
         if (data.textStatus === 'success') {
+          /*
+           Stamp.$.each(data.result, function (index, item) {
+           var optionConfig = {
+           value: item.mobile
+           }
+           item.id === cache.userId && (optionConfig.selected = 'selected')
+           nodes.phone.append(Stamp.$('<option>', optionConfig).text(item.mobile))
+           })
+           */
           var result = data.result.sort(function (ad1, ad2) {
             return ad2.defAddress - ad1.defAddress
           })
@@ -308,7 +317,7 @@ Stamp.$.extend(Loader.prototype, {
               for: ['_fare', index].join('_')
             }).text(fare.fare_name)
 
-            if (index === 0) {
+            if (fare.fare_name === '邮政小包') {
               radio.attr('checked', 'checked')
               cache.fareId = fare.id
               self.calculate()
@@ -433,16 +442,17 @@ Stamp.$.extend(Loader.prototype, {
       .then(function (data) {
         if (data.textStatus === 'success') {
           callback && callback()
-
           var dom = Stamp.$(data.result)
-          var infoWrap = Stamp.grep(dom, function (node) {
-            Stamp.$(node).hasClass('gwc') && Stamp.$(node).hasClass('gwc3')
+          var infoWrap = Stamp.$.grep(dom, function (node) {
+            return Stamp.$(node).hasClass('gwc') && Stamp.$(node).hasClass('gwc3')
           })
+          infoWrap.length && (infoWrap = Stamp.$(infoWrap.pop()))
 
           var orderInfoSection = Stamp.$('<div class="section orderInfoSection" id="_orderInfo_">')
 
+          var tips = ['订单号', '应付金额']
           Stamp.$.each(infoWrap.find('.gwc3-nr h4 span'), function (index, span) {
-            orderInfoSection.append(Stamp.$('<span>').text(Stamp.$(span).text()))
+            orderInfoSection.append(Stamp.$('<span class="tip">').text(tips[index] + '：' + Stamp.$(span).text()))
           })
 
           nodes.container.find('.section:last').after(orderInfoSection)
