@@ -9,6 +9,8 @@ var fairy = {
     goodsId: ''
   },
   cache: {
+    specIndex: '',
+    buyLimit: '',
     goodsId: '',
     userType: '',
     userId: '',
@@ -38,4 +40,3 @@ fairy.loader = new Loader(fairy)
 fairy.panel = new Panel(fairy)
 
 fairy.panel.init()
-fairy.loader.init()

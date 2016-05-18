@@ -83,10 +83,11 @@ Stamp.$.extend(Loader.prototype, {
     })
   },
 
-  init: function () {
+  init: function (needVerify) {
     var self = this
     var cache = self.fairy.cache
     var details = self.fairy.details
+    var nodes = self.fairy.panel.nodes
 
     self.post('user')
       .asCallback(function (error, data) {
@@ -97,7 +98,7 @@ Stamp.$.extend(Loader.prototype, {
       })
       .then(function () {
         var params = {
-          ticketAttr: details.goodsAttrList[0].id,
+          ticketAttr: details.goodsAttrList[cache.specIndex].id,
           userId: cache.userId,
           ticketId: details.goodsShowInfo.id
         }
@@ -108,21 +109,24 @@ Stamp.$.extend(Loader.prototype, {
         if (data.textStatus === 'success') {
           var result = JSON.parse(data.result)
 
-          details.goodsAttrList[0].buyLimit = result.buyLimit
+          details.goodsAttrList[cache.specIndex].buyLimit = result.buyLimit
         }
       })
       .then(function () {
         var params = {
-          ticketAttr: details.goodsAttrList[0].id,
-          goodsNum: 1
+          ticketAttr: details.goodsAttrList[cache.specIndex].id,
+          goodsNum: nodes.count.val()
         }
 
         return self.post('message', params)
       })
       .asCallback(function (error, data) {
         if (data.textStatus === 'success') {
-          self.fairy.panel.render(data.result)
+          self.fairy.panel.create(data.result, needVerify)
         }
+      })
+      .then(function () {
+        self.getSid()
       })
   },
 
@@ -138,8 +142,15 @@ Stamp.$.extend(Loader.prototype, {
         var image = Stamp.$('<img>', {
             src: message.data.image
           })
+          .css({
+            cursor: 'pointer',
+            border: '2px solid #31B0D5'
+          })
           .on('dblclick', function () {
             nodes.image.attr('src', [self.imageBase, "&sid=", cache.sid, "&", Math.random()].join(''))
+            Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
+              Stamp.$(checkbox).attr('checked', false)
+            })
           })
 
         nodes.image = image
@@ -238,28 +249,41 @@ Stamp.$.extend(Loader.prototype, {
               value: address.id,
             }).data('info', address)
 
+            var location = Stamp.$('<div class="location">').text(address.address)
+            var detail = Stamp.$('<div class="detail">').text(['收货人:', address.contextName, ', ', '电话:', address.mobile, ', ', '邮编:', address.zipcode].join(''))
+
             var label = Stamp.$('<label>', {
               for: ['_address', index].join('_')
-            }).text(address.address)
-
-            var detail = Stamp.$('<div>').text(['收货人:', address.contextName, ', ', '电话:', address.mobile, ', ', '邮编:', address.zipcode].join(''))
+            })
+            label.append(location)
+            label.append(detail)
 
             if (address.defAddress) {
               radio.attr('checked', 'checked')
               cache.addressId = address.id
+              label.addClass('selected')
             }
 
             nodes.addressRadios.push(radio)
 
             wrap.append(radio)
             wrap.append(label)
-            wrap.append(detail)
 
             addressListSection.append(wrap)
           })
 
           addressListSection.on('change', function (e) {
             var target = Stamp.$(e.target)
+
+            Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
+              var node = Stamp.$(node)
+
+              node.removeClass('selected')
+              if (node.attr('for').split('-').pop() === target.attr('id').split('-').pop()) {
+                node.addClass('selected')
+              }
+            })
+
             target.attr('checked') === 'checked' && ( cache.addressId = target.val())
             self.getFare(false)
           })
@@ -319,6 +343,7 @@ Stamp.$.extend(Loader.prototype, {
 
             if (fare.fare_name === '邮政小包') {
               radio.attr('checked', 'checked')
+              label.addClass('selected')
               cache.fareId = fare.id
               self.calculate()
             }
@@ -334,7 +359,18 @@ Stamp.$.extend(Loader.prototype, {
 
             fareListSection.on('change', function (e) {
               var target = Stamp.$(e.target)
+
+              Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
+                var node = Stamp.$(node)
+
+                node.removeClass('selected')
+                if (node.attr('for').split('-').pop() === target.attr('id').split('-').pop()) {
+                  node.addClass('selected')
+                }
+              })
+
               target.attr('checked') === 'checked' && ( cache.fareId = target.val())
+
               self.calculate()
             })
 
@@ -424,10 +460,9 @@ Stamp.$.extend(Loader.prototype, {
     var self = this
     var cache = self.fairy.cache
     var finalPostData = self.fairy.finalPostData
-    var nodes = self.fairy.panel.nodes
 
     var fareSelected = Stamp.$.grep(cache.fare, function (fare) {
-      return fare.id === cache.fareId
+      return fare.id == cache.fareId
     })
     fareSelected && fareSelected.length && (fareSelected = fareSelected.pop())
 
@@ -441,23 +476,65 @@ Stamp.$.extend(Loader.prototype, {
     self.post('book', finalPostData)
       .then(function (data) {
         if (data.textStatus === 'success') {
-          callback && callback()
           var dom = Stamp.$(data.result)
+
           var infoWrap = Stamp.$.grep(dom, function (node) {
             return Stamp.$(node).hasClass('gwc') && Stamp.$(node).hasClass('gwc3')
           })
-          infoWrap.length && (infoWrap = Stamp.$(infoWrap.pop()))
-
-          var orderInfoSection = Stamp.$('<div class="section orderInfoSection" id="_orderInfo_">')
-
-          var tips = ['订单号', '应付金额']
-          Stamp.$.each(infoWrap.find('.gwc3-nr h4 span'), function (index, span) {
-            orderInfoSection.append(Stamp.$('<span class="tip">').text(tips[index] + '：' + Stamp.$(span).text()))
+          var errorWrap = Stamp.$.grep(dom, function (node) {
+            return Stamp.$(node).hasClass('smrz') && Stamp.$(node).hasClass('zccgym')
           })
 
-          nodes.container.find('.section:last').after(orderInfoSection)
+          if (infoWrap.length) {
+            self.success(infoWrap, callback)
+          } else if (errorWrap.length) {
+            self.failed(errorWrap)
+          }
         }
       })
+  },
+
+  success: function (wrap, callback) {
+    var self = this
+    var nodes = self.fairy.panel.nodes
+
+    callback && callback()
+    var wrap = Stamp.$(wrap.pop())
+
+    var orderInfoSection = Stamp.$('<div class="section orderInfoSection" id="_orderInfo_">')
+
+    var tips = ['订单号：', '应付金额：']
+    Stamp.$.each(wrap.find('.gwc3-nr h4 span'), function (index, node) {
+      var info = Stamp.$('<div class="info">')
+
+      info.append(Stamp.$('<span>').text(tips[index]))
+      info.append(Stamp.$('<em>').text(Stamp.$(node).text()))
+
+      orderInfoSection.append(info)
+    })
+
+    nodes.container.find('.section:last').after(orderInfoSection)
+    orderInfoSection.before(Stamp.$('<div class="title">购买成功</div>'))
+  },
+
+  failed: function (wrap) {
+    var self = this
+    var nodes = self.fairy.panel.nodes
+
+    var wrap = Stamp.$(wrap.pop())
+
+    var errorInfoSection = Stamp.$('<div class="section errorInfoSection" id="_errorInfo_">')
+
+    Stamp.$.each(wrap.find('.smrz-nr h1'), function (index, node) {
+      var info = Stamp.$('<div class="info">')
+
+      info.append(Stamp.$('<em>').text(Stamp.$.trim(Stamp.$(node).text())))
+
+      errorInfoSection.append(info)
+    })
+
+    nodes.container.find('.section:last').after(errorInfoSection)
+    errorInfoSection.before(Stamp.$('<div class="title">购买失败</div>'))
   }
 })
 

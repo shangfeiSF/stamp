@@ -2,18 +2,29 @@
   position: absolute;
   display: block;
   top: 1em;
-  left: 2em;
-  background: #21b3c1;
+  left: 1em;
+  background: #31B0D5;
+  border: 2px solid #31B0D5;
   font-size: 20px;
   font-weight: bold;
   font-family: "microsoft yahei";
   z-index: 2147483647;
 
+  label {
+    cursor: pointer;
+    font-weight: normal;
+    margin-bottom: 0;
+  }
+  .selected {
+    font-weight: bold;
+    color: #3aad8b
+  }
+
   #_trigger_ {
     width: 100%;
     cursor: move;
     padding: 0.3em 0;
-    color: #fff;
+    color: #FFF;
     font-size: 0.8em;
     line-height: 120%;
     text-align: center;
@@ -22,18 +33,75 @@
   #_container_ {
     position: relative;
     float: left;
-    background: #e8e8e8;
+    background: #F8F8F8;
+    font-weight: normal;
     width: 16em;
-    padding: 0.5em 0 0 0.5em;
+    padding: 0.5em 0 0.5em 0.5em;
+
+    .boot {
+      float: left;
+      width: 100%;
+      font-size: 14px;
+      margin-bottom: 0.2em;
+
+      .tip {
+        float: left;
+        width: 100%;
+        line-height: 170%;
+        font-weight: normal;
+        padding: 0 0.5em 0.5em 0;
+      }
+
+      .area {
+        float: left;
+        width: 100%;
+        margin-bottom: 0.2em;
+
+        .title {
+          float: left;
+          width: 25%;
+          font-weight: bold;
+          line-height: 175%;
+        }
+
+        .specs {
+          float: left;
+          width: 75%;
+          margin-bottom: 0.2em;
+
+          .specItem {
+            float: left;
+            margin-right: 0.4em;
+
+            input {
+              position: relative;
+              top: 0.1em;
+              margin-right: 0.4em;
+            }
+
+            label {
+              margin: 0;
+              word-break: break-all;
+              word-wrap: break-word;
+            }
+          }
+        }
+      }
+
+      .goodsArea {
+        margin-bottom: 0;
+        padding: 0.5em 0 0 0;
+      }
+    }
 
     .sections {
       .title {
         float: left;
-        width: 100%;
+        width: 95%;
         font-size: 15px;
         font-weight: bold;
         padding: 0 0 0.2em 0.4em;
-        border-bottom: 1px solid #A3A3A3;
+        border-bottom: 2px solid #31B0D5;
       }
 
       .section {
@@ -48,21 +116,23 @@
         }
 
         input[type='button'] {
-          padding: 0 0.5em;
+          height: 34px;
+          padding: 0 1em;
         }
 
         .state {
           float: left;
           position: relative;
           font-size: 16px;
-          top: 0.4em;
-          width: 0.6em;
-          height: 0.6em;
+          top: 0.5em;
+          width: 1em;
+          height: 1em;
+          border-radius: 0.5em;
           background: #FF0000;
         }
 
         .fulfilled {
-          background: #00FF00;
+          background: #5CB85C;
         }
 
         .tip {
@@ -112,12 +182,25 @@
           }
 
           label {
-            word-break: break-all;
-            word-wrap: break-word;
+            width: 90%;
+            div {
+              margin-bottom: 0.2em;
+            }
           }
+        }
+      }
 
-          div {
-            margin-left: 1.6em;
+      .orderInfoSection, .errorInfoSection {
+        font-size: 14px;
+
+        .info {
+          width: 95%;
+          padding: 0.5em 0 0 0;
+
+          em {
+            color: #F35531;
+            font-weight: bold;
+            font-style: normal;
           }
         }
       }
@@ -130,12 +213,10 @@
         }
 
         .red {
-          color: #f35531;
+          color: #F35531;
           font-weight: bold;
         }
       }
     }
   }
 }
-
-

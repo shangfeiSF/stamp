@@ -57,75 +57,240 @@ Stamp.$.extend(Panel.prototype, {
     new Draggable(self.ids.panel, {
       handle: self.ids.trigger
     })
+
+    self.boot()
   },
 
-  render: function (state) {
+  boot: function () {
     var self = this
 
-    self.goodsRender(state)
-    self.sendRender()
-    self.verifyRender()
-    self.mockRender()
-    self.identifyRender()
-    self.bookRender()
+    self.boot_goods_render()
+    self.boot_specs_render()
 
-    self.goodsBind()
-    self.sendBind()
-    self.verifyBind()
-    self.identifyBind()
-    self.bookBind()
+    self.boot_goods_bind()
+    self.boot_specs_bind()
 
-    self.append()
+    self.boot_append()
   },
 
-  goodsRender: function (state) {
+  boot_goods_render: function () {
     var self = this
-
-    state.validity = true;
-    (state.message1 && state.message1 === '商品已售完') && (state.validity = false);
-    (state.message2 && state.message2 === '库存不足') && (state.validity = false);
-
-    var details = self.fairy.details
-    var limit = details.goodsAttrList[0].buyLimit
 
     var explain = Stamp.$('<span class="tip">')
       .css({
         color: '#555',
         'line-height': '150%'
       })
-      .text('提示：根据购买限制选择购买数量，生成快速订单后无法修改数量')
-
-    var tip = Stamp.$('<span class="tip">')
-    state.validity ? tip.text('最多购买' + limit + '件') : tip.text([state.message1, '/', state.message2].join(''))
+      .text('提示：选择规格和数量后生成快速订单')
 
     var count = Stamp.$('<input>', {
       type: 'number',
       min: 1,
-      max: limit,
       id: '_count_',
-      style: 'width: 5em;'
+      value: 1
+    }).css({
+      width: '4em',
+      margin: '0 0.5em 0 0',
+      'text-aligen': 'center'
     })
-    state.validity ? count.val('1') : count.val('0')
 
     var goods = Stamp.$('<input>', {
       type: 'button',
       id: '_goods_',
       value: '生成订单'
-    })
+    }).css({
+      padding: '0 0.5em'
+    }).addClass('btn btn-info')
 
     self.nodes.explain = explain
-    self.nodes.tip = tip
     self.nodes.count = count
     self.nodes.goods = goods
   },
 
-  sendRender: function () {
+  boot_specs_render: function () {
+    var self = this
+
+    var cache = self.fairy.cache
+    var details = self.fairy.details
+
+    var specs = Stamp.$('<div class="specs"></div>')
+
+    Stamp.$.each(details.goodsAttrList, function (index, attr) {
+      var wrap = Stamp.$('<sapn class="specItem"></sapn>')
+
+      var spec = Stamp.$('<input>', {
+        id: ['_sepc', index].join('-'),
+        name: 'spec',
+        type: 'radio',
+        value: index,
+      }).data('spec', attr)
+
+      var label = Stamp.$('<label>', {
+        for: ['_sepc', index].join('-')
+      }).text(attr.attrName)
+
+      if (index == 0) {
+        spec.attr('checked', 'checked')
+        label.addClass('selected')
+        self.nodes.count.attr('max', attr.buyLimit)
+
+        cache.specIndex = index
+        cache.buyLimit = attr.buyLimit
+      }
+
+      wrap.append(spec).append(label)
+
+      specs.append(wrap)
+    })
+
+    self.nodes.specs = specs
+  },
+
+  boot_goods_bind: function () {
+    var self = this
+
+    var cache = self.fairy.cache
+    var details = self.fairy.details
+
+    var goods = self.nodes.goods
+    var count = self.nodes.count
+
+    goods.on('click', function () {
+      var params = {
+        'buyGoodsNowBean.goods_id': self.fairy.cache.goodsId,
+        'buy_type': details.goodsStatus.lottery ? '3' : '2',
+        'buyGoodsNowBean.goods_attr_id': details.goodsAttrList[cache.specIndex].id,
+        'buyGoodsNowBean.goods_num': count.val(),
+        'goodsTicketAttr': details.goodsAttrList[cache.specIndex].id
+      }
+
+      self.fairy.loader.post('buy', params)
+        .then(function (data) {
+          if (data.result.search('date_form') > -1 && data.result.search('gwc gwc2') > -1) {
+            goods.off()
+
+            self.nodes.boot.hide()
+            count.attr('disabled', 'disabled').hide()
+
+            cache.html = data.result
+            cache.count = count.val()
+
+            var needVerify = data.result.search('手机确认') > -1 ? true : false
+
+            self.fairy.loader.init(needVerify)
+          }
+        })
+    })
+  },
+
+  boot_specs_bind: function () {
+    var self = this
+
+    var cache = self.fairy.cache
+    var count = self.nodes.count
+
+    self.nodes.specs.on('change', function (e) {
+      var target = Stamp.$(e.target)
+
+      Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
+        var node = Stamp.$(node)
+
+        node.removeClass('selected')
+        if (node.attr('for').split('-').pop() === target.val()) {
+          node.addClass('selected')
+        }
+      })
+
+      count.attr('max', Number(target.data('spec').buyLimit))
+      cache.specIndex = target.val()
+      cache.buyLimit = target.data('spec').buyLimit
+    })
+  },
+
+  boot_append: function () {
+    var self = this
+    var nodes = self.nodes
+
+    var areas = [
+      'specsArea',
+      'countArea',
+      'goodsArea'
+    ]
+
+    areas = Stamp.$.map(areas, function (klass) {
+      return Stamp.$('<div>', {
+        class: ['area', klass].join(' ')
+      })
+    })
+
+    areas[0].append(nodes.specs)
+    areas[1].append(nodes.count)
+    areas[2].append(nodes.goods)
+
+    var boot = Stamp.$('<div class="boot"></div>')
+    Stamp.$.each(areas, function (index, area) {
+      boot.append(area)
+    })
+    boot.prepend(nodes.explain)
+
+    nodes.boot = boot
+    nodes.container.append(boot)
+
+    nodes.specs.before(Stamp.$('<div class="title"></div>').text('邮票规格：'))
+    nodes.count.before(Stamp.$('<div class="title"></div>').text('订购数量：'))
+  },
+
+  create: function (state, needVerify) {
+    var self = this
+
+    self.create_tips_render(state)
+    if (needVerify) {
+      self.create_send_render()
+      self.create_verify_render()
+    }
+
+    self.create_mock_render()
+    self.create_identify_render()
+    self.create_book_render()
+
+    if (needVerify) {
+      self.create_send_bind()
+      self.create_verify_bind()
+    }
+    self.create_identify_bind()
+    self.create_book_bind()
+
+    self.create_append(needVerify)
+  },
+
+  create_tips_render: function (state) {
+    var self = this
+
+    state.validity = true;
+    (state.message1 && state.message1 === '商品已售完') && (state.validity = false);
+    (state.message2 && state.message2 === '库存不足') && (state.validity = false);
+
+    var cache = self.fairy.cache
+
+    var tip = Stamp.$('<span class="tip">')
+    state.validity ?
+      tip.text('最多购买' + cache.buyLimit + '件') :
+      tip.css({
+        color: ' #f35531',
+        'text-align': 'center',
+        'font-weight': 'bold'
+      }).text([state.message1, '/', state.message2].join(''))
+
+    self.nodes.tip = tip
+  },
+
+  create_send_render: function () {
     var self = this
 
     var phone = Stamp.$('<select>', {
       id: '_phone_',
       style: 'width: 10.7em;'
-    })
+    }).addClass('form-control')
     Stamp.$.each(self.mobiles, function (index, mobile) {
       var optionConfig = {
         value: mobile
@@ -138,7 +303,7 @@ Stamp.$.extend(Panel.prototype, {
       type: 'button',
       id: '_send_',
       value: '获取验证码'
-    })
+    }).addClass('btn btn-info')
     var sendState = Stamp.$('<span class="state">')
 
     self.nodes.phone = phone
@@ -146,7 +311,7 @@ Stamp.$.extend(Panel.prototype, {
     self.nodes.sendState = sendState
   },
 
-  verifyRender: function () {
+  create_verify_render: function () {
     var self = this
 
     var code = Stamp.$('<input>', {
@@ -154,12 +319,12 @@ Stamp.$.extend(Panel.prototype, {
       id: '_code_',
       value: '',
       style: 'width: 5em;'
-    })
+    }).addClass('form-control')
     var verify = Stamp.$('<input>', {
       type: 'button',
       id: '_verify_',
       value: '验证手机'
-    })
+    }).addClass('btn btn-info')
     var verifyState = Stamp.$('<span class="state">')
 
     self.nodes.code = code
@@ -167,7 +332,7 @@ Stamp.$.extend(Panel.prototype, {
     self.nodes.verifyState = verifyState
   },
 
-  mockRender: function () {
+  create_mock_render: function () {
     var self = this
 
     var answer = Stamp.$('<div class="checkboxs">')
@@ -199,74 +364,35 @@ Stamp.$.extend(Panel.prototype, {
     })
   },
 
-  identifyRender: function () {
+  create_identify_render: function () {
     var self = this
 
     var identify = Stamp.$('<input>', {
       type: 'button',
       id: '_identify_',
       value: '图片验证'
-    })
+    }).addClass('btn btn-info')
     var identifyState = Stamp.$('<span class="state">')
 
     self.nodes.identify = identify
     self.nodes.identifyState = identifyState
   },
 
-  bookRender: function () {
+  create_book_render: function () {
     var self = this
 
     var book = Stamp.$('<input>', {
       type: 'button',
       id: '_book_',
       value: '提交订单'
-    })
+    }).addClass('btn btn-info')
     var bookState = Stamp.$('<span class="state">')
 
     self.nodes.book = book
     self.nodes.bookState = bookState
   },
 
-  goodsBind: function () {
-    var self = this
-
-    var cache = self.fairy.cache
-    var details = self.fairy.details
-
-    var goods = self.nodes.goods
-    var count = self.nodes.count
-
-    goods.on('click', function () {
-      var params = {
-        'buyGoodsNowBean.goods_id': self.fairy.cache.goodsId,
-        'buy_type': details.goodsStatus.lottery ? '3' : '2',
-        'buyGoodsNowBean.goods_attr_id': details.goodsAttrList[0].id,
-        'buyGoodsNowBean.goods_num': count.val(),
-        'goodsTicketAttr': details.goodsAttrList[0].id
-      }
-
-      self.fairy.loader.post('buy', params)
-        .then(function (data) {
-          if (data.result.search('date_form') > -1 && data.result.search('gwc gwc2') > -1) {
-            self.nodes.sections[2].show()
-            self.nodes.sections[3].show()
-            self.nodes.sections[4].show()
-            self.nodes.sections[5].show()
-            goods.off()
-
-            goods.parent().hide()
-            count.attr('disabled', 'disabled').hide()
-
-            cache.html = data.result
-            cache.count = count.val()
-
-            self.fairy.loader.getSid()
-          }
-        })
-    })
-  },
-
-  sendBind: function () {
+  create_send_bind: function () {
     var self = this
 
     var cache = self.fairy.cache
@@ -276,6 +402,7 @@ Stamp.$.extend(Panel.prototype, {
     var sendState = self.nodes.sendState
 
     send.on('click', function () {
+      sendState.removeClass('fulfilled')
       var params = {
         mobileNum: phone.val(),
         smsType: '4'
@@ -284,7 +411,10 @@ Stamp.$.extend(Panel.prototype, {
       self.fairy.loader.post('code', params)
         .then(function (data) {
           if (data.result == "sended") {
-            sendState.toggleClass('fulfilled')
+            setTimeout(function () {
+              sendState.addClass('fulfilled')
+            }, 500)
+
             cache.mobile = phone.val()
           } else {
             alert(data.result)
@@ -293,7 +423,7 @@ Stamp.$.extend(Panel.prototype, {
     })
   },
 
-  verifyBind: function () {
+  create_verify_bind: function () {
     var self = this
 
     var cache = self.fairy.cache
@@ -303,6 +433,7 @@ Stamp.$.extend(Panel.prototype, {
     var verifyState = self.nodes.verifyState
 
     verify.on('click', function () {
+      verifyState.removeClass('fulfilled')
       var params = {
         mobile: self.nodes.phone.val(),
         message: code.val()
@@ -311,7 +442,10 @@ Stamp.$.extend(Panel.prototype, {
       self.fairy.loader.post('check', params)
         .then(function (data) {
           if (data.result.status == '1') {
-            verifyState.toggleClass('fulfilled')
+            setTimeout(function () {
+              verifyState.addClass('fulfilled')
+            }, 500)
+
             verifyState.attr('data-show', data.result.random_code)
             cache.message = data.result.random_code
           } else {
@@ -321,7 +455,7 @@ Stamp.$.extend(Panel.prototype, {
     })
   },
 
-  identifyBind: function () {
+  create_identify_bind: function () {
     var self = this
 
     var cache = self.fairy.cache
@@ -332,6 +466,8 @@ Stamp.$.extend(Panel.prototype, {
 
     identify.on('click', function () {
       if (cache.sid.length === 0) return false
+
+      identifyState.removeClass('fulfilled')
 
       var checked = Stamp.$.grep(checkboxs, function (checkbox) {
         return Stamp.$(checkbox).attr('checked') === 'checked'
@@ -356,7 +492,10 @@ Stamp.$.extend(Panel.prototype, {
         verifyURL: verifyURL + Math.random()
       }, function (message) {
         if (message.data.token !== 'ERROR') {
-          identifyState.toggleClass('fulfilled')
+          setTimeout(function () {
+            identifyState.addClass('fulfilled')
+          }, 500)
+
           identifyState.attr('data-show', message.data.token)
           cache.token = message.data.token
         }
@@ -364,20 +503,22 @@ Stamp.$.extend(Panel.prototype, {
     })
   },
 
-  bookBind: function () {
+  create_book_bind: function () {
     var self = this
 
     var book = self.nodes.book
     var bookState = self.nodes.bookState
 
     book.on('click', function () {
+      bookState.removeClass('fulfilled')
+
       self.fairy.loader.final(function () {
-        bookState.toggleClass('fulfilled')
+        bookState.addClass('fulfilled')
       })
     })
   },
 
-  append: function () {
+  create_append: function (needVerify) {
     var self = this
     var nodes = self.nodes
     var container = nodes.container
@@ -398,30 +539,27 @@ Stamp.$.extend(Panel.prototype, {
     })
     nodes.sections = sections
 
-    sections[0].append(nodes.explain)
-    sections[0].append(nodes.count)
-    sections[0].append(nodes.goods)
     sections[0].append(nodes.tip)
 
-    sections[1].append(nodes.phone)
-    sections[1].append(nodes.send)
-    nodes.send.after(nodes.sendState)
+    if (needVerify) {
+      sections[1].append(nodes.phone)
+      sections[1].append(nodes.send)
+      nodes.send.after(nodes.sendState)
+    }
 
-    sections[2].append(nodes.code)
-    sections[2].append(nodes.verify)
-    nodes.verify.after(nodes.verifyState)
-    sections[2].hide()
+    if (needVerify) {
+      sections[2].append(nodes.code)
+      sections[2].append(nodes.verify)
+      nodes.verify.after(nodes.verifyState)
+    }
 
     sections[3].append(nodes.answer)
-    sections[3].hide()
 
     sections[4].append(nodes.identify)
     nodes.identify.after(nodes.identifyState)
-    sections[4].hide()
 
     sections[5].append(nodes.book)
     nodes.book.after(nodes.bookState)
-    sections[5].hide()
 
     var wrap = Stamp.$('<div class="sections"></div>')
     Stamp.$.each(sections, function (index, section) {
