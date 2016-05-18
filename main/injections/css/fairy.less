@@ -88,18 +88,21 @@
         }
       }
 
-      .goodsArea, .cartsArea {
+      .goodsArea, .cartsArea, .mycartArea {
         width: auto;
         margin: 0 1em 0 0;
         padding: 0.8em 0 0 0;
 
         input[type='button'] {
-          width: 7em;
+          width: 6.5em;
           height: 2.5em;
-          padding: 0 0.8em;
+          padding: 0 0.4em;
         }
       }
 
+      .mycartArea {
+        margin: 0;
+      }
     }
 
     .notes {
@@ -139,6 +142,44 @@
 
       .record:nth-child(2n) {
         margin-right: 0;
+      }
+    }
+
+    .mycartTickets {
+      font-size: 13px;
+      width: 95%;
+      overflow: hidden;
+
+      .title {
+        float: left;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.2em;
+        border-bottom: 2px solid #31B0D5;
+      }
+
+      .tickets {
+        float: left;
+        width: 95%;
+        margin-bottom: 0.5em;
+
+        input {
+          position: relative;
+          top: 0.15em
+        }
+
+        label {
+          width: 90%;
+          margin-left: 0.5em;
+        }
+
+        .ticket {
+          padding: 0.2em 0;
+          margin: 0 0 0.2em 1.6em;
+          border-bottom: 1px solid #aaa;
+        }
       }
     }
 
@@ -233,6 +274,7 @@
 
           label {
             width: 90%;
+
             div {
               margin-bottom: 0.2em;
             }

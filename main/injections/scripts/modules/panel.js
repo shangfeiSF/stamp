@@ -124,9 +124,6 @@ Stamp.$.extend(Panel.prototype, {
     self.nodes.mycart = mycart
   },
 
-  boot_mycart_render: function () {
-  },
-
   boot_specs_render: function () {
     var self = this
 
@@ -202,6 +199,81 @@ Stamp.$.extend(Panel.prototype, {
     }
   },
 
+  boot_mycart_render: function (goodsCartIdShopIds, goodsInfos) {
+    var self = this
+
+    var nodes = self.nodes
+
+    var mycartTickets = nodes.mycartTickets ? nodes.mycartTickets : Stamp.$('<div class="mycartTickets" id="_mycartTickets_">')
+
+    if (nodes.mycartTickets) {
+      nodes.mycartTickets.empty()
+    }
+    else {
+      self.nodes.mycartTickets = mycartTickets
+
+      if (nodes.notes) {
+        nodes.notes.after(mycartTickets)
+      } else {
+        nodes.boot.after(mycartTickets)
+      }
+      mycartTickets.prepend(Stamp.$('<div class="title">我的购物车</div>'))
+
+      self.boot_mycart_bind()
+    }
+
+    var keys = ['name', 'date', 'spec', 'unit', 'total']
+    var infosArr = goodsInfos.map(function (nodes) {
+      return nodes.map(function (node) {
+        var node = Stamp.$(node)
+        var info = {}
+
+        info.image = node.find('img').attr('src') || ''
+
+        Stamp.$.each(node.find('span'), function (index, span) {
+          info[keys[index]] = Stamp.$(span).text()
+        })
+
+        info.count = info.total / info.unit
+
+        return info
+      })
+    })
+
+    Stamp.$.each(goodsCartIdShopIds, function (index, entry) {
+      var item = Stamp.$('<div class="tickets">').addClass('selected')
+
+      var checkbox = Stamp.$('<input>', {
+        type: 'checkbox',
+        id: ['_cartId', index].join('-'),
+        name: 'cartId',
+        value: entry.shopId,
+        checked: 'checked'
+      })
+
+      var label = Stamp.$('<label>', {
+        for: ['_cartId', index].join('-')
+      }).append(Stamp.$('<div>').text(entry.shopName))
+
+      item.append(checkbox).append(label)
+
+      infosArr[index].each(function (info) {
+        var ticket = Stamp.$('<div class="ticket">')
+
+        ticket.append(Stamp.$('<div>').text('商品名称：' + info.name))
+        ticket.append(Stamp.$('<div>').text('发行日期：' + info.date))
+        ticket.append(Stamp.$('<div>').text('规格：' + info.spec))
+        ticket.append(Stamp.$('<div>').text('数量：' + info.count))
+        ticket.append(Stamp.$('<div>').text('单价：' + info.unit))
+        ticket.append(Stamp.$('<div>').text('小计：' + info.total))
+
+        item.append(ticket)
+      })
+
+      mycartTickets.append(item)
+    })
+  },
+
   boot_goods_bind: function () {
     var self = this
 
@@ -272,11 +344,49 @@ Stamp.$.extend(Panel.prototype, {
     })
 
     nodes.mycart.on('click', function () {
-      
-    })
-  },
+      var mycartDoms = null
 
-  boot_mycart_bind: function () {
+      Stamp.$.ajax({
+        tupe: 'GET',
+        url: 'http://jiyou.biz.11185.cn/u/show.html',
+        async: false,
+        success: function (html) {
+          mycartDoms = Stamp.$(html)
+        },
+        error: function () {
+          mycartDoms = []
+        },
+        dataType: 'html'
+      })
+
+      var goodsCartIdShopIds = []
+      var goodsInfos = []
+      var tickets = Stamp.$.grep(mycartDoms, function (dom) {
+        return Stamp.$(dom).hasClass('gwc')
+      })
+
+      if (tickets.length) {
+        tickets = Stamp.$(tickets.pop())
+
+        Stamp.$.each(tickets.find('table tbody tr'), function (index, node) {
+          var node = Stamp.$(node)
+
+          if (node.hasClass('splt')) {
+            goodsCartIdShopIds.push({
+              shopName: node.find('p').text(),
+              shopId: node.find('input').val()
+            })
+            goodsInfos.push([])
+          }
+          else {
+            node.remove(node.children()[0])
+            goodsInfos[goodsInfos.length - 1].push(node)
+          }
+        })
+      }
+
+      self.boot_mycart_render(goodsCartIdShopIds, goodsInfos)
+    })
   },
 
   boot_specs_bind: function () {
@@ -303,6 +413,15 @@ Stamp.$.extend(Panel.prototype, {
     })
   },
 
+  boot_mycart_bind: function () {
+    var self = this
+
+    self.nodes.mycartTickets.on('change', function (e) {
+      debugger
+      Stamp.$(e.target).parent().toggleClass('selected')
+    })
+  },
+
   boot_append: function () {
     var self = this
     var nodes = self.nodes
@@ -311,7 +430,8 @@ Stamp.$.extend(Panel.prototype, {
       'specsArea',
       'countArea',
       'cartsArea',
-      'goodsArea'
+      'goodsArea',
+      'mycartArea'
     ]
 
     areas = Stamp.$.map(areas, function (klass) {
@@ -324,6 +444,7 @@ Stamp.$.extend(Panel.prototype, {
     areas[1].append(nodes.count)
     areas[2].append(nodes.carts)
     areas[3].append(nodes.goods)
+    areas[4].append(nodes.mycart)
 
     var boot = Stamp.$('<div class="boot"></div>')
     Stamp.$.each(areas, function (index, area) {
