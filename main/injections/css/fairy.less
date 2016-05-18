@@ -12,12 +12,12 @@
 
   label {
     cursor: pointer;
-    font-weight: normal;
+    font-weight: bold;
     margin-bottom: 0;
   }
+
   .selected {
-    font-weight: bold;
-    color: #3aad8b
+    color: #3AAD8B
   }
 
   #_trigger_ {
@@ -116,6 +116,7 @@
         }
 
         input[type='button'] {
+          width: 7em;
           height: 34px;
           padding: 0 1em;
         }
@@ -132,7 +133,7 @@
         }
 
         .fulfilled {
-          background: #5CB85C;
+          background: #3AAD8B;
         }
 
         .tip {
@@ -190,6 +191,37 @@
         }
       }
 
+      .recordsSection {
+        font-size: 13px;
+        width: 95%;
+        overflow: hidden;
+
+        .record {
+          float: left;
+          width: 49%;
+          background: #eee;
+          margin: 0 2% 2% 0;
+
+          .sequence {
+            font-weight: bold;
+          }
+
+          .success {
+            color: #3AAD8B;
+            padding: 0 0 0 0.5em;
+          }
+
+          .failed {
+            color: #FF0000;
+            padding: 0 0 0 0.5em;
+          }
+        }
+
+        .record:nth-child(2n) {
+          margin-right: 0;
+        }
+      }
+
       .orderInfoSection, .errorInfoSection {
         font-size: 14px;
 
@@ -212,8 +244,8 @@
           margin: 0.2em 0 0 0;
         }
 
-        .red {
-          color: #F35531;
+        .content {
+          color: #3AAD8B;
           font-weight: bold;
         }
       }

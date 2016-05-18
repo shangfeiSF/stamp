@@ -8,6 +8,8 @@ function Dig(fairy) {
   this.list = ['goodsStatus', 'goodsShowInfo', 'goodsAttrList']
 
   this.fairy = fairy
+
+  this.init()
 }
 
 Stamp.$.extend(Dig.prototype, {

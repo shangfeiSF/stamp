@@ -50,39 +50,6 @@ function Loader(fairy) {
 }
 
 Stamp.$.extend(Loader.prototype, {
-  post: function (prop, params) {
-    var self = this
-
-    var common = self.postConfig.common
-    var private = self.postConfig[prop]
-
-    return new Promise(function (resolve, rejected) {
-      var config = {
-        type: private.type || common.type,
-        url: private.url,
-        success: function () {
-          var args = Array.prototype.slice.call(arguments)
-          resolve({
-            result: args[0],
-            textStatus: args[1]
-          })
-        },
-        error: function () {
-          var args = Array.prototype.slice.call(arguments)
-          rejected({
-            result: args[0],
-            textStatus: args[1]
-          })
-        },
-        dataType: private.dataType || common.dataType,
-      }
-
-      params !== undefined && (config.data = params)
-
-      Stamp.$.ajax(config)
-    })
-  },
-
   init: function (needVerify) {
     var self = this
     var cache = self.fairy.cache
@@ -128,6 +95,39 @@ Stamp.$.extend(Loader.prototype, {
       .then(function () {
         self.getSid()
       })
+  },
+
+  post: function (prop, params) {
+    var self = this
+
+    var common = self.postConfig.common
+    var private = self.postConfig[prop]
+
+    return new Promise(function (resolve, rejected) {
+      var config = {
+        type: private.type || common.type,
+        url: private.url,
+        success: function () {
+          var args = Array.prototype.slice.call(arguments)
+          resolve({
+            result: args[0],
+            textStatus: args[1]
+          })
+        },
+        error: function () {
+          var args = Array.prototype.slice.call(arguments)
+          rejected({
+            result: args[0],
+            textStatus: args[1]
+          })
+        },
+        dataType: private.dataType || common.dataType,
+      }
+
+      params !== undefined && (config.data = params)
+
+      Stamp.$.ajax(config)
+    })
   },
 
   getSid: function () {
@@ -223,15 +223,20 @@ Stamp.$.extend(Loader.prototype, {
     self.post('address', params)
       .then(function (data) {
         if (data.textStatus === 'success') {
-          /*
-           Stamp.$.each(data.result, function (index, item) {
-           var optionConfig = {
-           value: item.mobile
-           }
-           item.id === cache.userId && (optionConfig.selected = 'selected')
-           nodes.phone.append(Stamp.$('<option>', optionConfig).text(item.mobile))
-           })
-           */
+          var phone = nodes.phone
+
+          var mobiles = Stamp.$.map(phone.children(), function (node) {
+            return Stamp.$(node).val()
+          })
+
+          Stamp.$.each(data.result, function (index, item) {
+            if (mobiles.indexOf(item.mobile) < 0) {
+              phone.append(Stamp.$('<option>', {
+                value: item.mobile
+              }).text(item.mobile))
+            }
+          })
+
           var result = data.result.sort(function (ad1, ad2) {
             return ad2.defAddress - ad1.defAddress
           })
@@ -437,27 +442,76 @@ Stamp.$.extend(Loader.prototype, {
         id: '_total_'
       })
       .append(info)
-      .append('<span class="red">' + self.fairy.cache.count + '</span>'))
+      .append('<span class="content">' + self.fairy.cache.count + '</span>'))
 
     info = Stamp.$('<span>').text('商品总价：')
     price.append(Stamp.$('<div>', {
         id: '_original_'
       })
       .append(info)
-      .append('<span class="red">' + original + '</span>'))
+      .append('<span class="content">' + original + '</span>'))
 
     info = Stamp.$('<span>').text('订单总价(含邮费)：')
     price.append(Stamp.$('<div>', {
         id: '_more_'
       })
       .append(info)
-      .append('<span class="red">' + more + '</span>'))
+      .append('<span class="content">' + more + '</span>'))
 
     finalPostData['preTradelist[0].postageInfo.shippingType'] = fareCode
   },
 
+  guard: function () {
+    var self = this
+    var cache = self.fairy.cache
+
+    var check = {
+      result: true,
+      success: [null, null, null, null, null],
+      failed: [null, null, null, null, null]
+    }
+
+    if (!(cache.addressId && String(cache.addressId).length)) {
+      check.result = false
+      check.failed[0] = '未选择邮寄地址'
+    } else {
+      check.success[0] = '邮寄地址正确'
+    }
+
+    if (!(cache.fareId && String(cache.fareId).length)) {
+      check.result = false
+      check.failed[1] = '未选择邮寄方式'
+    } else {
+      check.success[1] = '邮寄方式正确'
+    }
+
+    if (!(cache.mobile && String(cache.mobile).length)) {
+      check.result = false
+      check.failed[2] = '获取验证码未通过'
+    } else {
+      check.success[2] = '获取验证码正确'
+    }
+
+    if (!(cache.message && String(cache.message).length)) {
+      check.result = false
+      check.failed[3] = '验证手机未通过'
+    } else {
+      check.success[3] = '验证手机正确'
+    }
+
+    if (!(cache.token && String(cache.token).length)) {
+      check.result = false
+      check.failed[4] = '图片验证未通过'
+    } else {
+      check.success[4] = '图片验证正确'
+    }
+
+    return check
+  },
+
   final: function (callback) {
     var self = this
+
     var cache = self.fairy.cache
     var finalPostData = self.fairy.finalPostData
 

@@ -8,6 +8,7 @@ var fairy = {
     _parts: [],
     goodsId: ''
   },
+
   cache: {
     specIndex: '',
     buyLimit: '',
@@ -23,6 +24,7 @@ var fairy = {
     sendFlag: '',
     canGetFare: '',
     address: '',
+    addressId: '',
     fare: '',
     fareId: '',
     mobile: '',
@@ -30,6 +32,7 @@ var fairy = {
     sid: '',
     token: ''
   },
+
   finalPostData: {}
 }
 

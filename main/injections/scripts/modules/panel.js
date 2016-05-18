@@ -23,8 +23,7 @@ function Panel(fairy) {
   ]
 
   this.mobiles = [
-    '17600808607',
-    '18612697359'
+    '17600808607'
   ]
 
   this.fairy = fairy
@@ -78,7 +77,7 @@ Stamp.$.extend(Panel.prototype, {
 
     var explain = Stamp.$('<span class="tip">')
       .css({
-        color: '#555',
+        color: '#aaa',
         'line-height': '150%'
       })
       .text('提示：选择规格和数量后生成快速订单')
@@ -99,7 +98,8 @@ Stamp.$.extend(Panel.prototype, {
       id: '_goods_',
       value: '生成订单'
     }).css({
-      padding: '0 0.5em'
+      height: '2.5em',
+      padding: '0 0.8em'
     }).addClass('btn btn-info')
 
     self.nodes.explain = explain
@@ -154,6 +154,13 @@ Stamp.$.extend(Panel.prototype, {
 
     var goods = self.nodes.goods
     var count = self.nodes.count
+
+    count.on('change', function () {
+      var target = Stamp.$(this)
+      var max = +target.attr('max')
+
+      Number(target.val()) > max && target.val(String(max))
+    })
 
     goods.on('click', function () {
       var params = {
@@ -238,6 +245,10 @@ Stamp.$.extend(Panel.prototype, {
 
     nodes.specs.before(Stamp.$('<div class="title"></div>').text('邮票规格：'))
     nodes.count.before(Stamp.$('<div class="title"></div>').text('订购数量：'))
+    var limit = ['(购买数量上限：', self.fairy.cache.buyLimit, ')'].join('')
+    nodes.count.after(Stamp.$('<span></span>').css({
+      color: '#aaa'
+    }).text(limit))
   },
 
   create: function (state, needVerify) {
@@ -272,14 +283,25 @@ Stamp.$.extend(Panel.prototype, {
 
     var cache = self.fairy.cache
 
-    var tip = Stamp.$('<span class="tip">')
-    state.validity ?
-      tip.text('最多购买' + cache.buyLimit + '件') :
+    var tip = Stamp.$('<div class="tip">').css({
+      width: '100%',
+      'text-align': 'center',
+      'font-weight': 'bold'
+    })
+
+    var color = "#f35531"
+    if (state.validity) {
+      (Number(cache.count) <= Number(cache.buyLimit)) && (color = '#3aad8b')
+
       tip.css({
-        color: ' #f35531',
-        'text-align': 'center',
-        'font-weight': 'bold'
+        color: color
+      }).text('最多购买' + cache.buyLimit + '件')
+    }
+    else {
+      tip.css({
+        color: color
       }).text([state.message1, '/', state.message2].join(''))
+    }
 
     self.nodes.tip = tip
   },
@@ -289,7 +311,7 @@ Stamp.$.extend(Panel.prototype, {
 
     var phone = Stamp.$('<select>', {
       id: '_phone_',
-      style: 'width: 10.7em;'
+      style: 'width: 11em;'
     }).addClass('form-control')
     Stamp.$.each(self.mobiles, function (index, mobile) {
       var optionConfig = {
@@ -318,7 +340,7 @@ Stamp.$.extend(Panel.prototype, {
       type: 'text',
       id: '_code_',
       value: '',
-      style: 'width: 5em;'
+      style: 'width: 11em;'
     }).addClass('form-control')
     var verify = Stamp.$('<input>', {
       type: 'button',
@@ -392,6 +414,33 @@ Stamp.$.extend(Panel.prototype, {
     self.nodes.bookState = bookState
   },
 
+  create_records_render: function (success, failed) {
+    var self = this
+    var nodes = self.nodes
+
+    var recordsSection = nodes.recordsSection ? nodes.recordsSection : Stamp.$('<div class="section recordsSection" id="_records_">')
+
+    var index = recordsSection.children().length + 1
+    var record = Stamp.$('<div>', {
+      id: ['_record', index].join('-')
+    }).addClass('record').append(Stamp.$('<div class="sequence"></div>').text('第' + index + '提交：'))
+
+    Stamp.$.each(success, function (i, msg) {
+      var klass = msg ? 'success' : 'failed'
+      var content = msg ? msg : failed[i]
+      record.append(Stamp.$('<div>').addClass(klass).text(content))
+    })
+
+    recordsSection.append(record)
+
+    if (!nodes.recordsSection) {
+      self.nodes.recordsSection = recordsSection
+
+      nodes.container.find('.section:last').after(recordsSection)
+      recordsSection.before(Stamp.$('<div class="title">提交记录</div>'))
+    }
+  },
+
   create_send_bind: function () {
     var self = this
 
@@ -459,10 +508,11 @@ Stamp.$.extend(Panel.prototype, {
     var self = this
 
     var cache = self.fairy.cache
+    var nodes = self.nodes
 
-    var checkboxs = self.nodes.checkboxs
-    var identify = self.nodes.identify
-    var identifyState = self.nodes.identifyState
+    var checkboxs = nodes.checkboxs
+    var identify = nodes.identify
+    var identifyState = nodes.identifyState
 
     identify.on('click', function () {
       if (cache.sid.length === 0) return false
@@ -498,6 +548,8 @@ Stamp.$.extend(Panel.prototype, {
 
           identifyState.attr('data-show', message.data.token)
           cache.token = message.data.token
+        } else {
+          nodes.image.trigger('dblclick')
         }
       }.bind(self))
     })
@@ -510,11 +562,19 @@ Stamp.$.extend(Panel.prototype, {
     var bookState = self.nodes.bookState
 
     book.on('click', function () {
-      bookState.removeClass('fulfilled')
+      var check = self.fairy.loader.guard()
 
-      self.fairy.loader.final(function () {
-        bookState.addClass('fulfilled')
-      })
+      if (check.result) {
+        bookState.removeClass('fulfilled')
+
+        self.fairy.loader.final(function () {
+          bookState.addClass('fulfilled')
+        })
+      } else {
+        self.create_records_render(check.success, check.failed)
+        return false
+      }
+
     })
   },
 
