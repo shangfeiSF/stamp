@@ -22,6 +22,7 @@ $.extend(Inject.prototype, {
         allFrames: content.allFrames !== undefined ? content.allFrames : self.common.allFrames,
         matchAboutBlank: content.matchAboutBlank !== undefined ? content.matchAboutBlank : self.common.matchAboutBlank
       })
+      console.log('[Injected async]---', content.file.slice(1))
     })
   },
 
@@ -49,7 +50,7 @@ $.extend(Inject.prototype, {
 
         return function () {
           chrome.tabs[info.fname](info.tabId, config, function () {
-            console.log('[Injected]---', content.file.slice(1))
+            console.log('[Injected sync]---', content.file.slice(1))
 
             var next = callbacks[info.index + 1]
             next !== undefined && next()

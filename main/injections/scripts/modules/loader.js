@@ -475,35 +475,36 @@ Stamp.$.extend(Loader.prototype, {
       check.result = false
       check.failed[0] = '未选择邮寄地址'
     } else {
-      check.success[0] = '邮寄地址正确'
+      check.success[0] = '邮寄地址OK'
     }
 
     if (!(cache.fareId && String(cache.fareId).length)) {
       check.result = false
       check.failed[1] = '未选择邮寄方式'
     } else {
-      check.success[1] = '邮寄方式正确'
+      check.success[1] = '邮寄方式OK'
     }
 
-    if (!(cache.mobile && String(cache.mobile).length)) {
-      check.result = false
-      check.failed[2] = '获取验证码未通过'
-    } else {
-      check.success[2] = '获取验证码正确'
-    }
+    // if (!(cache.mobile && String(cache.mobile).length)) {
+    //   check.result = false
+    //   check.failed[2] = '未获取验证码'
+    // } else {
+    //   check.success[2] = '获取验证码OK'
+    // }
+    check.success[2] = '获取验证码OK'
 
     if (!(cache.message && String(cache.message).length)) {
       check.result = false
-      check.failed[3] = '验证手机未通过'
+      check.failed[3] = '未通过验证手机'
     } else {
-      check.success[3] = '验证手机正确'
+      check.success[3] = '验证手机OK'
     }
 
     if (!(cache.token && String(cache.token).length)) {
       check.result = false
-      check.failed[4] = '图片验证未通过'
+      check.failed[4] = '未通过图片验证'
     } else {
-      check.success[4] = '图片验证正确'
+      check.success[4] = '图片验证OK'
     }
 
     return check
@@ -582,7 +583,7 @@ Stamp.$.extend(Loader.prototype, {
     Stamp.$.each(wrap.find('.smrz-nr h1'), function (index, node) {
       var info = Stamp.$('<div class="info">')
 
-      info.append(Stamp.$('<em>').text(Stamp.$.trim(Stamp.$(node).text())))
+      info.append(Stamp.$('<em class="err">').text(Stamp.$.trim(Stamp.$(node).text())))
 
       errorInfoSection.append(info)
     })

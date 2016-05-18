@@ -64,9 +64,11 @@ Stamp.$.extend(Panel.prototype, {
     var self = this
 
     self.boot_goods_render()
+    self.boot_carts_render()
     self.boot_specs_render()
 
     self.boot_goods_bind()
+    self.boot_carts_bind()
     self.boot_specs_bind()
 
     self.boot_append()
@@ -96,15 +98,33 @@ Stamp.$.extend(Panel.prototype, {
     var goods = Stamp.$('<input>', {
       type: 'button',
       id: '_goods_',
-      value: '生成订单'
-    }).css({
-      height: '2.5em',
-      padding: '0 0.8em'
-    }).addClass('btn btn-info')
+      value: '立即购买'
+    }).addClass('btn btn-success')
 
     self.nodes.explain = explain
     self.nodes.count = count
     self.nodes.goods = goods
+  },
+
+  boot_carts_render: function () {
+    var self = this
+
+    var carts = Stamp.$('<input>', {
+      type: 'button',
+      id: '_carts_',
+      value: '加入购物车'
+    }).addClass('btn btn-warning')
+    var mycart = Stamp.$('<input>', {
+      type: 'button',
+      id: '_mycart_',
+      value: '我的购物车'
+    }).addClass('btn btn-info')
+
+    self.nodes.carts = carts
+    self.nodes.mycart = mycart
+  },
+
+  boot_mycart_render: function () {
   },
 
   boot_specs_render: function () {
@@ -144,6 +164,42 @@ Stamp.$.extend(Panel.prototype, {
     })
 
     self.nodes.specs = specs
+  },
+
+  boot_notes_render: function (msg) {
+    var self = this
+
+    var cache = self.fairy.cache
+    var details = self.fairy.details
+
+    var nodes = self.nodes
+
+    var notes = nodes.notes ? nodes.notes : Stamp.$('<div class="notes" id="_notes_">')
+
+    var index = notes.children('.note').length + 1
+    var note = Stamp.$('<div>', {
+      id: ['_note', index].join('-')
+    }).addClass('note').append(Stamp.$('<span class="sequence"></span>').text(index + '. '))
+
+    var matches = msg.match(/^\[(.*)\]$/)
+    matches && matches.length == 2 && (matches = matches.pop())
+
+    var params = matches.split(',')
+    var klass = params[0] === "'true'" ? 'success' : 'failed'
+    var content = params[0] === "'true'" ?
+      [details.goodsAttrList[cache.specIndex].attrName, '（', nodes.count.val(), '）'].join('') :
+      String(params[1]).slice(1, -1)
+
+    note.append(Stamp.$('<span>').addClass(klass).text(content))
+
+    notes.append(note)
+
+    if (!nodes.notes) {
+      self.nodes.notes = notes
+
+      nodes.boot.after(notes)
+      notes.prepend(Stamp.$('<div class="title">加入购物车记录</div>'))
+    }
   },
 
   boot_goods_bind: function () {
@@ -190,6 +246,39 @@ Stamp.$.extend(Panel.prototype, {
     })
   },
 
+  boot_carts_bind: function () {
+    var self = this
+
+    var nodes = self.nodes
+    var loader = self.fairy.loader
+
+    var cache = self.fairy.cache
+    var details = self.fairy.details
+
+    var count = nodes.count
+
+    nodes.carts.on('click', function () {
+      loader.post('user')
+        .asCallback(function (error, data) {
+          if (data.textStatus === 'success') {
+            cache.userType = data.result.userType
+            cache.userId = data.result.userId
+
+            ShoppingCartAction.addGoodsToShoppingCartLS(details.goodsId, count.val(), details.goodsAttrList[cache.specIndex].id, function (msg) {
+              self.boot_notes_render(msg)
+            })
+          }
+        })
+    })
+
+    nodes.mycart.on('click', function () {
+      
+    })
+  },
+
+  boot_mycart_bind: function () {
+  },
+
   boot_specs_bind: function () {
     var self = this
 
@@ -221,6 +310,7 @@ Stamp.$.extend(Panel.prototype, {
     var areas = [
       'specsArea',
       'countArea',
+      'cartsArea',
       'goodsArea'
     ]
 
@@ -232,7 +322,8 @@ Stamp.$.extend(Panel.prototype, {
 
     areas[0].append(nodes.specs)
     areas[1].append(nodes.count)
-    areas[2].append(nodes.goods)
+    areas[2].append(nodes.carts)
+    areas[3].append(nodes.goods)
 
     var boot = Stamp.$('<div class="boot"></div>')
     Stamp.$.each(areas, function (index, area) {
@@ -289,9 +380,9 @@ Stamp.$.extend(Panel.prototype, {
       'font-weight': 'bold'
     })
 
-    var color = "#f35531"
+    var color = "#FF0000"
     if (state.validity) {
-      (Number(cache.count) <= Number(cache.buyLimit)) && (color = '#3aad8b')
+      (Number(cache.count) <= Number(cache.buyLimit)) && (color = '#3AAD8B')
 
       tip.css({
         color: color
@@ -600,6 +691,7 @@ Stamp.$.extend(Panel.prototype, {
     nodes.sections = sections
 
     sections[0].append(nodes.tip)
+    sections[0].hide()
 
     if (needVerify) {
       sections[1].append(nodes.phone)

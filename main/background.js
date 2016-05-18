@@ -18,7 +18,7 @@ function Agent() {
             allFrames: false,
             matchAboutBlank: true
           }, function () {
-            console.log('[Injected]---', file.slice(1))
+            console.log('[Injected command]---', file.slice(1))
           })
         }
       },
@@ -99,7 +99,10 @@ function Agent() {
   this.inject = new Inject({
     content: {
       ayncScripts: [
-        {file: './lib/bluebird.min.js'}
+        {file: './lib/bluebird.min.js'},
+        {file: './main/injections/scripts/dwr/shoppingCartAction.js'},
+        {file: './main/injections/scripts/dwr/engine.js'},
+        {file: './main/injections/scripts/dwr/utils.js'}
       ],
 
       syncScripts: [
@@ -109,7 +112,7 @@ function Agent() {
       ],
 
       ayncCss: [],
-      
+
       syncCss: [
         {file: './main/injections/css/fairy.css',},
         {file: './lib/bootstrap.min.css',}
