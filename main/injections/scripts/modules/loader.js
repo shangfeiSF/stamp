@@ -50,71 +50,6 @@ function Loader(fairy) {
 }
 
 Stamp.$.extend(Loader.prototype, {
-  settle: function (needVerify) {
-    var self = this
-    var cache = self.fairy.cache
-
-    self.post('user')
-      .asCallback(function (error, data) {
-        if (data.textStatus === 'success') {
-          cache.userType = data.result.userType
-          cache.userId = data.result.userId
-
-          self.fairy.panel.create({}, needVerify)
-        }
-      })
-      .then(function () {
-        self.getSid()
-      })
-  },
-
-  init: function (needVerify) {
-    var self = this
-    var cache = self.fairy.cache
-    var details = self.fairy.details
-    var nodes = self.fairy.panel.nodes
-
-    self.post('user')
-      .asCallback(function (error, data) {
-        if (data.textStatus === 'success') {
-          cache.userType = data.result.userType
-          cache.userId = data.result.userId
-        }
-      })
-      .then(function () {
-        var params = {
-          ticketAttr: details.goodsAttrList[cache.specIndex].id,
-          userId: cache.userId,
-          ticketId: details.goodsShowInfo.id
-        }
-
-        return self.post('limit', params)
-      })
-      .asCallback(function (error, data) {
-        if (data.textStatus === 'success') {
-          var result = JSON.parse(data.result)
-
-          details.goodsAttrList[cache.specIndex].buyLimit = result.buyLimit
-        }
-      })
-      .then(function () {
-        var params = {
-          ticketAttr: details.goodsAttrList[cache.specIndex].id,
-          goodsNum: nodes.count.val()
-        }
-
-        return self.post('message', params)
-      })
-      .asCallback(function (error, data) {
-        if (data.textStatus === 'success') {
-          self.fairy.panel.create(data.result, needVerify)
-        }
-      })
-      .then(function () {
-        self.getSid()
-      })
-  },
-
   post: function (prop, params) {
     var self = this
 
@@ -148,15 +83,81 @@ Stamp.$.extend(Loader.prototype, {
     })
   },
 
-  getSid: function () {
+  init: function (needVerify, type) {
+    var self = this
+
+    var cache = self.fairy.cache
+    var details = self.fairy.details
+
+    self.post('user')
+      .asCallback(function (error, data) {
+        if (data.textStatus === 'success') {
+          cache.userType = data.result.userType
+          cache.userId = data.result.userId
+        }
+      })
+      .then(function () {
+        var params = {
+          ticketAttr: details.goodsAttrList[cache.specIndex].id,
+          userId: cache.userId,
+          ticketId: details.goodsShowInfo.id
+        }
+
+        return self.post('limit', params)
+      })
+      .asCallback(function (error, data) {
+        if (data.textStatus === 'success') {
+          var result = JSON.parse(data.result)
+
+          details.goodsAttrList[cache.specIndex].buyLimit = result.buyLimit
+        }
+      })
+      .then(function () {
+        var params = {
+          ticketAttr: details.goodsAttrList[cache.specIndex].id,
+          goodsNum: cache.count
+        }
+
+        return self.post('message', params)
+      })
+      .asCallback(function (error, data) {
+        if (data.textStatus === 'success') {
+          self.fairy.order.render(data.result, needVerify)
+        }
+      })
+      .then(function () {
+        self.getSid(type)
+      })
+  },
+
+  settle: function (needVerify, type) {
     var self = this
     var cache = self.fairy.cache
-    var nodes = self.fairy.panel.nodes
+
+    self.post('user')
+      .asCallback(function (error, data) {
+        if (data.textStatus === 'success') {
+          cache.userType = data.result.userType
+          cache.userId = data.result.userId
+
+          self.fairy.order.render({}, needVerify)
+        }
+      })
+      .then(function () {
+        self.getSid(type)
+      })
+  },
+
+  getSid: function (type) {
+    var self = this
+    var cache = self.fairy.cache
+
+    var nodes = self.fairy.order.nodes
 
     Stamp.probe.execute('getSid', {}, function (message) {
       cache.sid = message.data.sid
 
-      if (nodes.image === undefined) {
+      if (nodes.image === null) {
         var image = Stamp.$('<img>', {
             src: message.data.image
           })
@@ -178,15 +179,22 @@ Stamp.$.extend(Loader.prototype, {
         nodes.image.attr('src', message.data.image)
       }
 
-      self.shortCut()
+      if (type === 'purchase') {
+        self.purchaseShortCut()
+      } else if (type === 'settlement') {
+        self.settlementShortCut()
+      }
+
     }.bind(self))
   },
 
-  shortCut: function () {
+  purchaseShortCut: function () {
     var self = this
+
     var cache = self.fairy.cache
     var finalPostData = self.fairy.finalPostData
-    var dom = Stamp.$(cache.html)
+
+    var dom = Stamp.$(cache.html4order)
 
     var forms = Stamp.$.grep(dom, function (node) {
       return node.tagName === 'FORM' && Stamp.$(node).attr('id')
@@ -229,10 +237,71 @@ Stamp.$.extend(Loader.prototype, {
     self.getAddress()
   },
 
+  settlementShortCut: function () {
+    var self = this
+
+    var cache = self.fairy.cache
+    var settlementPostData = self.fairy.settlementPostData
+
+    var dom = Stamp.$(cache.html4settlement)
+
+    var forms = Stamp.$.grep(dom, function (node) {
+      return node.tagName === 'FORM' && Stamp.$(node).attr('id')
+    })
+    forms.length === 1 && (forms = Stamp.$(forms[0]))
+    Stamp.$.each(forms.find('input'), function (index, input) {
+      var name = Stamp.$(input).attr('name')
+      var value = Stamp.$(input).attr('value')
+
+      settlementPostData[name] = value
+    })
+
+    var main = Stamp.$.grep(dom, function (node) {
+      var node = Stamp.$(node)
+      return node.hasClass('gwc') && node.hasClass('gwc2')
+    })
+    main.length === 1 && (main = Stamp.$(main[0]))
+
+    Stamp.$.each(main.find('.order_shop_id'), function (i, input) {
+      var input = Stamp.$(input)
+
+      var id = input.attr('id')
+      var value = input.attr('value')
+
+      var index = id.split('_').pop()
+
+      var matches = Stamp.$.grep(cache.shops, function (shop) {
+        return shop.shopId == value
+      })
+
+      matches.length && (matches = matches.pop())
+
+      matches.orderTotalWeigth = main.find('#order_total_weight_' + index).val()
+      matches.goodsList_index = input.parent().find('input.goodsList_index').val()
+
+      Stamp.$.each(input.parent().find('.spqdbd-spxq'), function (i, node) {
+        var node = Stamp.$(node)
+        var goodsId = node.find('.shopidAndGoodsID').val().split('#').pop()
+
+        var matchGoods = Stamp.$.grep(matches.goods, function (good) {
+          return good.goodsId == goodsId
+        })
+        matchGoods.length && (matchGoods = matchGoods.pop())
+
+        matchGoods.sendFlag = node.find('.good_sendflag' + index).val()
+        matchGoods.idForEach = node.find('.good_idforeach' + index).val()
+      })
+    })
+
+    debugger
+  },
+
   getAddress: function () {
     var self = this
+
     var cache = self.fairy.cache
-    var nodes = self.fairy.panel.nodes
+
+    var nodes = self.fairy.order.nodes
 
     var params = {
       buyer_user_id: cache.userId
@@ -243,32 +312,37 @@ Stamp.$.extend(Loader.prototype, {
         if (data.textStatus === 'success') {
           var phone = nodes.phone
 
-          var mobiles = Stamp.$.map(phone.children(), function (node) {
-            return Stamp.$(node).val()
-          })
+          if (phone) {
+            var mobiles = Stamp.$.map(phone.children(), function (node) {
+              return Stamp.$(node).val()
+            })
 
-          Stamp.$.each(data.result, function (index, item) {
-            if (mobiles.indexOf(item.mobile) < 0) {
-              phone.append(Stamp.$('<option>', {
-                value: item.mobile
-              }).text(item.mobile))
-            }
-          })
+            Stamp.$.each(data.result, function (index, item) {
+              if (mobiles.indexOf(item.mobile) < 0) {
+                phone.append(Stamp.$('<option>', {
+                  value: item.mobile
+                }).text(item.mobile))
+              }
+            })
+          }
 
           var result = data.result.sort(function (ad1, ad2) {
             return ad2.defAddress - ad1.defAddress
           })
           cache.address = result
 
-          var addressListSection = Stamp.$('<div class="section radioSection" id="_addressList_"></div>')
+          var addressSection = Stamp.$('<div class="section addressSection"></div>')
+          addressSection.append(Stamp.$('<div class="radios"></div>'))
 
           Stamp.$.each(result, function (index, address) {
             var wrap = Stamp.$('<div class="radioWrap">')
 
+            var id = ['_address_', index].join('')
+
             var radio = Stamp.$('<input>', {
-              id: ['_address', index].join('_'),
-              name: 'address',
               type: 'radio',
+              id: id,
+              name: 'address',
               value: address.id,
             }).data('info', address)
 
@@ -276,7 +350,7 @@ Stamp.$.extend(Loader.prototype, {
             var detail = Stamp.$('<div class="detail">').text(['收货人:', address.contextName, ', ', '电话:', address.mobile, ', ', '邮编:', address.zipcode].join(''))
 
             var label = Stamp.$('<label>', {
-              for: ['_address', index].join('_')
+              for: id
             })
             label.append(location)
             label.append(detail)
@@ -292,17 +366,19 @@ Stamp.$.extend(Loader.prototype, {
             wrap.append(radio)
             wrap.append(label)
 
-            addressListSection.append(wrap)
+            addressSection.find('.radios').append(wrap)
           })
 
-          addressListSection.on('change', function (e) {
+          nodes.addressSection = addressSection
+
+          addressSection.on('change', function (e) {
             var target = Stamp.$(e.target)
 
             Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
               var node = Stamp.$(node)
 
               node.removeClass('selected')
-              if (node.attr('for').split('-').pop() === target.attr('id').split('-').pop()) {
+              if (node.attr('for').split('_').pop() === target.attr('id').split('_').pop()) {
                 node.addClass('selected')
               }
             })
@@ -311,8 +387,8 @@ Stamp.$.extend(Loader.prototype, {
             self.getFare(false)
           })
 
-          nodes.container.find('.section:first').after(addressListSection)
-          addressListSection.before(Stamp.$('<div class="title">确认收货地址</div>'))
+          nodes.root.find('.section:first').after(addressSection)
+          addressSection.prepend(Stamp.$('<div class="title">确认收货地址</div>'))
 
           self.getFare(true)
         }
@@ -321,8 +397,10 @@ Stamp.$.extend(Loader.prototype, {
 
   getFare: function (init) {
     var self = this
+
     var cache = self.fairy.cache
-    var nodes = self.fairy.panel.nodes
+
+    var nodes = self.fairy.order.nodes
 
     if (!cache.canGetFare) return null
 
@@ -343,17 +421,23 @@ Stamp.$.extend(Loader.prototype, {
         if (data.textStatus === 'success') {
           cache.fare = data.result
 
-          var fareListSection = init ?
-            Stamp.$('<div class="section radioSection" id="_fareList_"></div>') :
-            nodes.fareListSection
+          var fareSection = null
 
-          !init && fareListSection.empty()
+          if (init) {
+            fareSection = Stamp.$('<div class="section fareSection"></div>')
+            fareSection.append(Stamp.$('<div class="radios">'))
+          } else {
+            fareSection = nodes.fareSection
+            fareSection.find('.radios').empty()
+          }
 
           Stamp.$.each(data.result, function (index, fare) {
             var wrap = Stamp.$('<div class="radioWrap">')
 
+            var id = ['_fare_', index].join('')
+
             var radio = Stamp.$('<input>', {
-              id: ['_fare', index].join('_'),
+              id: id,
               name: 'fare',
               type: 'radio',
               value: fare.id,
@@ -361,7 +445,7 @@ Stamp.$.extend(Loader.prototype, {
             nodes.fareRadios.push(radio)
 
             var label = Stamp.$('<label>', {
-              for: ['_fare', index].join('_')
+              for: id
             }).text(fare.fare_name)
 
             if (fare.fare_name === '邮政小包') {
@@ -374,20 +458,20 @@ Stamp.$.extend(Loader.prototype, {
             wrap.append(radio)
             wrap.append(label)
 
-            fareListSection.append(wrap)
+            fareSection.find('.radios').append(wrap)
           })
 
           if (init) {
-            nodes.fareListSection = fareListSection
+            nodes.fareSection = fareSection
 
-            fareListSection.on('change', function (e) {
+            fareSection.on('change', function (e) {
               var target = Stamp.$(e.target)
 
               Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
                 var node = Stamp.$(node)
 
                 node.removeClass('selected')
-                if (node.attr('for').split('-').pop() === target.attr('id').split('-').pop()) {
+                if (node.attr('for').split('_').pop() === target.attr('id').split('_').pop()) {
                   node.addClass('selected')
                 }
               })
@@ -397,8 +481,8 @@ Stamp.$.extend(Loader.prototype, {
               self.calculate()
             })
 
-            nodes.container.find('.section#_addressList_').after(fareListSection)
-            fareListSection.before(Stamp.$('<div class="title">运送方式</div>'))
+            nodes.addressSection.after(fareSection)
+            fareSection.prepend(Stamp.$('<div class="title">运送方式</div>'))
           }
         }
       })
@@ -435,46 +519,44 @@ Stamp.$.extend(Loader.prototype, {
 
   _calculate: function (goodsListIndex, fareFee, fareCode) {
     var self = this
+
     var cache = self.fairy.cache
-    var nodes = self.fairy.panel.nodes
     var finalPostData = self.fairy.finalPostData
 
+    var nodes = self.fairy.order.nodes
+
     var original = Number(cache.goodPrice)
-    var more = (Number(original) + Number(fareFee)).toFixed(2)
+    var withFare = (Number(original) + Number(fareFee)).toFixed(2)
     original = original.toFixed(2)
 
-    var price = nodes.container.find('#_price_')
-    if (price.length === 0) {
-      nodes.fareListSection.after('<div class="section" id="_price_"></div>')
-      price = nodes.container.find('#_price_')
-      nodes.PriceSection = price
+    var priceScetion = nodes.root.find('.detailSection')
+    if (priceScetion.length === 0) {
+      priceScetion = Stamp.$('<div class="section detailSection"></div>')
 
-      price.before(Stamp.$('<div class="title">订单详情</div>'))
+      priceScetion.append(Stamp.$('<div class="details">'))
+      nodes.fareSection.after(priceScetion)
+
+      nodes.PriceSection = priceScetion
+
+      priceScetion.prepend(Stamp.$('<div class="title">订单详情</div>'))
     }
     else {
-      price.empty()
+      priceScetion.find('.details').empty()
     }
 
-    var info = Stamp.$('<span>').text('数量：')
-    price.append(Stamp.$('<div>', {
-        id: '_total_'
-      })
-      .append(info)
+    var details = priceScetion.find('.details')
+
+    details.append(Stamp.$('<div>')
+      .append(Stamp.$('<span>').text('数量：'))
       .append('<span class="content">' + self.fairy.cache.count + '</span>'))
 
-    info = Stamp.$('<span>').text('商品总价：')
-    price.append(Stamp.$('<div>', {
-        id: '_original_'
-      })
-      .append(info)
+    details.append(Stamp.$('<div>')
+      .append(Stamp.$('<span>').text('商品总价：'))
       .append('<span class="content">' + original + '</span>'))
 
-    info = Stamp.$('<span>').text('订单总价(含邮费)：')
-    price.append(Stamp.$('<div>', {
-        id: '_more_'
-      })
-      .append(info)
-      .append('<span class="content">' + more + '</span>'))
+    details.append(Stamp.$('<div>')
+      .append(Stamp.$('<span>').text('订单总价(含邮费)：'))
+      .append('<span class="content">' + withFare + '</span>'))
 
     finalPostData['preTradelist[0].postageInfo.shippingType'] = fareCode
   },
@@ -569,7 +651,8 @@ Stamp.$.extend(Loader.prototype, {
 
   success: function (wrap, callback) {
     var self = this
-    var nodes = self.fairy.panel.nodes
+
+    var nodes = self.fairy.order.nodes
 
     callback && callback()
     var wrap = Stamp.$(wrap.pop())
@@ -586,13 +669,16 @@ Stamp.$.extend(Loader.prototype, {
       orderInfoSection.append(info)
     })
 
-    nodes.container.find('.section:last').after(orderInfoSection)
-    orderInfoSection.before(Stamp.$('<div class="title">购买成功</div>'))
+    self.orderInfoSection = orderInfoSection
+
+    nodes.root.find('.section:last').after(orderInfoSection)
+    orderInfoSection.prepend(Stamp.$('<div class="title">购买成功</div>'))
   },
 
   failed: function (wrap) {
     var self = this
-    var nodes = self.fairy.panel.nodes
+
+    var nodes = self.fairy.order.nodes
 
     var wrap = Stamp.$(wrap.pop())
 
@@ -606,8 +692,10 @@ Stamp.$.extend(Loader.prototype, {
       errorInfoSection.append(info)
     })
 
-    nodes.container.find('.section:last').after(errorInfoSection)
-    errorInfoSection.before(Stamp.$('<div class="title">购买失败</div>'))
+    self.errorInfoSection = errorInfoSection
+
+    nodes.root.find('.section:last').after(errorInfoSection)
+    errorInfoSection.prepend(Stamp.$('<div class="title">购买失败</div>'))
   }
 })
 
