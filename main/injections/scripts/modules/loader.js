@@ -50,6 +50,24 @@ function Loader(fairy) {
 }
 
 Stamp.$.extend(Loader.prototype, {
+  settle: function (needVerify) {
+    var self = this
+    var cache = self.fairy.cache
+
+    self.post('user')
+      .asCallback(function (error, data) {
+        if (data.textStatus === 'success') {
+          cache.userType = data.result.userType
+          cache.userId = data.result.userId
+
+          self.fairy.panel.create({}, needVerify)
+        }
+      })
+      .then(function () {
+        self.getSid()
+      })
+  },
+
   init: function (needVerify) {
     var self = this
     var cache = self.fairy.cache

@@ -199,7 +199,7 @@ Stamp.$.extend(Panel.prototype, {
     }
   },
 
-  boot_mycart_render: function (goodsCartIdShopIds, goodsInfos) {
+  boot_mycart_render: function (shopInfos, goodsInfos) {
     var self = this
 
     var nodes = self.nodes
@@ -207,17 +207,29 @@ Stamp.$.extend(Panel.prototype, {
     var mycartTickets = nodes.mycartTickets ? nodes.mycartTickets : Stamp.$('<div class="mycartTickets" id="_mycartTickets_">')
 
     if (nodes.mycartTickets) {
-      nodes.mycartTickets.empty()
+      nodes.mycartTickets.find('#_mycartList_').empty()
     }
     else {
       self.nodes.mycartTickets = mycartTickets
 
       if (nodes.notes) {
         nodes.notes.after(mycartTickets)
-      } else {
+      }
+      else {
         nodes.boot.after(mycartTickets)
       }
+
       mycartTickets.prepend(Stamp.$('<div class="title">我的购物车</div>'))
+      mycartTickets.append(Stamp.$('<div id="_mycartList_"></div>'))
+
+      var settlement = Stamp.$('<input>', {
+        type: 'button',
+        id: '_settlement_',
+        value: '结算'
+      }).addClass('btn btn-success')
+
+      self.nodes.settlement = settlement
+      mycartTickets.append(settlement)
 
       self.boot_mycart_bind()
     }
@@ -227,6 +239,8 @@ Stamp.$.extend(Panel.prototype, {
       return nodes.map(function (node) {
         var node = Stamp.$(node)
         var info = {}
+
+        info.cartId = node.find('input[name="goodsCartIdList"]').val()
 
         info.image = node.find('img').attr('src') || ''
 
@@ -240,7 +254,7 @@ Stamp.$.extend(Panel.prototype, {
       })
     })
 
-    Stamp.$.each(goodsCartIdShopIds, function (index, entry) {
+    Stamp.$.each(shopInfos, function (index, entry) {
       var item = Stamp.$('<div class="tickets">').addClass('selected')
 
       var checkbox = Stamp.$('<input>', {
@@ -258,7 +272,7 @@ Stamp.$.extend(Panel.prototype, {
       item.append(checkbox).append(label)
 
       infosArr[index].each(function (info) {
-        var ticket = Stamp.$('<div class="ticket">')
+        var ticket = Stamp.$('<div class="ticket">').attr('data-cartId', info.cartId)
 
         ticket.append(Stamp.$('<div>').text('商品名称：' + info.name))
         ticket.append(Stamp.$('<div>').text('发行日期：' + info.date))
@@ -270,7 +284,7 @@ Stamp.$.extend(Panel.prototype, {
         item.append(ticket)
       })
 
-      mycartTickets.append(item)
+      mycartTickets.find('#_mycartList_').append(item)
     })
   },
 
@@ -359,7 +373,7 @@ Stamp.$.extend(Panel.prototype, {
         dataType: 'html'
       })
 
-      var goodsCartIdShopIds = []
+      var shopInfos = []
       var goodsInfos = []
       var tickets = Stamp.$.grep(mycartDoms, function (dom) {
         return Stamp.$(dom).hasClass('gwc')
@@ -372,20 +386,19 @@ Stamp.$.extend(Panel.prototype, {
           var node = Stamp.$(node)
 
           if (node.hasClass('splt')) {
-            goodsCartIdShopIds.push({
+            shopInfos.push({
               shopName: node.find('p').text(),
               shopId: node.find('input').val()
             })
             goodsInfos.push([])
           }
           else {
-            node.remove(node.children()[0])
             goodsInfos[goodsInfos.length - 1].push(node)
           }
         })
       }
 
-      self.boot_mycart_render(goodsCartIdShopIds, goodsInfos)
+      self.boot_mycart_render(shopInfos, goodsInfos)
     })
   },
 
@@ -416,9 +429,54 @@ Stamp.$.extend(Panel.prototype, {
   boot_mycart_bind: function () {
     var self = this
 
-    self.nodes.mycartTickets.on('change', function (e) {
-      debugger
+    var nodes = self.nodes
+
+    nodes.mycartTickets.on('change', function (e) {
       Stamp.$(e.target).parent().toggleClass('selected')
+    })
+
+    nodes.settlement.on('click', function () {
+      var settlementValue = []
+      var ticketsSelected = nodes.mycartTickets.find('.tickets.selected')
+
+      Stamp.$.each(ticketsSelected, function (i, node) {
+        var node = Stamp.$(node)
+        Stamp.$.each(node.find('.ticket'), function (j, ticket) {
+          settlementValue.push(Stamp.$(ticket).attr('data-cartid'))
+        })
+      })
+
+      if (settlementValue.length) {
+        ShoppingCartAction.checkShoppingCartTid(settlementValue.join(';'), function (msg) {
+          var msgType = msg.substring(msg.indexOf("\'") + 1, msg.indexOf("\',"))
+          // var msgValue = msg.substring(msg.indexOf("\',\'") + 3, msg.lastIndexOf("\']"))
+
+          if (msgType == 'true') {
+            var settlementHtml = ''
+
+            Stamp.$.ajax({
+              tupe: 'GET',
+              url: 'http://jiyou.biz.11185.cn/retail/initPageAfterMyShopcart.html?shoppingcartIds=' + settlementValue.join(';') + '&fg=3',
+              async: false,
+              success: function (html) {
+                settlementHtml = html
+              },
+              error: function () {
+                settlementDoms = []
+              },
+              dataType: 'html'
+            })
+
+            if (settlementHtml.search('date_form') > -1 && settlementHtml.search('gwc gwc2') > -1) {
+              nodes.settlement.off()
+
+              var needVerify = settlementHtml.search('手机确认') > -1 ? true : false
+
+              self.fairy.loader.settle(needVerify)
+            }
+          }
+        })
+      }
     })
   },
 
