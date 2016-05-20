@@ -176,15 +176,20 @@ Stamp.$.extend(Cart.prototype, {
           .attr('data-id', good.id)
           .attr('data-cart', good.cart)
 
-        goodItem.append(Stamp.$('<div>').text('商品名称：' + good.title))
-        //goodItem.append(Stamp.$('<img>').attr('src：' + good.image))
-        goodItem.append(Stamp.$('<div>').text('发行日期：' + good.date))
-        goodItem.append(Stamp.$('<div>').text('规格：' + good.spec))
-        goodItem.append(Stamp.$('<div>').text('数量：' + good.count))
-        goodItem.append(Stamp.$('<div>').text('限购：' + good.limit))
-        goodItem.append(Stamp.$('<div>').text('单价：' + good.price))
-        goodItem.append(Stamp.$('<div>').text('小计：' + good.total))
+        var title = Stamp.$('<div class="goodTiltle">').text(good.title).on('click', function (e) {
+          var target = Stamp.$(e.target)
+          target.next('.moreInfos').toggle('fast')
+        })
+        var moreInfos = Stamp.$('<div class="moreInfos">').hide()
+        //moreInfos.append(Stamp.$('<img>').attr('src：' + good.image))
+        moreInfos.append(Stamp.$('<div>').text('发行日期：' + good.date))
+        moreInfos.append(Stamp.$('<div>').text('规格：' + good.spec))
+        moreInfos.append(Stamp.$('<div>').text('数量：' + good.count))
+        moreInfos.append(Stamp.$('<div>').text('限购：' + good.limit))
+        moreInfos.append(Stamp.$('<div>').text('单价：' + good.price))
+        moreInfos.append(Stamp.$('<div>').text('小计：' + good.total))
 
+        goodItem.append(title).append(moreInfos)
         shopItem.find('.goodsList').append(goodItem)
       })
 
