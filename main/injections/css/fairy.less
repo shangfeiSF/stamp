@@ -145,7 +145,7 @@
         }
       }
 
-      .goods {
+      .shops {
         font-size: 13px;
         width: 95%;
         overflow: hidden;
@@ -160,12 +160,14 @@
           border-bottom: 2px solid #31B0D5;
         }
 
-        .shopList {
+        .shopsList {
           float: left;
+          width: 100%;
+          overflow: hidden;
 
           .shop {
             float: left;
-            width: 95%;
+            width: 100%;
             margin-bottom: 0.5em;
 
             input {
@@ -178,24 +180,34 @@
               margin-left: 0.5em;
             }
 
-            .good {
-              padding: 0.2em 0;
-              margin: 0 0 0.2em 1.6em;
-              border-bottom: 1px solid #aaa;
+            .goodsList {
+              float: left;
+              display: none;
+              width: 100%;
 
-              div {
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
+              .good {
+                padding: 0.2em 0;
+                margin: 0 0 0.2em 1.6em;
+                border-bottom: 1px solid #aaa;
+
+                div {
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                }
               }
             }
+          }
+
+          .selected .goodsList {
+            display: block;
           }
         }
       }
 
-      .settle {
+      .settlement {
         input[type='button'] {
-          width: 7em;
+          width: 6.5em;
           height: 2.5em;
           padding: 0 0.4em;
         }
@@ -304,6 +316,69 @@
 
             div {
               margin-bottom: 0.2em;
+            }
+          }
+        }
+      }
+
+      .shopsfareSection {
+        float: left;
+        width: 95%;
+        overflow: hidden;
+
+        .shopsfareList {
+          float: left;
+          width: 100%;
+
+          .shopfare {
+            width: 100%;
+            padding-bottom: 0.4em;
+
+            .shopName {
+              width: 100%;
+              padding-left: 0.5em;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+
+              &:hover {
+                color: #3AAD8B;
+              }
+            }
+
+            .goodsBill {
+              padding-left: 0.5em;
+
+              .good {
+                font-size: 14px;
+                border-bottom: 1px solid #aaa;
+
+                div {
+                  width: 100%;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                }
+              }
+            }
+
+            .show {
+              display: block;
+            }
+
+            .fares {
+              width: 100%;
+              height: 1.4em;
+
+              input {
+                float: left;
+                margin-right: 0.2em;
+              }
+
+              label {
+                float: left;
+                margin-right: 0.4em;
+              }
             }
           }
         }

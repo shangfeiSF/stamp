@@ -1,8 +1,11 @@
 var Dig = require('dig')
+
 var Panel = require('panel')
 var Order = require('order')
 var Cart = require('cart')
+
 var Loader = require('loader')
+var Settle = require('settle')
 
 var fairy = {
   mobiles: [
@@ -41,14 +44,15 @@ var fairy = {
   },
 
   finalPostData: {},
-  
-  settlementPostData: {}
+
+  settlefinalPostData: {}
 }
 
 fairy.dig = new Dig(fairy)
 fairy.dig.init()
 
 fairy.loader = new Loader(fairy)
+fairy.settle = new Settle(fairy)
 fairy.order = new Order(fairy)
 fairy.cart = new Cart(fairy)
 fairy.panel = new Panel(fairy)

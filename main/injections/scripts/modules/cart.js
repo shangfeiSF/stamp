@@ -4,11 +4,11 @@ function Cart(fairy) {
     root: null,
 
     notes: null,
-    goods: null,
-    settlement: null
+    shops: null,
+    settle: null
   }
 
-  this.settlementURL = 'http://jiyou.biz.11185.cn/retail/initPageAfterMyShopcart.html?shoppingcartIds='
+  this.settleURL = 'http://jiyou.biz.11185.cn/retail/initPageAfterMyShopcart.html?shoppingcartIds='
 
   this.fairy = fairy
 }
@@ -63,17 +63,72 @@ Stamp.$.extend(Cart.prototype, {
     }
   },
 
-  render: function (shopInfos, goodsInfos) {
+  render: function () {
     var self = this
 
-    self.goodsInCartRender(shopInfos, goodsInfos)
-    self.settlementRender()
+    self.parseShops()
+
+    self.goodsInCartRender()
+    self.settleRender()
 
     self.goodsInCartBind()
-    self.settlementBind()
+    self.settleBind()
   },
 
-  goodsInCartRender: function (shopInfos, goodsInfos) {
+  parseShops: function () {
+    var self = this
+
+    var cache = self.fairy.cache
+
+    var main = Stamp.$.grep(Stamp.$(cache.html4cart), function (dom) {
+      return Stamp.$(dom).hasClass('gwc')
+    })
+
+    if (!main.length) return null
+
+    var shops = []
+    main = Stamp.$(main.pop())
+
+    var index = 0
+    Stamp.$.each(main.find('table tbody tr'), function (i, node) {
+      var node = Stamp.$(node)
+
+      if (node.hasClass('splt')) {
+        shops.push({
+          index: index++,
+          id: node.find('input').val(),
+          name: node.find('p').text(),
+          goods: []
+        })
+      }
+      else {
+        var details = {}
+        var props = ['title', 'date', 'spec', 'price', 'total']
+
+        Stamp.$.each(node.find('span'), function (index, span) {
+          details[props[index]] = Stamp.$(span).text()
+        })
+        details.count = details.total / details.price
+
+        shops[shops.length - 1].goods.push({
+          id: node.nextAll('input[name="goodsId"]').val(),
+          cart: node.nextAll('input[name="cartId"]').val(),
+          title: node.nextAll('input[name="goodsTitle"]').val() || details.title,
+          image: node.find('img').attr('src') || '',
+          date: details.date,
+          spec: details.spec,
+          count: String(details.count),
+          limit: node.nextAll('input[name="goodsLimit"]').val(),
+          price: node.nextAll('input[name="goodsPrice"]').val() || details.price,
+          total: details.total
+        })
+      }
+    })
+
+    cache.shops = shops
+  },
+
+  goodsInCartRender: function () {
     var self = this
 
     var cache = self.fairy.cache
@@ -81,46 +136,21 @@ Stamp.$.extend(Cart.prototype, {
     var nodes = self.nodes
     var root = self.gerRoot()
 
-    var goods = nodes.goods ? nodes.goods : Stamp.$('<div class="goods">')
+    var shops = nodes.shops ? nodes.shops : Stamp.$('<div class="shops">')
 
-    if (nodes.goods) {
-      nodes.goods.find('.shopList').empty()
+    if (nodes.shops) {
+      nodes.shops.find('.shopList').empty()
     }
     else {
-      goods.append(Stamp.$('<div class="title">我的购物车</div>'))
-      goods.append(Stamp.$('<div class="shopList"></div>'))
+      shops.append(Stamp.$('<div class="title">我的购物车</div>'))
+      shops.append(Stamp.$('<div class="shopsList"></div>'))
 
-      root.append(goods)
-      self.nodes.goods = goods
+      root.append(shops)
+      self.nodes.shops = shops
     }
 
-    var keys = ['name', 'date', 'spec', 'unit', 'total']
-    var infosArr = goodsInfos.map(function (infosArr) {
-      return infosArr.map(function (item) {
-        var node = Stamp.$(item.node)
-        var info = {
-          goodsId: item.goodsId,
-          cartId: item.cartId,
-          title: item.goodsTitle,
-          limit: item.goodsLimit,
-          price: item.goodsPrice
-        }
-
-        info.image = node.find('img').attr('src') || ''
-
-        Stamp.$.each(node.find('span'), function (index, span) {
-          info[keys[index]] = Stamp.$(span).text()
-        })
-
-        info.count = info.total / info.unit
-
-        return info
-      })
-    })
-
-    cache.shops = []
-    Stamp.$.each(shopInfos, function (index, entry) {
-      var shop = Stamp.$('<div class="shop">').addClass('selected')
+    Stamp.$.each(cache.shops, function (index, shop) {
+      var shopItem = Stamp.$('<div class="shop">')
 
       var id = ['_shopId_', index].join('')
 
@@ -128,115 +158,115 @@ Stamp.$.extend(Cart.prototype, {
         type: 'checkbox',
         id: id,
         name: 'shopId',
-        value: entry.shopId,
-        checked: 'checked'
+        value: shop.id
       })
-
-      cache.shops.push({
-        shopId: entry.shopId,
-        goods: infosArr[index]
-      })
+      if (index == 0) {
+        shopItem.addClass('selected')
+        checkbox.attr('checked', 'checked')
+      }
 
       var label = Stamp.$('<label>', {
         for: id
-      }).append(Stamp.$('<div>').text(entry.shopName))
+      }).append(Stamp.$('<div>').text(shop.name))
 
-      shop.append(checkbox).append(label)
+      shopItem.append(checkbox).append(label).append(Stamp.$('<div class="goodsList">'))
 
-      infosArr[index].each(function (info) {
-        var good = Stamp.$('<div class="good">').attr('data-cartId', info.cartId)
+      shop.goods.each(function (good) {
+        var goodItem = Stamp.$('<div class="good">')
+          .attr('data-id', good.id)
+          .attr('data-cart', good.cart)
 
-        good.append(Stamp.$('<div>').text('商品名称：' + info.title))
-        good.append(Stamp.$('<div>').text('发行日期：' + info.date))
-        good.append(Stamp.$('<div>').text('规格：' + info.spec))
-        good.append(Stamp.$('<div>').text('数量：' + info.count))
-        good.append(Stamp.$('<div>').text('限购：' + info.limit))
-        good.append(Stamp.$('<div>').text('单价：' + info.price))
-        good.append(Stamp.$('<div>').text('小计：' + info.total))
+        goodItem.append(Stamp.$('<div>').text('商品名称：' + good.title))
+        //goodItem.append(Stamp.$('<img>').attr('src：' + good.image))
+        goodItem.append(Stamp.$('<div>').text('发行日期：' + good.date))
+        goodItem.append(Stamp.$('<div>').text('规格：' + good.spec))
+        goodItem.append(Stamp.$('<div>').text('数量：' + good.count))
+        goodItem.append(Stamp.$('<div>').text('限购：' + good.limit))
+        goodItem.append(Stamp.$('<div>').text('单价：' + good.price))
+        goodItem.append(Stamp.$('<div>').text('小计：' + good.total))
 
-        shop.append(good)
+        shopItem.find('.goodsList').append(goodItem)
       })
 
-      goods.find('.shopList').append(shop)
+      shops.find('.shopsList').append(shopItem)
     })
   },
 
-  settlementRender: function () {
+  settleRender: function () {
     var self = this
 
     var nodes = self.nodes
     var root = self.gerRoot()
 
-    if (!nodes.settlement) {
-      var settlement = Stamp.$('<input>', {
+    if (!nodes.settle) {
+      var settle = Stamp.$('<input>', {
         type: 'button',
-        id: '_settlement_',
-        value: '结算'
+        id: '_settle_',
+        value: '结算购物车'
       }).addClass('btn btn-success')
 
-      self.nodes.settlement = settlement
+      self.nodes.settle = settle
 
-      var settle = Stamp.$('<div class="settle">')
-      settle.append(settlement)
+      var settlement = Stamp.$('<div class="settlement">')
+      settlement.append(settle)
 
-      root.append(settle)
+      root.append(settlement)
     }
   },
 
   goodsInCartBind: function () {
     var self = this
 
-    self.nodes.goods.on('change', function (e) {
+    self.nodes.shops.on('change', function (e) {
       Stamp.$(e.target).parent().toggleClass('selected')
     })
   },
 
-  settlementBind: function () {
+  settleBind: function () {
     var self = this
 
     var cache = self.fairy.cache
     var nodes = self.nodes
 
-    nodes.settlement.on('click', function () {
+    nodes.settle.on('click', function () {
+      nodes.root.hide()
+
       var shoppingcartIds = []
 
-      Stamp.$.each(nodes.goods.find('.shop.selected'), function (i, node) {
-        var node = Stamp.$(node)
-
-        Stamp.$.each(node.find('.good'), function (j, good) {
-          shoppingcartIds.push(Stamp.$(good).attr('data-cartid'))
+      Stamp.$.each(nodes.shops.find('.shop.selected'), function (i, node) {
+        Stamp.$.each(Stamp.$(node).find('.good'), function (j, good) {
+          shoppingcartIds.push(Stamp.$(good).attr('data-cart'))
         })
       })
 
-      if (shoppingcartIds.length) {
-        ShoppingCartAction.checkShoppingCartTid(shoppingcartIds.join(';'), function (msg) {
-          var msgType = msg.substring(msg.indexOf("\'") + 1, msg.indexOf("\',"))
-          // var msgValue = msg.substring(msg.indexOf("\',\'") + 3, msg.lastIndexOf("\']"))
+      if (!shoppingcartIds.length) return false
 
-          if (msgType == 'true') {
-            Stamp.$.ajax({
-              tupe: 'GET',
-              url: self.settlementURL + shoppingcartIds.join(';') + '&fg=3',
-              async: false,
-              success: function (html) {
-                cache.html4settlement = html
-              },
-              error: function () {
-                cache.html4settlement = ''
-              },
-              dataType: 'html'
-            })
+      ShoppingCartAction.checkShoppingCartTid(shoppingcartIds.join(';'), function (msg) {
+        var msgType = msg.substring(msg.indexOf("\'") + 1, msg.indexOf("\',"))
+        // var msgValue = msg.substring(msg.indexOf("\',\'") + 3, msg.lastIndexOf("\']"))
 
-            if (cache.html4settlement.search('date_form') > -1 && cache.html4settlement.search('gwc gwc2') > -1) {
-              nodes.settlement.off()
+        if (msgType !== 'true') return false
 
-              var needVerify = cache.html4settlement.search('手机确认') > -1 ? true : false
+        Stamp.$.ajax({
+          tupe: 'GET',
+          url: self.settleURL + shoppingcartIds.join(';') + '&fg=3',
+          success: function (html) {
+            cache.html4settle = html
 
-              self.fairy.loader.settle(needVerify, 'settlement')
+            if (html.search('date_form') > -1 && html.search('gwc gwc2') > -1) {
+              nodes.settle.off()
+
+              var needVerify = cache.html4settle.search('手机确认') > -1 ? true : false
+
+              self.fairy.settle.init(needVerify)
             }
-          }
+          },
+          error: function () {
+            cache.html4settle = ''
+          },
+          dataType: 'html'
         })
-      }
+      })
     })
   }
 })

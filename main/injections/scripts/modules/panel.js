@@ -236,7 +236,7 @@ Stamp.$.extend(Panel.prototype, {
             cache.count = count.val()
 
             var needVerify = data.result.search('手机确认') > -1 ? true : false
-            self.fairy.loader.init(needVerify, 'purchase')
+            self.fairy.loader.init(needVerify)
           }
         })
     })
@@ -279,52 +279,16 @@ Stamp.$.extend(Panel.prototype, {
       Stamp.$.ajax({
         tupe: 'GET',
         url: 'http://jiyou.biz.11185.cn/u/show.html',
-        async: false,
         success: function (html) {
           cache.html4cart = html
+          self.fairy.cart.render()
         },
         error: function () {
           cache.html4cart = ''
+          // TODO: 拉取购物车失败
         },
         dataType: 'html'
       })
-
-      var shopInfos = []
-      var goodsInfos = []
-
-      var tickets = Stamp.$.grep(Stamp.$(cache.html4cart), function (dom) {
-        return Stamp.$(dom).hasClass('gwc')
-      })
-
-      if (tickets.length) {
-        tickets = Stamp.$(tickets.pop())
-        
-        Stamp.$.each(tickets.find('table tbody tr'), function (index, node) {
-          var node = Stamp.$(node)
-
-          if (node.hasClass('splt')) {
-            shopInfos.push({
-              shopName: node.find('p').text(),
-              shopId: node.find('input').val()
-            })
-            goodsInfos.push([])
-          }
-          else {
-            var goodInfo = {
-              node: node
-            }
-            goodInfo.goodsId = node.nextAll('input[name="goodsId"]').val()
-            goodInfo.cartId = node.nextAll('input[name="cartId"]').val()
-            goodInfo.goodsPrice = node.nextAll('input[name="goodsPrice"]').val()
-            goodInfo.goodsTitle = node.nextAll('input[name="goodsTitle"]').val()
-            goodInfo.goodsLimit = node.nextAll('input[name="goodsLimit"]').val()
-
-            goodsInfos[goodsInfos.length - 1].push(goodInfo)
-          }
-        })
-      }
-      
-      self.fairy.cart.render(shopInfos, goodsInfos)
     })
   },
 

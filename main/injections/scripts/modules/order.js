@@ -34,6 +34,9 @@ function Order(fairy) {
 
     fareSection: null,
     fareRadios: [],
+    shopsfareSection: null,
+    shopsfareList: null,
+    shopsfareRadios: [],
 
     PriceSection: null,
 
