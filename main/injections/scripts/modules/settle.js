@@ -93,7 +93,7 @@ Stamp.$.extend(Settle.prototype, {
           cache.userType = data.result.userType
           cache.userId = data.result.userId
 
-          self.fairy.order.render({}, needVerify)
+          self.fairy.order.render(null, needVerify)
         }
       })
       .then(function () {
@@ -225,7 +225,7 @@ Stamp.$.extend(Settle.prototype, {
           })
 
           Stamp.$.each(data.result, function (index, item) {
-            if (mobiles.indexOf(item.mobile < 0)) {
+            if (mobiles.indexOf(item.mobile) < 0) {
               phone.append(Stamp.$('<option>', {
                 value: item.mobile
               }).text(item.mobile))
@@ -327,7 +327,7 @@ Stamp.$.extend(Settle.prototype, {
 
       shopsfareList.on('click', function (e) {
         var target = Stamp.$(e.target)
-        target.hasClass('shopName') && target.next('.goodsBill').toggleClass('show')
+        target.hasClass('shopName') && target.next('.goodsBill').toggle('fast')
       })
 
       nodes.addressSection.after(shopsfareSection)
@@ -339,6 +339,7 @@ Stamp.$.extend(Settle.prototype, {
       shopsfareSection = nodes.shopsfareSection
       nodes.shopsfareRadios = []
       shopsfareSection.find('.fares').empty()
+      shopsfareSection.find('.subtotal em').empty()
     }
 
     Stamp.$.each(cache.shops, function (index, shop) {
@@ -380,7 +381,7 @@ Stamp.$.extend(Settle.prototype, {
 
             var wrap = shopsfareSection.find('#shopId_' + shop.id)
 
-            var fares = null
+            var fares = null, subtotal = null
             if (init) {
               var shopName = Stamp.$('<label class="shopName">').text(shop.name)
 
@@ -390,19 +391,35 @@ Stamp.$.extend(Settle.prototype, {
                   .attr('data-id', good.id)
                   .attr('data-cart', good.cart)
 
-                goodItem.append(Stamp.$('<div>').text('商品名称：' + good.title))
-                goodItem.append(Stamp.$('<div>').text('规格：' + good.spec))
-                goodItem.append(Stamp.$('<div>').text('数量：' + good.count))
-                goodItem.append(Stamp.$('<div>').text('单价：' + good.price))
-                goodItem.append(Stamp.$('<div>').text('小计：' + good.total))
+                var title = Stamp.$('<div class="goodTiltle">').text(good.title).on('click', function (e) {
+                  var target = Stamp.$(e.target)
+                  target.next('.moreInfos').toggle('fast')
+                })
 
+                var moreInfos = Stamp.$('<div class="moreInfos">').hide()
+                //moreInfos.append(Stamp.$('<img>').attr('src：' + good.image))
+                moreInfos.append(Stamp.$('<div>').text('发行日期：' + good.date))
+                moreInfos.append(Stamp.$('<div>').text('规格：' + good.spec))
+                moreInfos.append(Stamp.$('<div>').text('数量：' + good.count))
+                moreInfos.append(Stamp.$('<div>').text('限购：' + good.limit))
+                moreInfos.append(Stamp.$('<div>').text('单价：' + good.price))
+                moreInfos.append(Stamp.$('<div>').text('小计：' + good.total))
+
+                goodItem.append(title).append(moreInfos)
                 goodsList.append(goodItem).hide()
               })
 
               fares = Stamp.$('<div class="fares">').attr('data-shopId', shop.id)
-
               fares.on('change', function (e) {
                 var target = Stamp.$(e.target)
+
+                var shopId = target.parent().attr('data-shopId')
+
+                var shop = Stamp.$.grep(cache.shops, function (shop) {
+                  return shopId == shop.id
+                })
+                shop.length && (shop = shop.pop())
+                shop.fareId = target.val()
 
                 Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
                   var node = Stamp.$(node)
@@ -413,19 +430,19 @@ Stamp.$.extend(Settle.prototype, {
                   }
                 })
 
-                var shopId = target.parent().attr('data-shopId')
-
-                var shop = Stamp.$.grep(cache.shops, function (shop) {
-                  return shopId == shop.id
-                })
-                shop.length && (shop = shop.pop())
-                shop.fareId = target.val()
+                self.calculate(shop, target.parent().next('.subtotal'))
               })
 
-              wrap.append(shopName).append(goodsList).append(fares)
+              subtotal = Stamp.$('<div class="subtotal">').attr('data-shopId', shop.id)
+              var original = Stamp.$('<span class="original"></span>').text('商品价格：').append(Stamp.$('<em>'))
+              var withFare = Stamp.$('<span class="withFare"></span>').text('订单总价：').append(Stamp.$('<em>'))
+              subtotal.append(original).append(withFare)
+
+              wrap.append(shopName).append(goodsList).append(fares).append(subtotal)
             }
             else {
               fares = wrap.find('.fares')
+              subtotal = wrap.find('.subtotal')
             }
 
             Stamp.$.each(data.result, function (index, fare) {
@@ -448,6 +465,8 @@ Stamp.$.extend(Settle.prototype, {
                 radio.attr('checked', 'checked')
                 label.addClass('selected')
                 shop.fareId = fare.id
+
+                self.calculate(shop, subtotal)
               }
 
               fares.append(radio).append(label)
@@ -457,78 +476,49 @@ Stamp.$.extend(Settle.prototype, {
     })
   },
 
-  // TODO: 每个店铺的结算
-  calculate: function () {
+  calculate: function (shop, subtotal) {
     var self = this
+
     var cache = self.fairy.cache
 
-    var fareSelected = Stamp.$.grep(cache.fare, function (fare) {
-      return fare.id === cache.fareId
+    var fareSelected = Stamp.$.grep(shop.fare, function (fare) {
+      return fare.id == shop.fareId
     })
     fareSelected && fareSelected.length && (fareSelected = fareSelected.pop())
 
     var addressSelected = Stamp.$.grep(cache.address, function (address) {
-      return address.id === Number(cache.addressId)
+      return address.id == cache.addressId
     })
     addressSelected && addressSelected.length && (addressSelected = addressSelected.pop())
 
+    var goods_ids = shop.goods.map(function (good) {
+      return good.id
+    })
     var params = {
       fare_code: fareSelected.code,
-      total_weight: cache.orderTotalWeigth,
-      shopID: cache.shopId,
+      total_weight: shop.order_total_weight,
+      shopID: shop.id,
       user_new_address_province: addressSelected.province,
       buyer_user_id: cache.userId,
-      goods_ids: cache.goodsId + ',',
+      goods_ids: goods_ids.join(',') + ',',
     }
 
     self.post('fee', params)
       .then(function (data) {
-        data.textStatus === 'success' && self._calculate(cache.goodsListIndex, data.result, fareSelected.code)
+        data.textStatus === 'success' && self._calculate(shop, subtotal, data.result, fareSelected.code)
       })
   },
 
-  _calculate: function (goodsListIndex, fareFee, fareCode) {
+  _calculate: function (shop, subtotal, fareFee, fareCode) {
     var self = this
 
-    var cache = self.fairy.cache
-    var finalPostData = self.fairy.finalPostData
+    var original = shop.goods.reduce(function (pre, next) {
+      return pre + Number(next.price) * Number(next.count)
+    }, 0)
+    var withFare = (original + Number(fareFee)).toFixed(2)
 
-    var nodes = self.fairy.order.nodes
-
-    var original = Number(cache.goodPrice)
-    var withFare = (Number(original) + Number(fareFee)).toFixed(2)
-    original = original.toFixed(2)
-
-    var priceScetion = nodes.root.find('.detailSection')
-    if (priceScetion.length === 0) {
-      priceScetion = Stamp.$('<div class="section detailSection"></div>')
-
-      priceScetion.append(Stamp.$('<div class="details">'))
-      nodes.fareSection.after(priceScetion)
-
-      nodes.PriceSection = priceScetion
-
-      priceScetion.prepend(Stamp.$('<div class="title">订单详情</div>'))
-    }
-    else {
-      priceScetion.find('.details').empty()
-    }
-
-    var details = priceScetion.find('.details')
-
-    details.append(Stamp.$('<div>')
-      .append(Stamp.$('<span>').text('数量：'))
-      .append('<span class="content">' + self.fairy.cache.count + '</span>'))
-
-    details.append(Stamp.$('<div>')
-      .append(Stamp.$('<span>').text('商品总价：'))
-      .append('<span class="content">' + original + '</span>'))
-
-    details.append(Stamp.$('<div>')
-      .append(Stamp.$('<span>').text('订单总价(含邮费)：'))
-      .append('<span class="content">' + withFare + '</span>'))
-
-    finalPostData['preTradelist[0].postageInfo.shippingType'] = fareCode
+    subtotal.find('.original em').text(original.toFixed(2))
+    subtotal.find('.withFare em').text(withFare)
   },
 
   guard: function () {
@@ -548,7 +538,11 @@ Stamp.$.extend(Settle.prototype, {
       check.success[0] = '邮寄地址OK'
     }
 
-    if (!(cache.fareId && String(cache.fareId).length)) {
+    var completed = cache.shops.every(function (shop) {
+      return shop.fareId && String(shop.fareId).length
+    })
+
+    if (!completed) {
       check.result = false
       check.failed[1] = '未选择邮寄方式'
     } else {
@@ -584,21 +578,33 @@ Stamp.$.extend(Settle.prototype, {
     var self = this
 
     var cache = self.fairy.cache
-    var finalPostData = self.fairy.finalPostData
+    var settlefinalPostData = self.fairy.settlefinalPostData
 
-    var fareSelected = Stamp.$.grep(cache.fare, function (fare) {
-      return fare.id == cache.fareId
+    settlefinalPostData.addressId = cache.addressId
+    settlefinalPostData.checkcode = cache.token
+    settlefinalPostData.mobile = cache.mobile
+    settlefinalPostData.message = cache.message
+
+    var params = {
+      shippingType: ['preTradelist[', '].postageInfo.shippingType'],
+      mailType: ['preTradelist[', '].mailType']
+    }
+
+    cache.shops.each(function (shop) {
+      var index = Number(shop.goodsList_index) - 1
+
+      var shippingType = [params.shippingType[0], index, params.shippingType[1]].join('')
+      var mailType = [params.mailType[0], index, params.mailType[1]].join('')
+
+      var fareSelected = Stamp.$.grep(shop.fare, function (fare) {
+        return fare.id == shop.fareId
+      }).pop()
+
+      settlefinalPostData[shippingType] = fareSelected.code
+      settlefinalPostData[mailType] = fareSelected.type
     })
-    fareSelected && fareSelected.length && (fareSelected = fareSelected.pop())
 
-    finalPostData.addressId = cache.addressId
-    finalPostData.checkcode = cache.token
-    finalPostData.mobile = cache.mobile
-    finalPostData.message = cache.message
-    finalPostData['preTradelist[0].postageInfo.shippingType'] = fareSelected.code
-    finalPostData['preTradelist[0].mailType'] = fareSelected.type
-
-    self.post('book', finalPostData)
+    self.post('book', settlefinalPostData)
       .then(function (data) {
         if (data.textStatus === 'success') {
           var dom = Stamp.$(data.result)
@@ -629,15 +635,19 @@ Stamp.$.extend(Settle.prototype, {
 
     var orderInfoSection = Stamp.$('<div class="section orderInfoSection" id="_orderInfo_">')
 
-    var tips = ['订单号：', '应付金额：']
-    Stamp.$.each(wrap.find('.gwc3-nr h4 span'), function (index, node) {
-      var info = Stamp.$('<div class="info">')
+    var infos = wrap.find('.gwc3-nr h4 span')
+    var orderNumers = infos.shift().text().split('|')
+    var total = infos.shift().text()
 
-      info.append(Stamp.$('<span>').text(tips[index]))
-      info.append(Stamp.$('<em>').text(Stamp.$(node).text()))
-
-      orderInfoSection.append(info)
+    var ordersNumbersInfo = Stamp.$('<div class="info">')
+    ordersNumbersInfo.append(Stamp.$('<div>').text('订单号：'))
+    orderNumers.each(function (num) {
+      ordersNumbersInfo.append(Stamp.$('<div class="orederNumber">').text(num))
     })
+
+    var totalInfo = Stamp.$('<div class="info">')
+    totalInfo.append(Stamp.$('<span>').text('应付金额：'))
+    totalInfo.append(Stamp.$('<em class="total">').text(total))
 
     self.orderInfoSection = orderInfoSection
 

@@ -55,12 +55,16 @@ function Order(fairy) {
     [250, 120],
   ]
 
+  this.entry = ''
+
   this.fairy = fairy
 }
 
 Stamp.$.extend(Order.prototype, {
   render: function (state, needVerify) {
     var self = this
+
+    self.entry = state === null ? 'settle' : 'loader'
 
     self.tipsRender(state)
     if (needVerify) {
@@ -85,11 +89,9 @@ Stamp.$.extend(Order.prototype, {
   tipsRender: function (state) {
     var self = this
 
-    state.validity = true
-    state.message1 && state.message1 === '商品已售完' && (state.validity = false)
-    state.message2 && state.message2 === '库存不足' && (state.validity = false)
-
     var cache = self.fairy.cache
+
+    var validity = state !== null && ((state.message1 && state.message1 === '商品已售完') || (state.message2 && state.message2 === '库存不足')) ? false : true
 
     var tip = Stamp.$('<div class="tip">').css({
       width: '100%',
@@ -98,7 +100,7 @@ Stamp.$.extend(Order.prototype, {
     })
 
     var color = "#FF0000"
-    if (state.validity) {
+    if (validity) {
       (Number(cache.count) <= Number(cache.buyLimit)) && (color = '#3AAD8B')
 
       tip.css({
@@ -267,7 +269,7 @@ Stamp.$.extend(Order.prototype, {
         smsType: '4'
       }
 
-      self.fairy.loader.post('code', params)
+      self.fairy[self.entry].post('code', params)
         .then(function (data) {
           if (data.result == "sended") {
             setTimeout(function () {
@@ -298,7 +300,7 @@ Stamp.$.extend(Order.prototype, {
         message: code.val()
       }
 
-      self.fairy.loader.post('check', params)
+      self.fairy[self.entry].post('check', params)
         .then(function (data) {
           if (data.result.status == '1') {
             setTimeout(function () {
@@ -373,19 +375,18 @@ Stamp.$.extend(Order.prototype, {
     var bookState = self.nodes.bookState
 
     book.on('click', function () {
-      var check = self.fairy.loader.guard()
+      var check = self.fairy[self.entry].guard()
 
       if (check.result) {
         bookState.removeClass('fulfilled')
 
-        self.fairy.loader.final(function () {
+        self.fairy[self.entry].final(function () {
           bookState.addClass('fulfilled')
         })
       } else {
         self.recordsRender(check.success, check.failed)
         return false
       }
-
     })
   },
 

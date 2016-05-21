@@ -335,20 +335,21 @@
 
       .shopsfareSection {
         float: left;
-        width: 95%;
+        width: 100%;
         overflow: hidden;
 
         .shopsfareList {
           float: left;
-          width: 100%;
+          width: 95%;
 
           .shopfare {
-            width: 100%;
-            padding-bottom: 0.4em;
+            padding-bottom: 0.6em;
 
             .shopName {
               width: 100%;
-              padding-left: 0.5em;
+              text-align: center;
+              border-bottom: 1px solid #aaa;
+              padding: 0 0 0.2em 0;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
@@ -362,24 +363,30 @@
               padding-left: 0.5em;
 
               .good {
-                font-size: 14px;
-                border-bottom: 1px solid #aaa;
+                padding: 0.2em 0;
+
+                .goodTiltle {
+                  cursor: pointer;
+                  &:hover {
+                    color: #3AAD8B;
+                  }
+                }
 
                 div {
-                  width: 100%;
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
                 }
+
+                .moreInfos {
+                  color: #555;
+                  padding: 0.5em 0 0.5em 1.7em;
+                  border-bottom: 1px solid #aaa;
+                }
               }
             }
 
-            .show {
-              display: block;
-            }
-
             .fares {
-              width: 100%;
               height: 1.4em;
 
               input {
@@ -390,6 +397,29 @@
               label {
                 float: left;
                 margin-right: 0.4em;
+              }
+            }
+
+            .subtotal {
+              width: 100%;
+              height: 1.6em;
+              padding-left: 0.5em;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+
+              .original, .withFare {
+                display: inline-block;
+                line-height: 200%;
+                width: 50%;
+                height: 100%;
+                padding: 0;
+
+                em {
+                  font-weight: bold;
+                  font-style: normal;
+                  color: #3AAD8B;
+                }
               }
             }
           }
@@ -449,8 +479,16 @@
         font-size: 14px;
 
         .info {
+          float: left;
           width: 95%;
           padding: 0.5em 0 0 0;
+
+          .orederNumber {
+            width: 100%;
+            color: #3AAD8B;
+            font-weight: bold;
+            padding-right: 0.5em;
+          }
 
           em {
             color: #3AAD8B;
