@@ -77,8 +77,6 @@ Stamp.$.extend(Panel.prototype, {
       'text-aligen': 'center'
     })
 
-    count.before(Stamp.$('<div class="title"></div>').text('订购数量：'))
-
     self.nodes.count = count
   },
 
@@ -127,9 +125,7 @@ Stamp.$.extend(Panel.prototype, {
 
       specs.append(wrap)
     })
-
-    specs.before(Stamp.$('<div class="title"></div>').text('邮票规格：'))
-
+    
     self.nodes.specs = specs
   },
 

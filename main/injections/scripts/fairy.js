@@ -49,12 +49,9 @@ var fairy = {
   settlefinalPostData: {}
 }
 
-var rush = new Rush()
-rush.init()
+new Rush()
 
 fairy.dig = new Dig(fairy)
-fairy.dig.init()
-
 fairy.loader = new Loader(fairy)
 fairy.settle = new Settle(fairy)
 fairy.order = new Order(fairy)

@@ -76,6 +76,8 @@ function Rush() {
     root: null,
     sections: []
   }
+
+  this.init()
 }
 
 Stamp.$.extend(Rush.prototype, {
@@ -142,13 +144,13 @@ Stamp.$.extend(Rush.prototype, {
 
     self.sendRender()
     self.storeCodeRender()
+    self.targetsListRender()
     self.addRushTargetRender()
-    self.batch2MyCartRender()
+    self.batch2MyTargetsListRender()
 
     self.sendBind()
     self.storeCodeBind()
     self.addRushTargetBind()
-    self.batch2MyCartBind()
 
     self.append()
   },
@@ -204,16 +206,186 @@ Stamp.$.extend(Rush.prototype, {
     self.nodes.storeCodeState = storeCodeState
   },
 
-  addRushTargetRender: function () {
+  targetsListRender: function () {
+    var self = this
+
+    var targetsList = Stamp.$('<div class="targetsList">')
+    if (!self.storage.exist('targets')) {
+      self.storage.update('targets', [])
+    }
+
+    self.nodes.targetsList = targetsList
   },
 
-  batch2MyCartRender: function () {
+  addRushTargetRender: function () {
+    var self = this
+
+    var goodIds = Stamp.$('<input>', {
+      type: 'text',
+      id: '_rush_goodIds_',
+      value: '',
+      placeholder: '商品ID（分号分隔）',
+      style: 'width: 95%;'
+    }).addClass('form-control')
+    var fetchDetails = Stamp.$('<input>', {
+      type: 'button',
+      id: '_rush_fetchDetails_',
+      value: '获取商品信息',
+      style: 'width: 9em; margin-top: 0.4em;'
+    }).addClass('btn btn-info')
+    var fetchDetailsState = Stamp.$('<span class="state">').css({
+      margin: '0.4em 0 0 0'
+    })
+
+    self.nodes.goodIds = goodIds
+    self.nodes.fetchDetails = fetchDetails
+    self.nodes.fetchDetailsState = fetchDetailsState
+  },
+
+  batch2MyTargetsListRender: function () {
+    var self = this
+
+    var selectDetails = Stamp.$('<div class="selectDetails">')
+
+    self.nodes.selectDetails = selectDetails
   },
 
   settleRender: function () {
   },
 
-  specsRender: function () {
+  _selectDetailsRender: function (fairy) {
+    var self = this
+
+    var cache = fairy.cache
+    var details = fairy.details
+
+    var goodsName = Stamp.$('<div class="goodTitle">').text(details.goodsShowInfo.title)
+
+    var count = Stamp.$('<input>', {
+      type: 'number',
+      id: '_rush_count_' + cache.goodsId,
+      min: 1,
+      value: 1
+    }).css({
+      width: '4em',
+      margin: '0 0.2em 0 1em',
+      'text-aligen': 'center'
+    })
+
+    count.on('change', function () {
+      var target = Stamp.$(this)
+      var max = +target.attr('max')
+
+      Number(target.val()) > max && target.val(String(max))
+    })
+
+    var specs = Stamp.$('<div class="goodSpecs"></div>').attr('data-goodsId', cache.goodsId)
+    Stamp.$.each(details.goodsAttrList, function (index, attr) {
+      var wrap = Stamp.$('<sapn class="spec"></sapn>')
+
+      var id = ['_rush_sepc_', cache.goodsId, '_', index].join('')
+
+      var spec = Stamp.$('<input>', {
+        type: 'radio',
+        id: id,
+        name: ['spec_', cache.goodsId].join(''),
+        value: index,
+      }).data('info', attr)
+
+      var label = Stamp.$('<label>', {
+        for: id
+      }).text(attr.attrName)
+
+      if (index == 0) {
+        spec.attr('checked', 'checked')
+        label.addClass('selected')
+
+        count.attr('max', attr.buyLimit)
+
+        var limit = ['(购买数量上限：', attr.buyLimit, ')'].join('')
+        count.after(Stamp.$('<span>').css({
+          height: '24px',
+          'line-height': '170%',
+          'margin': '0 0.5em 0 0',
+          float: 'left',
+          color: '#aaa'
+        }).text(limit))
+      }
+
+      wrap.append(spec).append(label)
+
+      specs.append(wrap)
+    })
+
+    specs.on('change', function (e) {
+      var target = Stamp.$(e.target)
+
+      Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
+        var node = Stamp.$(node)
+
+        node.removeClass('selected')
+
+        node.attr('for').split('_').pop() === target.val() && node.addClass('selected')
+      })
+
+      count.attr('max', Number(target.data('info').buyLimit))
+    })
+
+    var add = Stamp.$('<input>', {
+      type: 'button',
+      id: '_rush_add_' + cache.goodsId,
+      value: '加入列表'
+    }).addClass('btn btn-warning')
+
+    add.on('click', function () {
+      var spec = specs.find('input[checked="checked"]')
+      var specindex = spec.val()
+      self._add2TargetsListRender(
+        details.goodsId,
+        count.val(),
+        details.goodsAttrList[specindex].id,
+        {
+          Title: details.goodsShowInfo.title,
+          Spec: spec.next('label').text(),
+          Count: count.val()
+        }
+      )
+    })
+
+    var block = Stamp.$('<div class="selectDetailsBlock">')
+    block.append(goodsName).append(specs).append(count).append(add)
+
+    return block
+  },
+
+  _add2TargetsListRender: function (goodsId, count, specId, showInfo) {
+    var self = this
+
+    var nodes = self.nodes
+
+    var targetsList = nodes.targetsList
+
+    var target = Stamp.$('<div class="target">')
+    Stamp.$.each(showInfo, function (prop, value) {
+      target.append(Stamp.$('<span>', {
+        class: ['target', prop].join('')
+      }).text(value))
+    })
+
+    var sign = +(new Date())
+    var targetsInStore = self.storage.get('targets')
+    targetsInStore.push({
+      sign: sign,
+      id: goodsId,
+      specId: specId,
+      count: count
+    })
+    self.storage.update('targets', targetsInStore)
+    target.append(Stamp.$('<a class="targetRemove">')
+      .attr('data-target', [sign, goodsId, specId, count].join('#'))
+      .text('X'))
+
+    targetsList.append(target)
   },
 
   sendBind: function () {
@@ -264,9 +436,57 @@ Stamp.$.extend(Rush.prototype, {
   },
 
   addRushTargetBind: function () {
-  },
+    var self = this
 
-  batch2MyCartBind: function () {
+    var nodes = self.nodes
+
+    var goodIds = nodes.goodIds
+    var fetchDetails = nodes.fetchDetails
+    var fetchDetailsState = nodes.fetchDetailsState
+
+    var commonAppend = function (new_fairys) {
+      var content = this
+
+      var blocks = Stamp.$('<div class="selectDetailsBlocks">')
+      new_fairys.forEach(function (fairy) {
+        blocks.append(content._selectDetailsRender(fairy))
+      })
+
+      this.nodes.selectDetails.append(blocks)
+    }
+    commonAppend = commonAppend.bind(self)
+
+    fetchDetails.on('click', function () {
+      nodes.selectDetails.empty()
+      fetchDetailsState.removeClass('fulfilled')
+
+      var ids = goodIds.val().split('#')
+      var urls = []
+
+      if (goodIds.val().length == 0) {
+        urls.push(window.location.href)
+      }
+      else {
+        urls = ids.map(function (id) {
+          return 'http://jiyou.biz.11185.cn/retail/ticketDetail_' + Stamp.$.trim(id) + '.html'
+        })
+      }
+
+      var new_fairys = []
+      urls.forEach(function (url) {
+        new Dig({
+          cache: {},
+          details: {}
+        }, url, function (new_fairy) {
+          new_fairys.push(new_fairy)
+
+          if (new_fairys.length == ids.length) {
+            fetchDetailsState.addClass('fulfilled')
+            commonAppend(new_fairys)
+          }
+        })
+      })
+    })
   },
 
   settleBind: function () {
@@ -283,8 +503,9 @@ Stamp.$.extend(Rush.prototype, {
     var sections = [
       'sendSection',
       'storeCodeSection',
+      'targetsListSection',
       'addRushTargetSection',
-      'batch2MyCartSection'
+      'batch2MyTargetsListSection'
     ]
 
     sections = Stamp.$.map(sections, function (klass) {
@@ -302,6 +523,14 @@ Stamp.$.extend(Rush.prototype, {
     sections[1].append(nodes.code)
     sections[1].append(nodes.storeCode)
     nodes.storeCode.after(nodes.storeCodeState)
+
+    sections[2].append(nodes.targetsList)
+
+    sections[3].append(nodes.goodIds)
+    sections[3].append(nodes.fetchDetails)
+    nodes.fetchDetails.after(nodes.fetchDetailsState)
+
+    sections[4].append(nodes.selectDetails)
 
     Stamp.$.each(sections, function (index, section) {
       root.append(section)
