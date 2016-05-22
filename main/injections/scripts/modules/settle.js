@@ -46,6 +46,8 @@ function Settle(fairy) {
     }
   }
 
+  this.needVerify = false
+
   this.imageBase = 'http://jiyou.11185.cn/l/captcha.html?wid=3be16628-c630-437b-b443-c4d9f18602ed'
 }
 
@@ -86,6 +88,8 @@ Stamp.$.extend(Settle.prototype, {
   init: function (needVerify) {
     var self = this
     var cache = self.fairy.cache
+
+    self.needVerify = needVerify
 
     self.post('user')
       .asCallback(function (error, data) {
@@ -375,8 +379,11 @@ Stamp.$.extend(Settle.prototype, {
             var fareNames = data.result.map(function (fare) {
               return fare.fare_name
             })
-            var defaultFare = fareNames.indexOf('邮政小包')
-            defaultFare == -1 && (defaultFare = fareNames.indexOf('国内小包'))
+
+            var defaultFare = -1, texts = ['邮政小包', '国内小包', '快递包裹']
+            texts.each(function (text) {
+              defaultFare == -1 && (defaultFare = fareNames.indexOf(text))
+            })
             defaultFare == -1 && (defaultFare = 0)
 
             var wrap = shopsfareSection.find('#shopId_' + shop.id)
@@ -399,11 +406,20 @@ Stamp.$.extend(Settle.prototype, {
                 var moreInfos = Stamp.$('<div class="moreInfos">').hide()
                 //moreInfos.append(Stamp.$('<img>').attr('src：' + good.image))
                 moreInfos.append(Stamp.$('<div>').text('发行日期：' + good.date))
-                moreInfos.append(Stamp.$('<div>').text('规格：' + good.spec))
-                moreInfos.append(Stamp.$('<div>').text('数量：' + good.count))
                 moreInfos.append(Stamp.$('<div>').text('限购：' + good.limit))
-                moreInfos.append(Stamp.$('<div>').text('单价：' + good.price))
-                moreInfos.append(Stamp.$('<div>').text('小计：' + good.total))
+                moreInfos.append(Stamp.$('<div>').text('规格：' + good.spec))
+                moreInfos.append(Stamp.$('<div>')
+                  .text('订购数量：')
+                  .append(Stamp.$('<em>').text(good.count))
+                )
+                moreInfos.append(Stamp.$('<div>')
+                  .text('单价：')
+                  .append(Stamp.$('<em>').text(parseFloat(good.price).toFixed(2)))
+                )
+                moreInfos.append(Stamp.$('<div>')
+                  .text('小计：')
+                  .append(Stamp.$('<em>').text(good.total))
+                )
 
                 goodItem.append(title).append(moreInfos)
                 goodsList.append(goodItem).hide()
@@ -505,13 +521,11 @@ Stamp.$.extend(Settle.prototype, {
 
     self.post('fee', params)
       .then(function (data) {
-        data.textStatus === 'success' && self._calculate(shop, subtotal, data.result, fareSelected.code)
+        data.textStatus === 'success' && self._calculate(shop, subtotal, data.result)
       })
   },
 
-  _calculate: function (shop, subtotal, fareFee, fareCode) {
-    var self = this
-
+  _calculate: function (shop, subtotal, fareFee) {
     var original = shop.goods.reduce(function (pre, next) {
       return pre + Number(next.price) * Number(next.count)
     }, 0)
@@ -525,50 +539,59 @@ Stamp.$.extend(Settle.prototype, {
     var self = this
     var cache = self.fairy.cache
 
+    var index = 0
     var check = {
-      result: true,
-      success: [null, null, null, null, null],
-      failed: [null, null, null, null, null]
+      result: true
+    }
+
+    if (self.needVerify) {
+      check.success = [null, null, null, null, null]
+      check.failed = [null, null, null, null, null]
+    }
+    else {
+      check.success = [null, null, null]
+      check.failed = [null, null, null]
     }
 
     if (!(cache.addressId && String(cache.addressId).length)) {
       check.result = false
-      check.failed[0] = '未选择邮寄地址'
-    } else {
-      check.success[0] = '邮寄地址OK'
+      check.failed[index++] = '未选择邮寄地址'
+    }
+    else {
+      check.success[index++] = '邮寄地址OK'
     }
 
     var completed = cache.shops.every(function (shop) {
-      return shop.fareId && String(shop.fareId).length
+      return shop.fare ?
+        (shop.fare.length ? shop.fareId && String(shop.fareId).length : true) :
+        true
     })
-
     if (!completed) {
       check.result = false
-      check.failed[1] = '未选择邮寄方式'
-    } else {
-      check.success[1] = '邮寄方式OK'
+      check.failed[index++] = '未选择邮寄方式'
+    }
+    else {
+      check.success[index++] = '邮寄方式OK'
     }
 
-    // if (!(cache.mobile && String(cache.mobile).length)) {
-    //   check.result = false
-    //   check.failed[2] = '未获取验证码'
-    // } else {
-    //   check.success[2] = '获取验证码OK'
-    // }
-    check.success[2] = '获取验证码OK'
+    if (self.needVerify) {
+      check.success[index++] = '获取验证码OK'
 
-    if (!(cache.message && String(cache.message).length)) {
-      check.result = false
-      check.failed[3] = '未通过验证手机'
-    } else {
-      check.success[3] = '验证手机OK'
+      if (!(cache.message && String(cache.message).length)) {
+        check.result = false
+        check.failed[index++] = '未通过验证手机'
+      }
+      else {
+        check.success[index++] = '验证手机OK'
+      }
     }
 
     if (!(cache.token && String(cache.token).length)) {
       check.result = false
-      check.failed[4] = '未通过图片验证'
-    } else {
-      check.success[4] = '图片验证OK'
+      check.failed[index++] = '未通过图片验证'
+    }
+    else {
+      check.success[index++] = '图片验证OK'
     }
 
     return check
@@ -591,17 +614,19 @@ Stamp.$.extend(Settle.prototype, {
     }
 
     cache.shops.each(function (shop) {
-      var index = Number(shop.goodsList_index) - 1
+      if (shop.fare && shop.canGetFare) {
+        var index = Number(shop.goodsList_index) - 1
 
-      var shippingType = [params.shippingType[0], index, params.shippingType[1]].join('')
-      var mailType = [params.mailType[0], index, params.mailType[1]].join('')
+        var shippingType = [params.shippingType[0], index, params.shippingType[1]].join('')
+        var mailType = [params.mailType[0], index, params.mailType[1]].join('')
 
-      var fareSelected = Stamp.$.grep(shop.fare, function (fare) {
-        return fare.id == shop.fareId
-      }).pop()
+        var fareSelected = Stamp.$.grep(shop.fare, function (fare) {
+          return fare.id == shop.fareId
+        }).pop()
 
-      settlefinalPostData[shippingType] = fareSelected.code
-      settlefinalPostData[mailType] = fareSelected.type
+        settlefinalPostData[shippingType] = fareSelected.code
+        settlefinalPostData[mailType] = fareSelected.type
+      }
     })
 
     self.post('book', settlefinalPostData)
@@ -636,18 +661,20 @@ Stamp.$.extend(Settle.prototype, {
     var orderInfoSection = Stamp.$('<div class="section orderInfoSection" id="_orderInfo_">')
 
     var infos = wrap.find('.gwc3-nr h4 span')
-    var orderNumers = infos.shift().text().split('|')
-    var total = infos.shift().text()
+    var orderNumers = Stamp.$(infos[0]).text().split('|')
+    var total = Stamp.$(infos[1]).text()
 
     var ordersNumbersInfo = Stamp.$('<div class="info">')
-    ordersNumbersInfo.append(Stamp.$('<div>').text('订单号：'))
+    ordersNumbersInfo.append(Stamp.$('<div class="infotitle">').text('订单号：'))
     orderNumers.each(function (num) {
       ordersNumbersInfo.append(Stamp.$('<div class="orederNumber">').text(num))
     })
 
     var totalInfo = Stamp.$('<div class="info">')
-    totalInfo.append(Stamp.$('<span>').text('应付金额：'))
-    totalInfo.append(Stamp.$('<em class="total">').text(total))
+    totalInfo.append(Stamp.$('<div class="infotitle">').text('应付金额：'))
+    totalInfo.append(Stamp.$('<div class="total">').text(total))
+
+    orderInfoSection.append(ordersNumbersInfo).append(totalInfo)
 
     self.orderInfoSection = orderInfoSection
 

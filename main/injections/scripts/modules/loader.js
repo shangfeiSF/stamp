@@ -46,6 +46,8 @@ function Loader(fairy) {
     }
   }
 
+  this.needVerify = false
+
   this.imageBase = 'http://jiyou.11185.cn/l/captcha.html?wid=3be16628-c630-437b-b443-c4d9f18602ed'
 }
 
@@ -88,6 +90,8 @@ Stamp.$.extend(Loader.prototype, {
 
     var cache = self.fairy.cache
     var details = self.fairy.details
+
+    self.needVerify = needVerify
 
     self.post('user')
       .asCallback(function (error, data) {
@@ -438,21 +442,20 @@ Stamp.$.extend(Loader.prototype, {
 
     self.post('fee', params)
       .then(function (data) {
-        data.textStatus === 'success' && self._calculate(cache.goodsListIndex, data.result, fareSelected.code)
+        data.textStatus === 'success' && self._calculate(cache.goodsListIndex, data.result)
       })
   },
 
-  _calculate: function (goodsListIndex, fareFee, fareCode) {
+  _calculate: function (goodsListIndex, fareFee) {
     var self = this
 
     var cache = self.fairy.cache
-    var finalPostData = self.fairy.finalPostData
 
     var nodes = self.fairy.order.nodes
 
     var original = Number(cache.goodPrice)
-    var withFare = (Number(original) + Number(fareFee)).toFixed(2)
-    original = original.toFixed(2)
+    var fare = Number(fareFee)
+    var withFare = original + fare
 
     var priceScetion = nodes.root.find('.detailSection')
     if (priceScetion.length === 0) {
@@ -472,64 +475,74 @@ Stamp.$.extend(Loader.prototype, {
     var details = priceScetion.find('.details')
 
     details.append(Stamp.$('<div>')
-      .append(Stamp.$('<span>').text('数量：'))
+      .append(Stamp.$('<span>').text('购买数量：'))
       .append('<span class="content">' + self.fairy.cache.count + '</span>'))
 
     details.append(Stamp.$('<div>')
-      .append(Stamp.$('<span>').text('商品总价：'))
-      .append('<span class="content">' + original + '</span>'))
+      .append(Stamp.$('<span>').text('商品小计：'))
+      .append('<span class="content">' + original.toFixed(2) + '</span>'))
 
     details.append(Stamp.$('<div>')
-      .append(Stamp.$('<span>').text('订单总价(含邮费)：'))
-      .append('<span class="content">' + withFare + '</span>'))
+      .append(Stamp.$('<span>').text('邮费小计：'))
+      .append('<span class="content">' + fare.toFixed(2) + '</span>'))
 
-    finalPostData['preTradelist[0].postageInfo.shippingType'] = fareCode
+    details.append(Stamp.$('<div>')
+      .append(Stamp.$('<span>').text('订单总价：'))
+      .append('<span class="content">' + withFare.toFixed(2) + '</span>'))
   },
 
   guard: function () {
     var self = this
     var cache = self.fairy.cache
 
+    var index = 0
     var check = {
-      result: true,
-      success: [null, null, null, null, null],
-      failed: [null, null, null, null, null]
+      result: true
+    }
+
+    if (self.needVerify) {
+      check.success = [null, null, null, null, null]
+      check.failed = [null, null, null, null, null]
+    }
+    else {
+      check.success = [null, null, null]
+      check.failed = [null, null, null]
     }
 
     if (!(cache.addressId && String(cache.addressId).length)) {
       check.result = false
-      check.failed[0] = '未选择邮寄地址'
-    } else {
-      check.success[0] = '邮寄地址OK'
+      check.failed[index++] = '未选择邮寄地址'
+    }
+    else {
+      check.success[index++] = '邮寄地址OK'
     }
 
     if (!(cache.fareId && String(cache.fareId).length)) {
       check.result = false
-      check.failed[1] = '未选择邮寄方式'
-    } else {
-      check.success[1] = '邮寄方式OK'
+      check.failed[index++] = '未选择邮寄方式'
+    }
+    else {
+      check.success[index++] = '邮寄方式OK'
     }
 
-    // if (!(cache.mobile && String(cache.mobile).length)) {
-    //   check.result = false
-    //   check.failed[2] = '未获取验证码'
-    // } else {
-    //   check.success[2] = '获取验证码OK'
-    // }
-    check.success[2] = '获取验证码OK'
+    if (self.needVerify) {
+      check.success[index++] = '获取验证码OK'
 
-    if (!(cache.message && String(cache.message).length)) {
-      check.result = false
-      check.failed[3] = '未通过验证手机'
-    } else {
-      check.success[3] = '验证手机OK'
+      if (!(cache.message && String(cache.message).length)) {
+        check.result = false
+        check.failed[index++] = '未通过验证手机'
+      }
+      else {
+        check.success[index++] = '验证手机OK'
+      }
     }
 
     if (!(cache.token && String(cache.token).length)) {
       check.result = false
-      check.failed[4] = '未通过图片验证'
-    } else {
-      check.success[4] = '图片验证OK'
+      check.failed[index++] = '未通过图片验证'
+    }
+    else {
+      check.success[index++] = '图片验证OK'
     }
 
     return check
@@ -584,15 +597,21 @@ Stamp.$.extend(Loader.prototype, {
 
     var orderInfoSection = Stamp.$('<div class="section orderInfoSection" id="_orderInfo_">')
 
-    var tips = ['订单号：', '应付金额：']
-    Stamp.$.each(wrap.find('.gwc3-nr h4 span'), function (index, node) {
-      var info = Stamp.$('<div class="info">')
+    var infos = wrap.find('.gwc3-nr h4 span')
+    var orderNumers = Stamp.$(infos[0]).text().split('|')
+    var total = Stamp.$(infos[1]).text()
 
-      info.append(Stamp.$('<span>').text(tips[index]))
-      info.append(Stamp.$('<em>').text(Stamp.$(node).text()))
-
-      orderInfoSection.append(info)
+    var ordersNumbersInfo = Stamp.$('<div class="info">')
+    ordersNumbersInfo.append(Stamp.$('<div class="infotitle">').text('订单号：'))
+    orderNumers.each(function (num) {
+      ordersNumbersInfo.append(Stamp.$('<div class="orederNumber">').text(num))
     })
+
+    var totalInfo = Stamp.$('<div class="info">')
+    totalInfo.append(Stamp.$('<div class="infotitle">').text('应付金额：'))
+    totalInfo.append(Stamp.$('<div class="total">').text(total))
+
+    orderInfoSection.append(ordersNumbersInfo).append(totalInfo)
 
     self.orderInfoSection = orderInfoSection
 

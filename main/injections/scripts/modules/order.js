@@ -45,14 +45,18 @@ function Order(fairy) {
   }
 
   this.mocks = [
-    [40, 40],
-    [110, 40],
-    [180, 40],
-    [250, 40],
-    [40, 120],
-    [110, 120],
-    [180, 120],
-    [250, 120],
+    // X: [40, 110, 180, 250]
+    // Y : [40, 120]
+    // mocks = X * Y
+    [38, 42],
+    [111, 39],
+    [178, 38],
+    [253, 41],
+
+    [41, 119],
+    [108, 122],
+    [181, 117],
+    [247, 124],
   ]
 
   this.entry = ''
@@ -171,8 +175,13 @@ Stamp.$.extend(Order.prototype, {
     self.nodes.answer = answer
 
     Stamp.$.each(self.mocks, function (index, config) {
-      var offsetX = Math.floor(Math.random() * 31)
-      var offsetY = Math.floor(Math.random() * 27)
+      var seedX = 31, seedY = 27
+      if (Math.random() < 0.371) {
+        seedX = 21
+        seedY = 29
+      }
+      var offsetX = Math.floor(Math.random() * seedX)
+      var offsetY = Math.floor(Math.random() * seedY)
 
       var pos = [config[0] + offsetX, config[1] + offsetY]
       var id = ['_pic_', index].join('')
@@ -249,7 +258,7 @@ Stamp.$.extend(Order.prototype, {
       self.nodes.records = records
 
       nodes.root.find('.section:last').after(records)
-      records.before(Stamp.$('<div class="title">提交记录</div>'))
+      records.prepend(Stamp.$('<div class="title">提交记录</div>'))
     }
   },
 
@@ -421,12 +430,16 @@ Stamp.$.extend(Order.prototype, {
       sections[1].append(nodes.phone)
       sections[1].append(nodes.send)
       nodes.send.after(nodes.sendState)
+    } else {
+      sections[1].css('display', 'none')
     }
 
     if (needVerify) {
       sections[2].append(nodes.code)
       sections[2].append(nodes.verify)
       nodes.verify.after(nodes.verifyState)
+    } else {
+      sections[2].css('display', 'none')
     }
 
     sections[3].append(nodes.answer)

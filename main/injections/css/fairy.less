@@ -1,8 +1,8 @@
 #_panel_ {
   position: absolute;
   display: block;
-  top: 1em;
-  left: 1em;
+  top: 0.5em;
+  left: 0.5em;
   background: #31B0D5;
   border: 2px solid #31B0D5;
   font-size: 20px;
@@ -36,7 +36,7 @@
     background: #F8F8F8;
     font-weight: normal;
     width: 16em;
-    padding: 0.5em 0 0.5em 0.5em;
+    padding: 0.5em 0 0 0.5em;
 
     .goodsRoot {
       float: left;
@@ -162,6 +162,14 @@
           border-bottom: 2px solid #31B0D5;
         }
 
+        .emptycart {
+          float: left;
+          width: 100%;
+          text-align: center;
+          font-size: 16px;
+          color: #FF0000;
+        }
+
         .shopsList {
           float: left;
           width: 100%;
@@ -191,7 +199,11 @@
                 margin: 0.2em 0 0.2em 1.6em;
 
                 .goodTiltle {
+                  color: #555;
                   cursor: pointer;
+                  &:hover {
+                    color: #3AAD8B;
+                  }
                 }
 
                 div {
@@ -204,8 +216,20 @@
                   color: #555;
                   padding: 0.5em 0 0.5em 1.7em;
                   border-bottom: 1px solid #aaa;
+
+                  em {
+                    font-weight: bold;
+                    font-style: normal;
+                    color: #3AAD8B;
+                  }
                 }
               }
+            }
+
+            .shopTotal {
+              float: left;
+              font-weight: bold;
+              margin: 0 0 0 1.5em;
             }
           }
 
@@ -222,6 +246,16 @@
           width: 6.5em;
           height: 2.5em;
           padding: 0 0.4em;
+        }
+
+        .settleTotal {
+          margin: 0 0 0 1em;
+          font-size: 14px;
+          font-weight: bold;
+
+          span {
+            color: #3AAD8B;
+          }
         }
       }
     }
@@ -382,6 +416,12 @@
                   color: #555;
                   padding: 0.5em 0 0.5em 1.7em;
                   border-bottom: 1px solid #aaa;
+
+                  em {
+                    font-weight: bold;
+                    font-style: normal;
+                    color: #3AAD8B;
+                  }
                 }
               }
             }
@@ -446,27 +486,29 @@
 
       .recordsSection {
         font-size: 13px;
-        width: 95%;
+        width: 100%;
         overflow: hidden;
 
         .record {
           float: left;
           width: 49%;
           background: #eee;
+          padding: 0 0 2% 0;
           margin: 0 2% 2% 0;
 
           .sequence {
             font-weight: bold;
+            margin: 0 0 0.3em 0;
           }
 
           .success {
             color: #3AAD8B;
-            padding: 0 0 0 0.5em;
+            padding: 0 0 0 1em;
           }
 
           .failed {
             color: #FF0000;
-            padding: 0 0 0 0.5em;
+            padding: 0 0 0 1em;
           }
         }
 
@@ -477,23 +519,24 @@
 
       .orderInfoSection, .errorInfoSection {
         font-size: 14px;
+        margin-bottom: 0;
 
         .info {
           float: left;
           width: 95%;
-          padding: 0.5em 0 0 0;
+          padding: 0;
 
-          .orederNumber {
+          .infotitle {
+            width: 100%;
+            font-size: 16px;
+          }
+
+          .orederNumber, .total {
             width: 100%;
             color: #3AAD8B;
             font-weight: bold;
-            padding-right: 0.5em;
-          }
-
-          em {
-            color: #3AAD8B;
-            font-weight: bold;
-            font-style: normal;
+            margin: 0.3em 0 0 0;
+            padding: 0 0 0 0.5em;
           }
 
           .err {
