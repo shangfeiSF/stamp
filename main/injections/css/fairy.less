@@ -571,3 +571,85 @@
     }
   }
 }
+
+#_rush_panel_ {
+  position: absolute;
+  display: block;
+  top: 0.5em;
+  left: 18em;
+  background: #31B0D5;
+  border: 2px solid #31B0D5;
+  font-size: 20px;
+  font-weight: bold;
+  font-family: "microsoft yahei";
+  z-index: 2147483647;
+
+  #_rush_trigger_ {
+    width: 100%;
+    cursor: move;
+    padding: 0.3em 0;
+    color: #FFF;
+    font-size: 0.8em;
+    line-height: 120%;
+    text-align: center;
+  }
+
+  #_rush_container_ {
+    position: relative;
+    float: left;
+    background: #F8F8F8;
+    font-weight: normal;
+    width: 16em;
+    padding: 0.5em 0 0 0.5em;
+
+    .presetRoot {
+      float: left;
+      width: 100%;
+      font-size: 14px;
+      margin-bottom: 0.2em;
+
+      .section {
+        float: left;
+        width: 100%;
+        margin-bottom: 0.4em;
+
+        .title {
+          float: left;
+          width: 95%;
+          font-size: 15px;
+          font-weight: bold;
+          padding: 0 0 0.2em 0.4em;
+          margin-bottom: 0.2em;
+          border-bottom: 2px solid #31B0D5;
+        }
+
+        input, select {
+          float: left;
+          font-size: 14px;
+          margin-right: 0.4em;
+        }
+
+        input[type='button'] {
+          width: 7em;
+          height: 34px;
+          padding: 0 1em;
+        }
+
+        .state {
+          float: left;
+          position: relative;
+          font-size: 16px;
+          top: 0.5em;
+          width: 1em;
+          height: 1em;
+          border-radius: 0.5em;
+          background: #FF0000;
+        }
+
+        .fulfilled {
+          background: #3AAD8B;
+        }
+      }
+    }
+  }
+}

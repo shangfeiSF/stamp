@@ -1,6 +1,7 @@
 var Dig = require('dig')
 
 var Panel = require('panel')
+var Rush = require('rush')
 var Order = require('order')
 var Cart = require('cart')
 
@@ -47,6 +48,9 @@ var fairy = {
 
   settlefinalPostData: {}
 }
+
+var rush = new Rush()
+rush.init()
 
 fairy.dig = new Dig(fairy)
 fairy.dig.init()
