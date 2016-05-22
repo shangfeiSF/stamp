@@ -37,8 +37,9 @@ function Order(fairy) {
     shopsfareSection: null,
     shopsfareList: null,
     shopsfareRadios: [],
+    total: null,
 
-    PriceSection: null,
+    priceSection: null,
 
     orderInfoSection: null,
     errorInfoSection: null
@@ -241,7 +242,7 @@ Stamp.$.extend(Order.prototype, {
 
     var records = nodes.records ? nodes.records : Stamp.$('<div class="section recordsSection" id="_records_">')
 
-    var index = records.children().length + 1
+    var index = records.find('.record').length + 1
     var record = Stamp.$('<div>', {
       id: ['_record_', index].join('')
     }).addClass('record').append(Stamp.$('<div class="sequence"></div>').text('第' + index + '次提交：'))

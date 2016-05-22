@@ -464,7 +464,7 @@ Stamp.$.extend(Loader.prototype, {
       priceScetion.append(Stamp.$('<div class="details">'))
       nodes.fareSection.after(priceScetion)
 
-      nodes.PriceSection = priceScetion
+      nodes.priceSection = priceScetion
 
       priceScetion.prepend(Stamp.$('<div class="title">订单详情</div>'))
     }

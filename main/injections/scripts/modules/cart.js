@@ -183,7 +183,7 @@ Stamp.$.extend(Cart.prototype, {
       }).append(Stamp.$('<div>').text(shop.name))
 
       var shopTotal = Stamp.$('<div class="shopTotal">')
-      shopTotal.text('总价：￥').append(
+      shopTotal.text('总价：').append(
         Stamp.$('<span>').text((shop.total / 100).toFixed(2))
       )
       shopItem.append(checkbox)
@@ -241,7 +241,7 @@ Stamp.$.extend(Cart.prototype, {
         totalPrice += +Stamp.$(span).text() * 100
       })
       total.append(
-        Stamp.$('<span>').text('￥' + parseFloat(totalPrice / 100).toFixed(2))
+        Stamp.$('<span>').text(parseFloat(totalPrice / 100).toFixed(2))
       )
       self.nodes.total = total
 
@@ -271,7 +271,7 @@ Stamp.$.extend(Cart.prototype, {
       Stamp.$.each(nodes.shops.find('.shopsList .selected .shopTotal span'), function (index, span) {
         totalPrice += +Stamp.$(span).text() * 100
       })
-      nodes.total.find('span').text('￥' + parseFloat(totalPrice / 100).toFixed(2))
+      nodes.total.find('span').text(parseFloat(totalPrice / 100).toFixed(2))
     })
   },
 

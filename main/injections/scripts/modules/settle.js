@@ -450,9 +450,10 @@ Stamp.$.extend(Settle.prototype, {
               })
 
               subtotal = Stamp.$('<div class="subtotal">').attr('data-shopId', shop.id)
-              var original = Stamp.$('<span class="original"></span>').text('商品价格：').append(Stamp.$('<em>'))
-              var withFare = Stamp.$('<span class="withFare"></span>').text('订单总价：').append(Stamp.$('<em>'))
-              subtotal.append(original).append(withFare)
+              var original = Stamp.$('<span class="original"></span>').text('商品：').append(Stamp.$('<em>'))
+              var fare = Stamp.$('<span class="fare"></span>').text('邮费：').append(Stamp.$('<em>'))
+              var withFare = Stamp.$('<span class="withFare"></span>').text('订单：').append(Stamp.$('<em>'))
+              subtotal.append(original).append(fare).append(withFare)
 
               wrap.append(shopName).append(goodsList).append(fares).append(subtotal)
             }
@@ -526,13 +527,51 @@ Stamp.$.extend(Settle.prototype, {
   },
 
   _calculate: function (shop, subtotal, fareFee) {
+    var self = this
+
+    var nodes = self.fairy.order.nodes
+
     var original = shop.goods.reduce(function (pre, next) {
       return pre + Number(next.price) * Number(next.count)
     }, 0)
-    var withFare = (original + Number(fareFee)).toFixed(2)
+    var fare = Number(fareFee)
+    var withFare = original + fare
 
     subtotal.find('.original em').text(original.toFixed(2))
-    subtotal.find('.withFare em').text(withFare)
+    subtotal.find('.fare em').text(fare.toFixed(2))
+    subtotal.find('.withFare em').text(withFare.toFixed(2))
+
+    var priceScetion = nodes.root.find('.detailSection')
+    if (priceScetion.length === 0) {
+      priceScetion = Stamp.$('<div class="section detailSection"></div>')
+
+      priceScetion.append(Stamp.$('<div class="title">结算总计</div>'))
+      priceScetion.append(Stamp.$('<div class="details">'))
+
+      var original = Stamp.$('<span class="original"></span>').text('商品：').append(Stamp.$('<em>'))
+      var fare = Stamp.$('<span class="fare"></span>').text('邮费：').append(Stamp.$('<em>'))
+      var withFare = Stamp.$('<span class="withFare"></span>').text('订单：').append(Stamp.$('<em>'))
+
+      priceScetion.find('.details').append(original).append(fare).append(withFare)
+
+      nodes.priceSection = priceScetion
+      nodes.shopsfareSection.after(priceScetion)
+    }
+    else {
+      priceScetion.find('.details em').empty()
+    }
+
+    var details = priceScetion.find('.details')
+
+    var originalTotal = 0, fareTotal = 0, withFareTotal = 0
+    Stamp.$.each(nodes.shopsfareList.find('.subtotal'), function (index, subtotal) {
+      originalTotal += +(Stamp.$(subtotal).find('.original em').text()) * 100
+      fareTotal += +(Stamp.$(subtotal).find('.fare em').text()) * 100
+      withFareTotal += +(Stamp.$(subtotal).find('.withFare em').text()) * 100
+    })
+    details.find('.original em').text(parseFloat(originalTotal / 100).toFixed(2))
+    details.find('.fare em').text(parseFloat(fareTotal / 100).toFixed(2))
+    details.find('.withFare em').text(parseFloat(withFareTotal / 100).toFixed(2))
   },
 
   guard: function () {

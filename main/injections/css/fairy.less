@@ -380,8 +380,8 @@
             padding-bottom: 0.6em;
 
             .shopName {
-              width: 100%;
-              text-align: center;
+              width: 70%;
+              margin: 0 0 0 1em;
               border-bottom: 1px solid #aaa;
               padding: 0 0 0.2em 0;
               overflow: hidden;
@@ -443,15 +443,13 @@
             .subtotal {
               width: 100%;
               height: 1.6em;
-              padding-left: 0.5em;
-              overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
 
-              .original, .withFare {
+              .original, .fare, .withFare {
                 display: inline-block;
                 line-height: 200%;
-                width: 50%;
+                width: 35%;
                 height: 100%;
                 padding: 0;
 
@@ -460,6 +458,10 @@
                   font-style: normal;
                   color: #3AAD8B;
                 }
+              }
+
+              .fare {
+                width: 30%;
               }
             }
           }
@@ -471,7 +473,7 @@
 
         .details {
           float: left;
-          width: 100%;
+          width: 95%;
 
           div {
             margin: 0.2em 0 0 0;
@@ -481,13 +483,35 @@
             color: #3AAD8B;
             font-weight: bold;
           }
+
+          .original, .fare, .withFare {
+            display: inline-block;
+            line-height: 200%;
+            width: 35%;
+            height: 100%;
+            padding: 0;
+
+            em {
+              font-weight: bold;
+              font-style: normal;
+              color: #3AAD8B;
+            }
+          }
+
+          .fare {
+            width: 30%;
+          }
         }
       }
 
       .recordsSection {
         font-size: 13px;
-        width: 100%;
+        width: 95%;
         overflow: hidden;
+
+        .title {
+          width: 100%;
+        }
 
         .record {
           float: left;
@@ -512,7 +536,7 @@
           }
         }
 
-        .record:nth-child(2n) {
+        .record:nth-child(2n+1) {
           margin-right: 0;
         }
       }
