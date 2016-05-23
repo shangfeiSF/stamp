@@ -144,13 +144,14 @@ Stamp.$.extend(Rush.prototype, {
 
     self.sendRender()
     self.storeCodeRender()
-    self.targetsListRender()
+    self.targetsListRender(true)
     self.addRushTargetRender()
     self.batch2MyTargetsListRender()
 
     self.sendBind()
     self.storeCodeBind()
     self.addRushTargetBind()
+    self.batch2MyTargetsListBind()
 
     self.append()
   },
@@ -206,21 +207,73 @@ Stamp.$.extend(Rush.prototype, {
     self.nodes.storeCodeState = storeCodeState
   },
 
-  targetsListRender: function () {
+  targetsListRender: function (init) {
     var self = this
 
-    var targetsList = Stamp.$('<div class="targetsList">')
-    if (!self.storage.exist('targets')) {
-      self.storage.update('targets', [])
+    var targetsList = null
+    if (init) {
+      targetsList = Stamp.$('<div class="targetsList">')
+
+      if (!self.storage.exist('targets')) {
+        self.storage.update('targets', [])
+      }
+
+      self.nodes.targetsList = targetsList
+    }
+    else {
+      self.nodes.targetsList.empty()
+      targetsList = self.nodes.targetsList
+    }
+
+    var editAreaListener = function (index, number, type, infoNode) {
+      var targets = self.storage.get('targets')
+      var IDS = index.split('#')
+
+      var matchGoods = targets.filter(function (target) {
+        return target.id == IDS[0]
+      })
+      var matchSpecs = matchGoods[0].specs.filter(function (spec) {
+        return spec.id == IDS[1]
+      })
+
+      if (type) {
+        matchSpecs[0].count = number
+        infoNode.find('.goodCount').text(number)
+      } else {
+        matchGoods[0].specs = matchGoods[0].specs.filter(function (spec) {
+          return spec.id != IDS[1]
+        })
+        if (matchGoods[0].specs.length == 0) {
+          targets = targets.filter(function (target) {
+            return target.id != IDS[0]
+          })
+        }
+        infoNode.remove()
+      }
+
+      self.storage.update('targets', targets)
     }
 
     self.storage.get('targets').each(function (good) {
       good.specs.each(function (spec) {
-        var item = Stamp.$('<div class="target">').attr('data-index', [good.id, spec.id].join('#'))
+        var item = Stamp.$('<div>', {
+          id: [good.id, spec.id].join('#'),
+          class: 'target'
+        })
 
         var title = Stamp.$('<div class="goodTitle">').text(good.title)
         var name = Stamp.$('<div class="goodName">').text(spec.name)
         var count = Stamp.$('<div class="goodCount">').text(spec.count)
+        var goodEditAreaTrigger = Stamp.$('<div class="goodEditAreaTrigger">')
+
+        goodEditAreaTrigger.on('click', function (e) {
+          var target = Stamp.$(e.target)
+          target.next('.goodEditArea').toggle()
+          Stamp.$(this).toggleClass('goodEditAreaTriggerOpen')
+        })
+
+        var editArea = Stamp.$('<div class="goodEditArea">').attr('data-index', [good.id, spec.id].join('#'))
+
         var number = Stamp.$('<input>', {
           type: 'number',
           class: 'goodNumber',
@@ -228,9 +281,9 @@ Stamp.$.extend(Rush.prototype, {
           max: spec.limit,
           value: 1
         })
-        var numberEdit = Stamp.$('<input>', {
+        var modify = Stamp.$('<input>', {
           type: 'button',
-          class: 'goodNumberEdit',
+          class: 'goodModify',
           value: '修改数量'
         }).addClass('btn btn-info')
         var remove = Stamp.$('<input>', {
@@ -239,18 +292,26 @@ Stamp.$.extend(Rush.prototype, {
           value: '删除'
         }).addClass('btn btn-danger')
 
-        item.append(title).append(name).append(count)
-          .append(remove).append(numberEdit).append(number)
+        editArea.on('click', function (e) {
+          var target = Stamp.$(e.target)
+          var index = target.parent().attr('data-index')
+          var number = Number(target.parent().find('.goodNumber').val())
+          var infoNode = Stamp.$(this).parent()
+
+          if (target.hasClass('goodModify')) {
+            editAreaListener(index, number, true, infoNode)
+          } else if (target.hasClass('goodRemove')) {
+            editAreaListener(index, number, false, infoNode)
+          }
+        })
+
+        editArea.append(number).append(modify).append(remove)
+        item.append(title).append(name).append(count).append(goodEditAreaTrigger).append(editArea)
+
         targetsList.append(item)
+        editArea.hide()
       })
     })
-
-    targetsList.on('click', function (e) {
-      var target = Stamp.$(e.target)
-      console.log(target.parent().attr('data-index'))
-    })
-
-    self.nodes.targetsList = targetsList
   },
 
   addRushTargetRender: function () {
@@ -283,9 +344,15 @@ Stamp.$.extend(Rush.prototype, {
 
     var selectDetails = Stamp.$('<div class="selectDetails">')
     var addTargetRecords = Stamp.$('<div class="addTargetRecords">')
+    var clearAllAddTargetRecords = Stamp.$('<input>', {
+      type: 'button',
+      class: 'clearAllAddTargetRecords',
+      value: '清空记录区'
+    }).addClass('btn btn-info')
 
     self.nodes.selectDetails = selectDetails
     self.nodes.addTargetRecords = addTargetRecords
+    self.nodes.clearAllAddTargetRecords = clearAllAddTargetRecords
   },
 
   sendBind: function () {
@@ -356,6 +423,7 @@ Stamp.$.extend(Rush.prototype, {
 
       this.nodes.selectDetails.append(blocks)
       content.nodes.addTargetRecords.show()
+      content.nodes.clearAllAddTargetRecords.show()
     }
     commonAppend = commonAppend.bind(self)
 
@@ -396,6 +464,14 @@ Stamp.$.extend(Rush.prototype, {
           }
         })
       })
+    })
+  },
+
+  batch2MyTargetsListBind: function () {
+    var self = this
+
+    self.nodes.clearAllAddTargetRecords.on('click', function (e) {
+      self.nodes.addTargetRecords.empty()
     })
   },
 
@@ -488,9 +564,9 @@ Stamp.$.extend(Rush.prototype, {
           count: Number(goodCount.val())
         },
         {
-          Title: details.goodsShowInfo.title,
-          Spec: goodAttr.attrName,
-          Count: goodCount.val()
+          Title: [details.goodsId, details.goodsShowInfo.title].join('#'),
+          Spec: ['规格：', goodAttr.attrName].join(''),
+          Count: ['订购数量：', goodCount.val()].join('')
         }
       )
     })
@@ -506,6 +582,8 @@ Stamp.$.extend(Rush.prototype, {
 
     var storageInfo = self._mergeTargetCount(record)
     self._addTargetRecord(showInfo, storageInfo)
+
+    storageInfo.code != 500 && self._updateTargetList(record)
   },
 
   _mergeTargetCount: function (record) {
@@ -543,7 +621,7 @@ Stamp.$.extend(Rush.prototype, {
           storageInfo.code = 400
           storageInfo.add = match_spec.limit - match_spec.count
           storageInfo.rest = 0
-          storageInfo.msg = '该商品此规格已经达到购买上限'
+          storageInfo.msg = '该商品此规格达到购买上限'
 
           match_spec.count = match_spec.limit
         } else {
@@ -592,18 +670,47 @@ Stamp.$.extend(Rush.prototype, {
     var nodes = self.nodes
     var addTargetRecords = nodes.addTargetRecords
 
-    var target = Stamp.$('<div class="target">')
+    var record = Stamp.$('<div class="record">')
+
     Stamp.$.each(showInfo, function (prop, value) {
-      target.append(Stamp.$('<div>', {
-        class: ['target', prop].join('')
+      record.append(Stamp.$('<div>', {
+        class: ['record', prop].join('')
       }).text(value))
     })
 
-    target.append(Stamp.$('<a class="targetRemove">').text('删除'))
+    var info = Stamp.$('<div>', {
+      class: ['recordState', storageInfo.code].join('')
+    }).addClass('recordState')
+    var msg = Stamp.$('<div class="recordMessage">').text('本次操作：' + storageInfo.msg)
+    var addCount = Stamp.$('<div class="recordAddCount">').text('本次添加：' + storageInfo.add)
+    var rest = Stamp.$('<div class="recordRest">').text('还可添加：' + storageInfo.rest)
 
-    console.log(storageInfo)
+    info.append(msg).append(addCount).append(rest)
+    record.append(info)
 
-    addTargetRecords.append(target)
+    addTargetRecords.prepend(record)
+  },
+
+  _updateTargetList: function (record) {
+    var self = this
+
+    var targets = self.storage.get('targets')
+
+    var matchGoods = targets.filter(function (target) {
+      return target.id == record.id
+    })
+    var matchSpecs = matchGoods[0].specs.filter(function (spec) {
+      return spec.id == record.specId
+    })
+
+    var selector = ['div[id="', [record.id, record.specId].join('#'), '"]'].join('')
+    var targetNode = self.nodes.targetsList.find(selector)
+
+    if (targetNode.length == 1) {
+      targetNode.find('.goodCount').text(matchSpecs[0].count)
+    } else {
+      self.targetsListRender(false)
+    }
   },
 
   append: function () {
@@ -646,6 +753,7 @@ Stamp.$.extend(Rush.prototype, {
 
     sections[4].append(nodes.selectDetails)
     sections[4].append(nodes.addTargetRecords)
+    sections[4].append(nodes.clearAllAddTargetRecords)
 
     Stamp.$.each(sections, function (index, section) {
       root.append(section)
