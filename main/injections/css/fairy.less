@@ -584,6 +584,16 @@
   font-family: "microsoft yahei";
   z-index: 2147483647;
 
+  label {
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 0;
+  }
+
+  .selected {
+    color: #3AAD8B
+  }
+
   #_rush_trigger_ {
     width: 100%;
     cursor: move;
@@ -651,35 +661,107 @@
         }
       }
 
+      .targetsListSection {
+        width: 95%;
+        float: left;
+        height: 15em;
+        border: 2px solid #31B0D5;
+        background: #FFF;
+        overflow: auto;
+
+        .targetsList {
+          width: 100%;
+          float: left;
+          font-size: 13px;
+
+          .target {
+            width: 100%;
+            float: left;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+            padding: 0.2em 0;
+
+            .goodTitle {
+              width: 100%;
+              float: left;
+              margin: 0 0 0.2em 0;
+              padding: 0 0 0 1em;
+              color: #3AAD8B;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+
+            .goodName, .goodCount {
+              float: left;
+              height: 20px;
+              line-height: 20px;
+              padding: 0 0 0 1em;
+              color: #555;
+            }
+
+            .goodNumber, .goodNumberEdit, .goodRemove {
+              float: right;
+              font-size: 12px;
+              width: 3.5em;
+              height: 20px;
+              padding: 0 0.2em;
+            }
+
+            .goodNumberEdit {
+              width: 5em;
+            }
+
+            .goodRemove {
+              width: 3em;
+            }
+
+          }
+
+          .target:nth-child(2n) {
+            background: #F3F3F3
+          }
+        }
+      }
+
       .batch2MyTargetsListSection {
         .selectDetails {
           width: 95%;
           float: left;
 
           .selectDetailsBlocks {
+            width: 100%;
             float: left;
 
             .selectDetailsBlock {
+              width: 100%;
               float: left;
+              padding: 0 0 0.6em 0;
               margin: 0 0 0.6em 0;
+              border-bottom: 1px solid #ddd;
 
               .goodTitle {
-                width: 95%;
+                width: 100%;
                 margin: 0 0 0.2em 0;
                 color: #3AAD8B;
                 font-weight: bold;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+
+                em {
+                  font-style: normal;
+                  color: #F0AD4F;
+                }
               }
 
               .goodSpecs {
                 float: left;
-                width: 95%;
+                width: 100%;
                 padding: 0 0 0 5%;
                 margin-bottom: 0.2em;
 
-                .spec {
+                .goodSpec {
                   float: left;
                   margin: 0 0.4em 0.1em 0;
 
@@ -691,15 +773,39 @@
                 }
               }
 
-              input[type='button'] {
+              .goodCount {
+                width: 4em;
+                margin: 0 0.4em 0 1em;
+              }
+
+              .goodLimit {
+                float: left;
+                width: 9.5em;
+                height: 24px;
+                line-height: 170%;
+                margin: 0 0.5em 0 0;
+                color: #aaa;
+              }
+
+              .goodAdd {
                 width: 5em;
                 height: 24px;
                 padding: 0;
+                margin: 0;
               }
             }
           }
         }
 
+        .addTargetRecords {
+          display: none;
+          width: 95%;
+          float: left;
+          height: 10em;
+          border: 2px solid #31B0D5;
+          background: #FFF;
+          overflow: auto;
+        }
       }
     }
   }
