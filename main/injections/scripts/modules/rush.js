@@ -65,7 +65,6 @@ function Rush() {
   }
   this.storage = new Storage({
     key: storageKey,
-    separator: '&'
   })
 
   this.nodes = {
@@ -77,7 +76,7 @@ function Rush() {
     sections: []
   }
 
-  this.init()
+  this.boot()
 }
 
 Stamp.$.extend(Rush.prototype, {
@@ -112,6 +111,25 @@ Stamp.$.extend(Rush.prototype, {
 
       Stamp.$.ajax(config)
     })
+  },
+
+  boot: function () {
+    var self = this
+
+    if (!self.storage.exist('userType') || !self.storage.exist('userId')) {
+      self.post('user')
+        .asCallback(function (error, data) {
+          if (data.textStatus === 'success') {
+            self.storage.update('userType', data.result.userType)
+            self.storage.update('userId', data.result.userId)
+            self.init()
+          } else {
+            alert('获取用户类型和用户ID失败')
+          }
+        })
+    } else {
+      self.init()
+    }
   },
 
   init: function () {
@@ -213,9 +231,14 @@ Stamp.$.extend(Rush.prototype, {
 
     var nodes = self.nodes
 
-    var targetsList = null
+    var targetsList = null, batch2MyCart = null
     if (init) {
       targetsList = Stamp.$('<div class="targetsList">').addClass('scrollBar')
+      batch2MyCart = Stamp.$('<input>', {
+        type: 'button',
+        class: 'batch2MyCart',
+        value: '一键加购'
+      }).addClass('btn btn-warning')
 
       if (!self.storage.exist('targets')) {
         self.storage.update('targets', [])
@@ -223,7 +246,9 @@ Stamp.$.extend(Rush.prototype, {
 
       nodes.goodEditAreaTriggers = []
       nodes.editAreas = []
+
       nodes.targetsList = targetsList
+      nodes.batch2MyCart = batch2MyCart
     }
     else {
       nodes.targetsList.empty()
@@ -284,7 +309,7 @@ Stamp.$.extend(Rush.prototype, {
     var goodIds = Stamp.$('<input>', {
       type: 'text',
       id: '_rush_goodIds_',
-      value: '27710#27711#27144#26720',
+      value: '27710#27711', // #27144#26720
       placeholder: '商品ID（#分隔多个ID）',
       style: 'width: 95%;'
     }).addClass('form-control')
@@ -400,6 +425,19 @@ Stamp.$.extend(Rush.prototype, {
         }
       })
     })
+
+    nodes.batch2MyCart.on('click', function () {
+      var targets = self.storage.get('targets')
+
+      targets.forEach(function (target) {
+        target.specs.forEach(function (spec) {
+          ShoppingCartAction.addGoodsToShoppingCartLS(target.id, spec.count, spec.id, function (msg) {
+            console.log(msg)
+          })
+        })
+      })
+    })
+
   },
 
   _editAreaListener: function (index, number, type, infoNode) {
@@ -797,6 +835,7 @@ Stamp.$.extend(Rush.prototype, {
 
     sections[2].append(Stamp.$('<div class="title">').text('秒杀任务清单'))
     sections[2].append(nodes.targetsList)
+    sections[2].append(nodes.batch2MyCart)
 
     sections[3].append(Stamp.$('<div class="title">').text('商品详情'))
     sections[3].append(nodes.goodIds)

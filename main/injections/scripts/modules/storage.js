@@ -1,6 +1,5 @@
 function Storage(config) {
   this.key = config.key.toString()
-  this.separator = config.separator.toString()
 }
 
 Stamp.$.extend(Storage.prototype, {
