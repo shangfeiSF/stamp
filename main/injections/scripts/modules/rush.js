@@ -431,9 +431,49 @@ Stamp.$.extend(Rush.prototype, {
 
       targets.forEach(function (target) {
         target.specs.forEach(function (spec) {
-          ShoppingCartAction.addGoodsToShoppingCartLS(target.id, spec.count, spec.id, function (msg) {
-            console.log(msg)
+          var iframeId = ['iframe', target.id, spec.id].join('_')
+          var pathname = ['/retail/ticketDetail_', target.id, '.html'].join('')
+
+          var iframe = Stamp.$('<iframe>', {
+            id: iframeId,
+            style: 'display: none;'
           })
+
+          var iframeScriptDefine = (function () {
+            return function add() {
+              var parent = window.parent;
+              var goodId = '{{goodId_value}}'
+              var count = '{{count_value}}'
+              var specId = '{{specId_value}}'
+              var iframeId = '{{iframeId_value}}'
+              var mock = {
+                pathname: '{{pathname_value}}'
+              }
+              window.parent.ShoppingCartAction.addGoodsToShoppingCartLS(goodId, count, specId, function () {
+                var iframe = parent.document.getElementById(iframeId)
+                iframe.parentNode.classList.add('added')
+                iframe.parentNode.removeChild(iframe)
+              }, mock)
+            }
+          })().toString()
+            .replace(/\{\{goodId\_value\}\}/, target.id)
+            .replace(/\{\{count\_value\}\}/, spec.count)
+            .replace(/\{\{specId\_value\}\}/, spec.id)
+            .replace(/\{\{iframeId\_value\}\}/, iframeId)
+            .replace(/\{\{pathname\_value\}\}/, pathname)
+          var iframeScriptExecute = ';add()'
+
+          var script = [
+            '<script type="text/javascript">',
+            iframeScriptDefine,
+            iframeScriptExecute,
+            '</script>'
+          ].join('')
+
+          var selector = ['div[id="', [target.id, spec.id].join('#'), '"]'].join('')
+          nodes.targetsList.find(selector).append(iframe)
+
+          iframe[0].contentWindow.document.write(script)
         })
       })
     })

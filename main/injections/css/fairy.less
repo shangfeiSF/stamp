@@ -749,6 +749,24 @@
           .target:nth-child(2n) {
             background: #F3F3F3
           }
+
+          @-webkit-keyframes added {
+            0% {
+              background: red;
+            }
+            25% {
+              background: yellow;
+            }
+            50% {
+              background: blue;
+            }
+            100% {
+              background: green;
+            }
+          }
+          .added {
+            -webkit-animation: added 5s;
+          }
         }
 
         .batch2MyCart {

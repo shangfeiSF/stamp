@@ -77,7 +77,7 @@ module.exports = function (grunt) {
   grunt.registerTask('clear', [
     'clean:tmp'
   ])
-  grunt.registerTask('reset567890', [
+  grunt.registerTask('reset', [
     'clean:buildDir'
   ])
 

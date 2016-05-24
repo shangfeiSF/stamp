@@ -3,6 +3,7 @@ var $ = require('jquery')
 var Port = require('port')
 var Inject = require('inject')
 var Connect = require('connect')
+var Listener = require('listener')
 
 function Agent() {
   this.port = new Port({
@@ -119,10 +120,26 @@ function Agent() {
       ]
     }
   })
+
+  this.listener = new Listener({
+    sentries: [
+      {
+        keyword: 'ShoppingCartAction.addGoodsToShoppingCartLS',
+        handler: function (details) {
+          console.log(details)
+        }
+      }
+    ],
+    cancels: [
+      /.*\:\/\/jiyou\.img\.11185\.cn\/td\/.*/,
+    ],
+    headers: {}
+  })
 }
 
 $.extend(Agent.prototype, {
   start: function () {
+    this.listener.start()
     this.port.start()
     this.connect.start()
     this.inject.start()

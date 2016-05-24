@@ -203,12 +203,12 @@ dwr.engine.defaultWarningHandler = function (message, ex) {
  * For reduced latency you can group several remote calls together using a batch.
  * @see getahead.org/dwr/browser/engine/batch
  */
-dwr.engine.beginBatch = function () {
+dwr.engine.beginBatch = function (mock) {
   if (dwr.engine._batch) {
     dwr.engine._handleError(null, {name: "dwr.engine.batchBegun", message: "Batch already begun"});
     return;
   }
-  dwr.engine._batch = dwr.engine._createBatch();
+  dwr.engine._batch = dwr.engine._createBatch(mock);
 };
 
 /**
@@ -490,11 +490,12 @@ dwr.engine._pollErrorHandler = function (msg, ex) {
 };
 
 /** @private Generate a new standard batch */
-dwr.engine._createBatch = function () {
+dwr.engine._createBatch = function (mock) {
+  var page = mock ? mock.pathname : (window.location.pathname + window.location.search)
   var batch = {
     map: {
       callCount: 0,
-      page: window.location.pathname + window.location.search,
+      page: page,
       httpSessionId: dwr.engine._getJSessionId(),
       scriptSessionId: dwr.engine._getScriptSessionId()
     },
