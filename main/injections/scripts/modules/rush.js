@@ -142,21 +142,22 @@ Stamp.$.extend(Rush.prototype, {
   render: function () {
     var self = this
 
-    self.sendRender()
-    self.storeCodeRender()
-    self.targetsListRender(true)
-    self.addRushTargetRender()
-    self.batch2MyTargetsListRender()
+    self.send_render()
+    self.storeCode_render()
+    self.targetsList_render(true)
+    self.addRushTarget_render()
+    self.batch2MyTargetsList_render()
 
-    self.sendBind()
-    self.storeCodeBind()
-    self.addRushTargetBind()
-    self.batch2MyTargetsListBind()
+    self.send_bind()
+    self.storeCode_bind()
+    self.targetsList_bind()
+    self.addRushTarget_bind()
+    self.batch2MyTargetsList_bind()
 
     self.append()
   },
 
-  sendRender: function () {
+  send_render: function () {
     var self = this
 
     var phone = Stamp.$('<select>', {
@@ -183,7 +184,7 @@ Stamp.$.extend(Rush.prototype, {
     self.nodes.sendState = sendState
   },
 
-  storeCodeRender: function () {
+  storeCode_render: function () {
     var self = this
 
     var storedMessage = self.storage.get('message')
@@ -207,51 +208,30 @@ Stamp.$.extend(Rush.prototype, {
     self.nodes.storeCodeState = storeCodeState
   },
 
-  targetsListRender: function (init) {
+  targetsList_render: function (init) {
     var self = this
+
+    var nodes = self.nodes
 
     var targetsList = null
     if (init) {
-      targetsList = Stamp.$('<div class="targetsList">')
+      targetsList = Stamp.$('<div class="targetsList">').addClass('scrollBar')
 
       if (!self.storage.exist('targets')) {
         self.storage.update('targets', [])
       }
 
-      self.nodes.targetsList = targetsList
+      nodes.goodEditAreaTriggers = []
+      nodes.editAreas = []
+      nodes.targetsList = targetsList
     }
     else {
-      self.nodes.targetsList.empty()
-      targetsList = self.nodes.targetsList
-    }
+      nodes.targetsList.empty()
 
-    var editAreaListener = function (index, number, type, infoNode) {
-      var targets = self.storage.get('targets')
-      var IDS = index.split('#')
+      nodes.goodEditAreaTriggers = []
+      nodes.editAreas = []
 
-      var matchGoods = targets.filter(function (target) {
-        return target.id == IDS[0]
-      })
-      var matchSpecs = matchGoods[0].specs.filter(function (spec) {
-        return spec.id == IDS[1]
-      })
-
-      if (type) {
-        matchSpecs[0].count = number
-        infoNode.find('.goodCount').text(number)
-      } else {
-        matchGoods[0].specs = matchGoods[0].specs.filter(function (spec) {
-          return spec.id != IDS[1]
-        })
-        if (matchGoods[0].specs.length == 0) {
-          targets = targets.filter(function (target) {
-            return target.id != IDS[0]
-          })
-        }
-        infoNode.remove()
-      }
-
-      self.storage.update('targets', targets)
+      targetsList = nodes.targetsList
     }
 
     self.storage.get('targets').each(function (good) {
@@ -265,12 +245,6 @@ Stamp.$.extend(Rush.prototype, {
         var name = Stamp.$('<div class="goodName">').text(spec.name)
         var count = Stamp.$('<div class="goodCount">').text(spec.count)
         var goodEditAreaTrigger = Stamp.$('<div class="goodEditAreaTrigger">')
-
-        goodEditAreaTrigger.on('click', function (e) {
-          var target = Stamp.$(e.target)
-          target.next('.goodEditArea').toggle()
-          Stamp.$(this).toggleClass('goodEditAreaTriggerOpen')
-        })
 
         var editArea = Stamp.$('<div class="goodEditArea">').attr('data-index', [good.id, spec.id].join('#'))
 
@@ -292,21 +266,11 @@ Stamp.$.extend(Rush.prototype, {
           value: '删除'
         }).addClass('btn btn-danger')
 
-        editArea.on('click', function (e) {
-          var target = Stamp.$(e.target)
-          var index = target.parent().attr('data-index')
-          var number = Number(target.parent().find('.goodNumber').val())
-          var infoNode = Stamp.$(this).parent()
-
-          if (target.hasClass('goodModify')) {
-            editAreaListener(index, number, true, infoNode)
-          } else if (target.hasClass('goodRemove')) {
-            editAreaListener(index, number, false, infoNode)
-          }
-        })
-
         editArea.append(number).append(modify).append(remove)
         item.append(title).append(name).append(count).append(goodEditAreaTrigger).append(editArea)
+
+        nodes.goodEditAreaTriggers.push(goodEditAreaTrigger)
+        nodes.editAreas.push(editArea)
 
         targetsList.append(item)
         editArea.hide()
@@ -314,7 +278,7 @@ Stamp.$.extend(Rush.prototype, {
     })
   },
 
-  addRushTargetRender: function () {
+  addRushTarget_render: function () {
     var self = this
 
     var goodIds = Stamp.$('<input>', {
@@ -339,11 +303,11 @@ Stamp.$.extend(Rush.prototype, {
     self.nodes.fetchDetailsState = fetchDetailsState
   },
 
-  batch2MyTargetsListRender: function () {
+  batch2MyTargetsList_render: function () {
     var self = this
 
     var selectDetails = Stamp.$('<div class="selectDetails">')
-    var addTargetRecords = Stamp.$('<div class="addTargetRecords">')
+    var addTargetRecords = Stamp.$('<div class="addTargetRecords scrollBar">')
     var clearAllAddTargetRecords = Stamp.$('<input>', {
       type: 'button',
       class: 'clearAllAddTargetRecords',
@@ -355,7 +319,7 @@ Stamp.$.extend(Rush.prototype, {
     self.nodes.clearAllAddTargetRecords = clearAllAddTargetRecords
   },
 
-  sendBind: function () {
+  send_bind: function () {
     var self = this
 
     var phone = self.nodes.phone
@@ -364,6 +328,7 @@ Stamp.$.extend(Rush.prototype, {
 
     send.on('click', function () {
       sendState.removeClass('fulfilled')
+      sendState.addClass('pending')
       var params = {
         mobileNum: phone.val(),
         smsType: '4'
@@ -373,6 +338,7 @@ Stamp.$.extend(Rush.prototype, {
         .then(function (data) {
           if (data.result == "sended") {
             setTimeout(function () {
+              sendState.removeClass('pending')
               sendState.addClass('fulfilled')
             }, 500)
 
@@ -384,7 +350,7 @@ Stamp.$.extend(Rush.prototype, {
     })
   },
 
-  storeCodeBind: function () {
+  storeCode_bind: function () {
     var self = this
 
     var code = self.nodes.code
@@ -394,17 +360,80 @@ Stamp.$.extend(Rush.prototype, {
     storeCode.on('click', function () {
       if (code.val().length) {
         storeCodeState.removeClass('fulfilled')
+        storeCodeState.addClass('pending')
 
         self.storage.update('message', code.val())
 
         setTimeout(function () {
+          storeCodeState.removeClass('pending')
           storeCodeState.addClass('fulfilled')
         }, 500)
       }
     })
   },
 
-  addRushTargetBind: function () {
+  targetsList_bind: function () {
+    var self = this
+
+    var nodes = self.nodes
+
+    nodes.goodEditAreaTriggers.forEach(function (goodEditAreaTrigger) {
+      goodEditAreaTrigger.on('click', function (e) {
+        var target = Stamp.$(e.target)
+
+        target.next('.goodEditArea').toggle()
+        Stamp.$(this).toggleClass('goodEditAreaTriggerOpen')
+      })
+    })
+
+    nodes.editAreas.forEach(function (editArea) {
+      editArea.on('click', function (e) {
+        var target = Stamp.$(e.target)
+        var index = target.parent().attr('data-index')
+        var number = Number(target.parent().find('.goodNumber').val())
+        var infoNode = Stamp.$(this).parent()
+
+        if (target.hasClass('goodModify')) {
+          self._editAreaListener(index, number, true, infoNode)
+        } else if (target.hasClass('goodRemove')) {
+          self._editAreaListener(index, number, false, infoNode)
+        }
+      })
+    })
+  },
+
+  _editAreaListener: function (index, number, type, infoNode) {
+    var self = this
+
+    var targets = self.storage.get('targets')
+    var IDS = index.split('#')
+
+    var matchGoods = targets.filter(function (target) {
+      return target.id == IDS[0]
+    })
+    var matchSpecs = matchGoods[0].specs.filter(function (spec) {
+      return spec.id == IDS[1]
+    })
+
+    if (type) {
+      matchSpecs[0].count = number
+      infoNode.find('.goodCount').text(number)
+    } else {
+      matchGoods[0].specs = matchGoods[0].specs.filter(function (spec) {
+        return spec.id != IDS[1]
+      })
+      if (matchGoods[0].specs.length == 0) {
+        targets = targets.filter(function (target) {
+          return target.id != IDS[0]
+        })
+      }
+      infoNode.remove()
+    }
+
+    self.storage.update('targets', targets)
+  },
+
+  addRushTarget_bind: function () {
     var self = this
 
     var nodes = self.nodes
@@ -413,22 +442,9 @@ Stamp.$.extend(Rush.prototype, {
     var fetchDetails = nodes.fetchDetails
     var fetchDetailsState = nodes.fetchDetailsState
 
-    var commonAppend = function (new_fairys) {
-      var content = this
-
-      var blocks = Stamp.$('<div class="selectDetailsBlocks">')
-      new_fairys.forEach(function (fairy) {
-        blocks.append(content._selectDetailsBuild(fairy))
-      })
-
-      this.nodes.selectDetails.append(blocks)
-      content.nodes.addTargetRecords.show()
-      content.nodes.clearAllAddTargetRecords.show()
-    }
-    commonAppend = commonAppend.bind(self)
-
     fetchDetails.on('click', function () {
       fetchDetailsState.removeClass('fulfilled')
+      fetchDetailsState.addClass('pending')
       nodes.selectDetails.empty()
 
       var ids = goodIds.val().split('#')
@@ -452,6 +468,7 @@ Stamp.$.extend(Rush.prototype, {
           new_fairys.push(new_fairy)
 
           if (new_fairys.length == ids.length) {
+            fetchDetailsState.removeClass('pending')
             fetchDetailsState.addClass('fulfilled')
 
             var new_fairys_sorted = ids.map(function (id) {
@@ -460,27 +477,36 @@ Stamp.$.extend(Rush.prototype, {
               }).pop()
             })
 
-            commonAppend(new_fairys_sorted)
+            self._selectDetailsBlocks(new_fairys_sorted)
           }
         })
       })
     })
   },
 
-  batch2MyTargetsListBind: function () {
+  _selectDetailsBlocks: function (new_fairys) {
     var self = this
 
-    self.nodes.clearAllAddTargetRecords.on('click', function (e) {
-      self.nodes.addTargetRecords.empty()
+    var nodes = self.nodes
+
+    var blocks = Stamp.$('<div class="selectDetailsBlocks">')
+
+    new_fairys.forEach(function (fairy) {
+      var block = self._selectDetails(fairy)
+      blocks.append(block)
+      self._selectDetailsListeners(fairy, block)
     })
+
+    nodes.selectDetails.append(blocks)
+
+    nodes.selectDetails.parent().show()
   },
 
-  _selectDetailsBuild: function (fairy) {
-    var self = this
-
+  _selectDetails: function (fairy) {
     var details = fairy.details
 
-    var goodTitle = Stamp.$('<div class="goodTitle">').text(details.goodsShowInfo.title)
+    var goodTitle = Stamp.$('<div class="goodTitle">')
+      .text(details.goodsShowInfo.title)
       .prepend(Stamp.$('<em>').text(details.goodsId + '#'))
 
     var goodCount = Stamp.$('<input>', {
@@ -488,13 +514,6 @@ Stamp.$.extend(Rush.prototype, {
       class: 'goodCount',
       min: 1,
       value: 1
-    })
-
-    goodCount.on('change', function () {
-      var target = Stamp.$(this)
-      var max = +target.attr('max')
-
-      Number(target.val()) > max && target.val(String(max))
     })
 
     var goodSpecs = Stamp.$('<div class="goodSpecs"></div>')
@@ -530,10 +549,40 @@ Stamp.$.extend(Rush.prototype, {
       goodSpecs.append(wrap)
     })
 
+    var goodAdd = Stamp.$('<input>', {
+      type: 'button',
+      class: 'goodAdd',
+      value: '加入列表'
+    }).addClass('btn btn-warning')
+
+    var block = Stamp.$('<div class="selectDetailsBlock">')
+      .attr('data-goodsId', details.goodsId)
+
+    block.append(goodTitle).append(goodSpecs).append(goodCount).append(goodAdd)
+
+    return block
+  },
+
+  _selectDetailsListeners: function (fairy, block) {
+    var self = this
+
+    var details = fairy.details
+
+    var goodCount = block.find('.goodCount')
+    var goodSpecs = block.find('.goodSpecs')
+    var goodAdd = block.find('.goodAdd')
+
+    goodCount.on('change', function () {
+      var target = Stamp.$(this)
+      var max = +target.attr('max')
+
+      Number(target.val()) > max && target.val(String(max))
+    })
+
     goodSpecs.on('change', function (e) {
       var target = Stamp.$(e.target)
 
-      Stamp.$.each(Stamp.$(this).find('label'), function (index, node) {
+      Stamp.$.each(Stamp.$(this).find('label'), function (i, node) {
         var node = Stamp.$(node)
 
         node.removeClass('selected')
@@ -545,42 +594,33 @@ Stamp.$.extend(Rush.prototype, {
       goodCount.attr('max', Number(target.data('buyLimit')))
     })
 
-    var goodAdd = Stamp.$('<input>', {
-      type: 'button',
-      class: 'goodAdd',
-      value: '加入列表'
-    }).addClass('btn btn-warning')
-
     goodAdd.on('click', function () {
       var goodAttr = details.goodsAttrList[goodSpecs.data('specIndex')]
 
-      self._addTarget2Storage(
-        {
-          id: goodAttr.goodsId,
-          title: details.goodsShowInfo.title,
-          specId: goodAttr.id,
-          name: goodAttr.attrName,
-          limit: Number(goodAttr.buyLimit),
-          count: Number(goodCount.val())
-        },
-        {
-          Title: [details.goodsId, details.goodsShowInfo.title].join('#'),
-          Spec: ['规格：', goodAttr.attrName].join(''),
-          Count: ['订购数量：', goodCount.val()].join('')
-        }
-      )
+      var record = {
+        id: goodAttr.goodsId,
+        title: details.goodsShowInfo.title,
+        specId: goodAttr.id,
+        name: goodAttr.attrName,
+        limit: Number(goodAttr.buyLimit),
+        count: Number(goodCount.val())
+      }
+
+      var showInfo = {
+        Title: [details.goodsId, details.goodsShowInfo.title].join('#'),
+        Spec: ['规格：', goodAttr.attrName].join(''),
+        Count: ['订购数量：', goodCount.val()].join('')
+      }
+
+      self._addTarget2Storage(record, showInfo)
     })
-
-    var block = Stamp.$('<div class="selectDetailsBlock">').attr('data-goodsId', details.goodsId)
-    block.append(goodTitle).append(goodSpecs).append(goodCount).append(goodAdd)
-
-    return block
   },
 
   _addTarget2Storage: function (record, showInfo) {
     var self = this
 
     var storageInfo = self._mergeTargetCount(record)
+
     self._addTargetRecord(showInfo, storageInfo)
 
     storageInfo.code != 500 && self._updateTargetList(record)
@@ -617,7 +657,7 @@ Stamp.$.extend(Rush.prototype, {
           storageInfo.rest = 0
           storageInfo.msg = '无法购买该商品此规格'
         }
-        else if (match_spec.count + record.count > match_spec.limit) {
+        else if (match_spec.count + record.count >= match_spec.limit) {
           storageInfo.code = 400
           storageInfo.add = match_spec.limit - match_spec.count
           storageInfo.rest = 0
@@ -625,10 +665,10 @@ Stamp.$.extend(Rush.prototype, {
 
           match_spec.count = match_spec.limit
         } else {
+          match_spec.count += record.count
+
           storageInfo.add = record.count
           storageInfo.rest = match_spec.limit - match_spec.count
-
-          match_spec.count += record.count
         }
       }
       else {
@@ -670,7 +710,7 @@ Stamp.$.extend(Rush.prototype, {
     var nodes = self.nodes
     var addTargetRecords = nodes.addTargetRecords
 
-    var record = Stamp.$('<div class="record">')
+    var record = Stamp.$('<div class="record">').addClass(['record', storageInfo.code].join(''))
 
     Stamp.$.each(showInfo, function (prop, value) {
       record.append(Stamp.$('<div>', {
@@ -678,14 +718,14 @@ Stamp.$.extend(Rush.prototype, {
       }).text(value))
     })
 
-    var info = Stamp.$('<div>', {
-      class: ['recordState', storageInfo.code].join('')
-    }).addClass('recordState')
-    var msg = Stamp.$('<div class="recordMessage">').text('本次操作：' + storageInfo.msg)
-    var addCount = Stamp.$('<div class="recordAddCount">').text('本次添加：' + storageInfo.add)
-    var rest = Stamp.$('<div class="recordRest">').text('还可添加：' + storageInfo.rest)
+    var now = new Date()
+    var time = [now.getHours(), now.getMinutes(), now.getSeconds()].join(':')
+    var tips = ['本次添加：', storageInfo.add, '；还可添加：', storageInfo.rest].join('')
+    var info = Stamp.$('<div class="recordState">').addClass(['recordState', storageInfo.code].join(''))
+    var msg = Stamp.$('<div class="recordMessage">').text('（' + time + '）' + storageInfo.msg)
+    var addRest = Stamp.$('<div class="recordAddRest">').text(tips)
 
-    info.append(msg).append(addCount).append(rest)
+    info.append(msg).append(addRest)
     record.append(info)
 
     addTargetRecords.prepend(record)
@@ -709,8 +749,17 @@ Stamp.$.extend(Rush.prototype, {
     if (targetNode.length == 1) {
       targetNode.find('.goodCount').text(matchSpecs[0].count)
     } else {
-      self.targetsListRender(false)
+      self.targetsList_render(false)
+      self.targetsList_bind()
     }
+  },
+
+  batch2MyTargetsList_bind: function () {
+    var self = this
+
+    self.nodes.clearAllAddTargetRecords.on('click', function () {
+      self.nodes.addTargetRecords.empty()
+    })
   },
 
   append: function () {
@@ -737,6 +786,7 @@ Stamp.$.extend(Rush.prototype, {
 
     nodes.sections = sections
 
+    sections[0].append(Stamp.$('<div class="title">').text('配置验证码'))
     sections[0].append(nodes.phone)
     sections[0].append(nodes.send)
     nodes.send.after(nodes.sendState)
@@ -745,12 +795,15 @@ Stamp.$.extend(Rush.prototype, {
     sections[1].append(nodes.storeCode)
     nodes.storeCode.after(nodes.storeCodeState)
 
+    sections[2].append(Stamp.$('<div class="title">').text('秒杀任务清单'))
     sections[2].append(nodes.targetsList)
 
+    sections[3].append(Stamp.$('<div class="title">').text('商品详情'))
     sections[3].append(nodes.goodIds)
     sections[3].append(nodes.fetchDetails)
     nodes.fetchDetails.after(nodes.fetchDetailsState)
 
+    sections[4].append(Stamp.$('<div class="title">').text('新添秒杀任务'))
     sections[4].append(nodes.selectDetails)
     sections[4].append(nodes.addTargetRecords)
     sections[4].append(nodes.clearAllAddTargetRecords)

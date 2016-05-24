@@ -1,7 +1,7 @@
 #_panel_ {
   position: absolute;
   display: block;
-  top: 0.5em;
+  top: 1.5em;
   left: 0.5em;
   background: #31B0D5;
   border: 2px solid #31B0D5;
@@ -575,7 +575,7 @@
 #_rush_panel_ {
   position: absolute;
   display: block;
-  top: 0.5em;
+  top: 1.5em;
   left: 18em;
   background: #31B0D5;
   border: 2px solid #31B0D5;
@@ -629,7 +629,7 @@
           font-size: 15px;
           font-weight: bold;
           padding: 0 0 0.2em 0.4em;
-          margin-bottom: 0.2em;
+          margin-bottom: 0.4em;
           border-bottom: 2px solid #31B0D5;
         }
 
@@ -659,20 +659,24 @@
         .fulfilled {
           background: #3AAD8B;
         }
+
+        .pending {
+          background: #F0AD4F;
+        }
       }
 
       .targetsListSection {
-        width: 95%;
+        width: 100%;
         float: left;
-        height: 15em;
-        border: 2px solid #31B0D5;
-        background: #FFF;
-        overflow: auto;
 
         .targetsList {
-          width: 100%;
+          width: 95%;
           float: left;
           font-size: 13px;
+          height: 15em;
+          border: 2px solid #31B0D5;
+          background: #FFF;
+          overflow: auto;
 
           .target {
             width: 100%;
@@ -748,21 +752,9 @@
         }
       }
 
-      .targetsListSection::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
-        background-color: #F5F5F5;
-      }
-
-      .targetsListSection::-webkit-scrollbar {
-        width: 6px;
-        background-color: #F5F5F5;
-      }
-
-      .targetsListSection::-webkit-scrollbar-thumb {
-        background-color: #31B0D5;
-      }
-
       .batch2MyTargetsListSection {
+        display: none;
+
         .selectDetails {
           width: 95%;
           float: left;
@@ -836,7 +828,6 @@
         }
 
         .addTargetRecords {
-          display: none;
           width: 95%;
           float: left;
           height: 15em;
@@ -847,8 +838,9 @@
           .record {
             width: 100%;
             float: left;
-            padding: 0.5em 0 0.5em;
-            border-bottom: 1px solid #666;
+            font-weight: bold;
+            padding: 0.2em 0;
+            border-bottom: 1px solid #aaa;
 
             .recordTitle {
               float: left;
@@ -875,12 +867,12 @@
               width: 100%;
               color: #FFF;
               font-weight: bold;
-              margin: 0.5em 0 0 0;
+              margin: 0.2em 0 0 0;
 
-              .recordMessage, .recordAddCount, .recordRest {
+              .recordMessage, .recordAddRest {
                 float: left;
                 width: 100%;
-                padding: 0 0 0 1em;
+                padding: 0 0 0 0.5em;
               }
             }
 
@@ -896,12 +888,37 @@
               background: #FF0000;
             }
           }
+
+          .record200 {
+            color: #3AAD8B;
+          }
+
+          .record400 {
+            color: #F0AD4F;
+          }
+
+          .record500 {
+            color: #FF0000;
+          }
         }
 
         .clearAllAddTargetRecords {
-          display: none;
           margin: 0.5em 0 0 0;
         }
+      }
+
+      .scrollBar::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+        background-color: #F5F5F5;
+      }
+
+      .scrollBar::-webkit-scrollbar {
+        width: 6px;
+        background-color: #F5F5F5;
+      }
+
+      .scrollBar::-webkit-scrollbar-thumb {
+        background-color: #31B0D5;
       }
     }
   }
