@@ -5,6 +5,7 @@ function Port(config) {
 
   this.ports = []
   this.actions = config.actions || []
+  this.portCache = config.portCache
 }
 
 $.extend(Port.prototype, {

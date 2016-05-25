@@ -1,12 +1,42 @@
 var $ = require('jquery')
 
 function Listener(config) {
-  this.sentries = config.sentries
-
+  this.headers = config.headers
   this.cancels = config.cancels
+  this.sentries = config.sentries
 }
 
 $.extend(Listener.prototype, {
+  onBeforeSendHeaders: function () {
+    var self = this
+
+    chrome.webRequest.onBeforeSendHeaders.addListener(function (details) {
+      var matches = self.headers.filter(function (header) {
+        return details.url.indexOf(header.keyword) > -1
+      })
+
+      if (matches.length) {
+        var MAP = {}
+
+        details.requestHeaders.forEach(function (header) {
+          MAP[header.name] = header
+        })
+
+        matches.forEach(function (match) {
+          match.modifiers.forEach(function (modifier) {
+            modifier.handler(MAP[modifier.name], self.portCache)
+          })
+        })
+      }
+
+      return {
+        requestHeaders: details.requestHeaders
+      }
+    }, {
+      urls: ["<all_urls>"]
+    }, ["blocking", "requestHeaders"])
+  },
+
   onBeforeRequest: function () {
     var self = this
 
@@ -27,7 +57,7 @@ $.extend(Listener.prototype, {
       var matches = self.sentries.filter(function (sentry) {
         return details.url.indexOf(sentry.keyword) > -1
       })
-      
+
       matches.forEach(function (match) {
         match.handler.bind(self)(details)
       })
@@ -36,9 +66,17 @@ $.extend(Listener.prototype, {
     })
   },
 
-  start: function () {
-    this.onBeforeRequest()
-    this.onCompleted()
+  start: function (portCache) {
+    if (this.headers.length) {
+      this.portCache = portCache
+      this.onBeforeSendHeaders()
+    }
+    if (this.cancels.length) {
+      this.onBeforeRequest()
+    }
+    if (this.sentries.length) {
+      this.onCompleted()
+    }
   }
 })
 

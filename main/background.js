@@ -7,6 +7,10 @@ var Listener = require('listener')
 
 function Agent() {
   this.port = new Port({
+    portCache: {
+      goodsIds: []
+    },
+
     actions: [
       {
         command: 'fairyInject',
@@ -93,6 +97,13 @@ function Agent() {
             dataType: 'html'
           })
         }
+      },
+      {
+        command: 'storeGoodsId',
+        action: function (port, msg) {
+          var self = this
+          self.portCache.goodsIds.push(msg.goodsId)
+        }
       }
     ]
   })
@@ -134,24 +145,32 @@ function Agent() {
   })
 
   this.listener = new Listener({
-    sentries: [
+    headers: [
       {
         keyword: 'ShoppingCartAction.addGoodsToShoppingCartLS',
-        handler: function (details) {
-          console.log(details)
-        }
+        modifiers: [{
+          name: 'Referer',
+          handler: function (header, portCache) {
+            header.value = ['http://jiyou.biz.11185.cn/retail/ticketDetail_', portCache.goodsIds.shift(), '.html'].join('')
+          }
+        }]
       }
     ],
     cancels: [
-      /.*\:\/\/jiyou\.img\.11185\.cn\/td\/.*/,
+      // /.*\:\/\/jiyou\.img\.11185\.cn\/td\/.*/,
     ],
-    headers: {}
+    sentries: [
+      // {
+      //   keyword: 'ShoppingCartAction.addGoodsToShoppingCartLS',
+      //   handler: function (details) {}
+      // }
+    ]
   })
 }
 
 $.extend(Agent.prototype, {
   start: function () {
-    this.listener.start()
+    this.listener.start(this.port.portCache)
     this.port.start()
     this.connect.start()
     this.inject.start()

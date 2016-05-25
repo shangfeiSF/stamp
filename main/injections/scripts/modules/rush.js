@@ -420,6 +420,14 @@ Stamp.$.extend(Rush.prototype, {
       var targets = self.storage.get('targets')
 
       targets.forEach(function (target) {
+        target.specs.forEach(function () {
+          Stamp.probe.execute('storeGoodsId', {
+            goodsId: target.id
+          })
+        })
+      })
+
+      targets.forEach(function (target) {
         target.specs.forEach(function (spec) {
           var params = {
             goodId: target.id,
