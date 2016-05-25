@@ -380,10 +380,11 @@ dwr.engine._partialResponseFlush = 2;
  *       if this is null, any returned data will be ignored
  * @param vararg_params The parameters to pass to the above class
  */
-dwr.engine._execute = function (path, scriptName, methodName, vararg_params) {
+dwr.engine._execute = function (combine, scriptName, methodName, vararg_params) {
   var singleShot = false;
+  var path = combine.path;
   if (dwr.engine._batch == null) {
-    dwr.engine.beginBatch();
+    dwr.engine.beginBatch(combine.mock);
     singleShot = true;
   }
   var batch = dwr.engine._batch;
@@ -491,13 +492,17 @@ dwr.engine._pollErrorHandler = function (msg, ex) {
 
 /** @private Generate a new standard batch */
 dwr.engine._createBatch = function (mock) {
-  var page = mock ? mock.pathname : (window.location.pathname + window.location.search)
+  var mock = mock || {}
+  
+  var page = mock.pathname ? mock.pathname : (window.location.pathname + window.location.search)
+  var scriptSessionId = mock._origScriptSessionId ? mock._origScriptSessionId : dwr.engine._getScriptSessionId()
+
   var batch = {
     map: {
       callCount: 0,
       page: page,
       httpSessionId: dwr.engine._getJSessionId(),
-      scriptSessionId: dwr.engine._getScriptSessionId()
+      scriptSessionId: scriptSessionId
     },
     charsProcessed: 0, paramCount: 0,
     headers: [], parameters: [],

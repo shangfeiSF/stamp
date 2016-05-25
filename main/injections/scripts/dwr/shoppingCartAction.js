@@ -9,7 +9,10 @@ ShoppingCartAction.addGoodsToShoppingCartDWR = function (p0, p1, p2, callback) {
   dwr.engine._execute(ShoppingCartAction._path, 'ShoppingCartAction', 'addGoodsToShoppingCartDWR', p0, p1, p2, callback);
 }
 ShoppingCartAction.addGoodsToShoppingCartLS = function (p0, p1, p2, callback, mock) {
-  dwr.engine._execute(ShoppingCartAction._path, 'ShoppingCartAction', 'addGoodsToShoppingCartLS', p0, p1, p2, callback, mock);
+  dwr.engine._execute({
+    path: ShoppingCartAction._path,
+    mock: mock
+  }, 'ShoppingCartAction', 'addGoodsToShoppingCartLS', p0, p1, p2, callback);
 }
 ShoppingCartAction.checkShoppingCartTid = function (p0, callback) {
   dwr.engine._execute(ShoppingCartAction._path, 'ShoppingCartAction', 'checkShoppingCartTid', p0, callback);

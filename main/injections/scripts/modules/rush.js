@@ -59,6 +59,8 @@ function Rush() {
     }
   }
 
+  this._origScriptSessionIdPattern = /dwr\.engine\.\_origScriptSessionId\s*\=\s*\"(.*)\"/
+
   var storageKey = 'RUSH'
   if (window.localStorage.getItem(storageKey) == null) {
     window.localStorage.setItem(storageKey, JSON.stringify({}))
@@ -431,53 +433,29 @@ Stamp.$.extend(Rush.prototype, {
 
       targets.forEach(function (target) {
         target.specs.forEach(function (spec) {
-          var iframeId = ['iframe', target.id, spec.id].join('_')
-          var pathname = ['/retail/ticketDetail_', target.id, '.html'].join('')
-
-          var iframe = Stamp.$('<iframe>', {
-            id: iframeId,
-            style: 'display: none;'
-          })
-
-          var iframeScriptDefine = (function () {
-            return function add() {
-              var parent = window.parent;
-              var goodId = '{{goodId_value}}'
-              var count = '{{count_value}}'
-              var specId = '{{specId_value}}'
-              var iframeId = '{{iframeId_value}}'
-              var mock = {
-                pathname: '{{pathname_value}}'
-              }
-              window.parent.ShoppingCartAction.addGoodsToShoppingCartLS(goodId, count, specId, function () {
-                var iframe = parent.document.getElementById(iframeId)
-                iframe.parentNode.classList.add('added')
-                iframe.parentNode.removeChild(iframe)
-              }, mock)
-            }
-          })().toString()
-            .replace(/\{\{goodId\_value\}\}/, target.id)
-            .replace(/\{\{count\_value\}\}/, spec.count)
-            .replace(/\{\{specId\_value\}\}/, spec.id)
-            .replace(/\{\{iframeId\_value\}\}/, iframeId)
-            .replace(/\{\{pathname\_value\}\}/, pathname)
-          var iframeScriptExecute = ';add()'
-
-          var script = [
-            '<script type="text/javascript">',
-            iframeScriptDefine,
-            iframeScriptExecute,
-            '</script>'
-          ].join('')
+          var params = {
+            goodId: target.id,
+            count: spec.count,
+            specId: spec.id
+          }
 
           var selector = ['div[id="', [target.id, spec.id].join('#'), '"]'].join('')
-          nodes.targetsList.find(selector).append(iframe)
+          var targetNode = nodes.targetsList.find(selector)
 
-          iframe[0].contentWindow.document.write(script)
+          var mock = {
+            pathname: ['/retail/ticketDetail_', target.id, '.html'].join(''),
+            _origScriptSessionId: spec._origScriptSessionId
+          };
+
+          (function (params, targetNode, mock) {
+            ShoppingCartAction.addGoodsToShoppingCartLS(params.goodId, params.count, params.specId, function (msg) {
+              targetNode.addClass('added')
+              console.log(msg)
+            }, mock)
+          })(params, targetNode, mock)
         })
       })
     })
-
   },
 
   _editAreaListener: function (index, number, type, infoNode) {
@@ -757,7 +735,8 @@ Stamp.$.extend(Rush.prototype, {
           name: record.name,
           id: record.specId,
           limit: record.limit,
-          count: record.count
+          count: record.count,
+          _origScriptSessionId: self._get_origScriptSessionId()
         })
       }
     }
@@ -772,7 +751,8 @@ Stamp.$.extend(Rush.prototype, {
           id: record.specId,
           name: record.name,
           limit: record.limit,
-          count: record.count
+          count: record.count,
+          _origScriptSessionId: self._get_origScriptSessionId()
         }]
       })
     }
@@ -780,6 +760,28 @@ Stamp.$.extend(Rush.prototype, {
     self.storage.update('targets', targets)
 
     return storageInfo
+  },
+
+  _get_origScriptSessionId: function () {
+    var self = this
+
+    var _origScriptSessionId = undefined
+
+    Stamp.$.ajax({
+      type: 'GET',
+      url: 'http://jiyou.biz.11185.cn/dwr/engine.js',
+      cache: false,
+      async: false,
+      success: function (content) {
+        var matches = self._origScriptSessionIdPattern.exec(content)
+        matches && matches.length == 2 && ( _origScriptSessionId = matches.pop() + Math.floor(Math.random() * 31793))
+      },
+      error: function () {
+        _origScriptSessionId = undefined
+      }
+    })
+
+    return _origScriptSessionId
   },
 
   _addTargetRecord: function (showInfo, storageInfo) {
