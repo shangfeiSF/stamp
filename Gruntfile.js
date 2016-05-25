@@ -37,7 +37,7 @@ module.exports = function (grunt) {
             expand: true
           }, {
             cwd: 'main/injections/scripts/dwr/',
-            src: ['engine.js', 'utils.js', 'shoppingCartAction.js'],
+            src: ['init.js', 'engine.js', 'utils.js', 'shoppingCartAction.js'],
             dest: 'build/injections/scripts/dwr/',
             expand: true
           }]

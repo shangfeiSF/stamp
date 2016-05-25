@@ -19,7 +19,8 @@ function Agent() {
             allFrames: false,
             matchAboutBlank: true
           }, function () {
-            console.log('[Injected command]---', file.slice(1))
+            var message = ['%c[Injected script by command]---', file.slice(1)].join('')
+            console.log(message, 'color: #ff0062; font-weight: bold;')
           })
         }
       },
@@ -41,14 +42,21 @@ function Agent() {
                 sid = 'ERROR'
               }
 
+              var image = [imageBase, "&sid=", sid, "&", Math.random()].join('')
               port.postMessage({
                 portName: port.name,
                 command: 'getSid_reply',
                 data: {
                   sid: sid,
-                  image: [imageBase, "&sid=", sid, "&", Math.random()].join('')
+                  image: image
                 }
               })
+
+              var messageSid = ['%c[Get sid by command]---', sid].join('')
+              var messageImage = ['%c[Get image with sid by command]---', image].join('')
+
+              console.log(messageSid, 'color: #ff0062; font-weight: bold;')
+              console.log(messageImage, 'color: #ff0062; font-weight: bold;')
             },
             dataType: 'html'
           })
@@ -78,6 +86,9 @@ function Agent() {
                   token: token
                 }
               })
+
+              var messageToken = ['%c[Get token by command]---', sid].join('')
+              console.log(messageToken, 'color: #ff0062; font-weight: bold;')
             },
             dataType: 'html'
           })
@@ -101,12 +112,13 @@ function Agent() {
     content: {
       ayncScripts: [
         {file: './lib/bluebird.min.js'},
-        {file: './main/injections/scripts/dwr/shoppingCartAction.js'},
-        {file: './main/injections/scripts/dwr/engine.js'},
-        {file: './main/injections/scripts/dwr/utils.js'}
       ],
 
       syncScripts: [
+        {file: './main/injections/scripts/dwr/init.js'},
+        {file: './main/injections/scripts/dwr/engine.js'},
+        {file: './main/injections/scripts/dwr/utils.js'},
+        {file: './main/injections/scripts/dwr/shoppingCartAction.js'},
         {file: './lib/jquery.min.js',},
         {file: './main/injections/scripts/probe.js',},
         {file: './lib/drag.min.js',}

@@ -15,6 +15,7 @@ $.extend(Inject.prototype, {
     var self = this
     var contents = type ? self.content.ayncScripts : self.content.ayncCss
     var fname = type ? 'executeScript' : 'insertCSS'
+    var tip = type ? 'Script' : 'CSS'
 
     $.each(contents, function (index, content) {
       chrome.tabs[fname](tabId, {
@@ -22,7 +23,8 @@ $.extend(Inject.prototype, {
         allFrames: content.allFrames !== undefined ? content.allFrames : self.common.allFrames,
         matchAboutBlank: content.matchAboutBlank !== undefined ? content.matchAboutBlank : self.common.matchAboutBlank
       })
-      console.log('[Injected async]---', content.file.slice(1))
+      var message = ['%c[Injected async ' + type + ']---', content.file.slice(1)].join('')
+      console.log(message, 'color: #1dbe1a; font-weight: bold;')
     })
   },
 
@@ -30,6 +32,7 @@ $.extend(Inject.prototype, {
     var self = this
     var contents = type ? self.content.syncScripts : self.content.syncCss
     var fname = type ? 'executeScript' : 'insertCSS'
+    var tip = type ? 'script' : 'CSS'
 
     var callbacks = $.map(contents, function (content, index) {
       var info = {
@@ -50,7 +53,8 @@ $.extend(Inject.prototype, {
 
         return function () {
           chrome.tabs[info.fname](info.tabId, config, function () {
-            console.log('[Injected sync]---', content.file.slice(1))
+            var message = ['%c[Injected sync ' + type + ']---', content.file.slice(1)].join('')
+            console.log(message, 'color: #2b9dff; font-weight: bold;')
 
             var next = callbacks[info.index + 1]
             next !== undefined && next()
@@ -67,7 +71,7 @@ $.extend(Inject.prototype, {
 
     chrome.webNavigation.onCommitted.addListener(function (details) {
       if (details.frameId !== 0) return null
-      
+
       var match = details.url.match(/http:\/\/jiyou\.biz\.11185\.cn\/retail\/ticketDetail\_(\d+)\.html/)
       if (!(match && match.length == 2)) return null
 

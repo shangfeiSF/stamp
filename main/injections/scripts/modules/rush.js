@@ -165,14 +165,14 @@ Stamp.$.extend(Rush.prototype, {
     self.send_render()
     self.storeCode_render()
     self.targetsList_render(true)
-    self.addRushTarget_render()
-    self.batch2MyTargetsList_render()
+    self.fetchGoodsDetails_render()
+    self.add2TargetsList_render()
 
     self.send_bind()
     self.storeCode_bind()
     self.targetsList_bind()
-    self.addRushTarget_bind()
-    self.batch2MyTargetsList_bind()
+    self.fetchGoodsDetails_bind()
+    self.add2TargetsList_bind()
 
     self.append()
   },
@@ -246,17 +246,11 @@ Stamp.$.extend(Rush.prototype, {
         self.storage.update('targets', [])
       }
 
-      nodes.goodEditAreaTriggers = []
-      nodes.editAreas = []
-
       nodes.targetsList = targetsList
       nodes.batch2MyCart = batch2MyCart
     }
     else {
       nodes.targetsList.empty()
-
-      nodes.goodEditAreaTriggers = []
-      nodes.editAreas = []
 
       targetsList = nodes.targetsList
     }
@@ -296,16 +290,13 @@ Stamp.$.extend(Rush.prototype, {
         editArea.append(number).append(modify).append(remove)
         item.append(title).append(name).append(count).append(goodEditAreaTrigger).append(editArea)
 
-        nodes.goodEditAreaTriggers.push(goodEditAreaTrigger)
-        nodes.editAreas.push(editArea)
-
         targetsList.append(item)
         editArea.hide()
       })
     })
   },
 
-  addRushTarget_render: function () {
+  fetchGoodsDetails_render: function () {
     var self = this
 
     var goodIds = Stamp.$('<input>', {
@@ -330,7 +321,7 @@ Stamp.$.extend(Rush.prototype, {
     self.nodes.fetchDetailsState = fetchDetailsState
   },
 
-  batch2MyTargetsList_render: function () {
+  add2TargetsList_render: function () {
     var self = this
 
     var selectDetails = Stamp.$('<div class="selectDetails">')
@@ -404,28 +395,25 @@ Stamp.$.extend(Rush.prototype, {
 
     var nodes = self.nodes
 
-    nodes.goodEditAreaTriggers.forEach(function (goodEditAreaTrigger) {
-      goodEditAreaTrigger.on('click', function (e) {
-        var target = Stamp.$(e.target)
+    nodes.targetsList.delegate('.goodEditAreaTrigger', 'click', function (e) {
+      var target = Stamp.$(e.target)
 
-        target.next('.goodEditArea').toggle()
-        Stamp.$(this).toggleClass('goodEditAreaTriggerOpen')
-      })
+      target.next('.goodEditArea').toggle()
+      Stamp.$(this).toggleClass('goodEditAreaTriggerOpen')
     })
 
-    nodes.editAreas.forEach(function (editArea) {
-      editArea.on('click', function (e) {
-        var target = Stamp.$(e.target)
-        var index = target.parent().attr('data-index')
-        var number = Number(target.parent().find('.goodNumber').val())
-        var infoNode = Stamp.$(this).parent()
+    nodes.targetsList.delegate('.goodEditArea', 'click', function (e) {
+      var target = Stamp.$(e.target)
+      var index = target.parent().attr('data-index')
 
-        if (target.hasClass('goodModify')) {
-          self._editAreaListener(index, number, true, infoNode)
-        } else if (target.hasClass('goodRemove')) {
-          self._editAreaListener(index, number, false, infoNode)
-        }
-      })
+      var number = Number(target.parent().find('.goodNumber').val())
+      var infoNode = Stamp.$(this).parent()
+
+      if (target.hasClass('goodModify')) {
+        self._editAreaListener(index, number, true, infoNode)
+      } else if (target.hasClass('goodRemove')) {
+        self._editAreaListener(index, number, false, infoNode)
+      }
     })
 
     nodes.batch2MyCart.on('click', function () {
@@ -489,7 +477,7 @@ Stamp.$.extend(Rush.prototype, {
     self.storage.update('targets', targets)
   },
 
-  addRushTarget_bind: function () {
+  fetchGoodsDetails_bind: function () {
     var self = this
 
     var nodes = self.nodes
@@ -830,11 +818,10 @@ Stamp.$.extend(Rush.prototype, {
       targetNode.find('.goodCount').text(matchSpecs[0].count)
     } else {
       self.targetsList_render(false)
-      self.targetsList_bind()
     }
   },
 
-  batch2MyTargetsList_bind: function () {
+  add2TargetsList_bind: function () {
     var self = this
 
     self.nodes.clearAllAddTargetRecords.on('click', function () {
@@ -854,8 +841,8 @@ Stamp.$.extend(Rush.prototype, {
       'sendSection',
       'storeCodeSection',
       'targetsListSection',
-      'addRushTargetSection',
-      'batch2MyTargetsListSection'
+      'fetchGoodsDetailsSection',
+      'add2TargetsListSection'
     ]
 
     sections = Stamp.$.map(sections, function (klass) {
