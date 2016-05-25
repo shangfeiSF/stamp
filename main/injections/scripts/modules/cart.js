@@ -9,6 +9,8 @@ function Cart(fairy) {
     total: null
   }
 
+  this._origScriptSessionIdPattern = /dwr\.engine\.\_origScriptSessionId\s*\=\s*\"(.*)\"/
+
   this.settleURL = 'http://jiyou.biz.11185.cn/retail/initPageAfterMyShopcart.html?shoppingcartIds='
 
   this.fairy = fairy
@@ -295,6 +297,10 @@ Stamp.$.extend(Cart.prototype, {
 
       if (!shoppingcartIds.length) return false
 
+      var mock = {
+        _origScriptSessionId: self._get_origScriptSessionId()
+      }
+
       ShoppingCartAction.checkShoppingCartTid(shoppingcartIds.join(';'), function (msg) {
         var msgType = msg.substring(msg.indexOf("\'") + 1, msg.indexOf("\',"))
         // var msgValue = msg.substring(msg.indexOf("\',\'") + 3, msg.lastIndexOf("\']"))
@@ -320,8 +326,30 @@ Stamp.$.extend(Cart.prototype, {
           },
           dataType: 'html'
         })
-      })
+      }, mock)
     })
+  },
+
+  _get_origScriptSessionId: function () {
+    var self = this
+
+    var _origScriptSessionId = undefined
+
+    Stamp.$.ajax({
+      type: 'GET',
+      url: 'http://jiyou.biz.11185.cn/dwr/engine.js',
+      cache: false,
+      async: false,
+      success: function (content) {
+        var matches = self._origScriptSessionIdPattern.exec(content)
+        matches && matches.length == 2 && ( _origScriptSessionId = matches.pop() + Math.floor(Math.random() * 31793))
+      },
+      error: function () {
+        _origScriptSessionId = undefined
+      }
+    })
+
+    return _origScriptSessionId
   }
 })
 

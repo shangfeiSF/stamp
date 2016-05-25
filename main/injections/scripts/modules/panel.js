@@ -16,6 +16,8 @@ function Panel(fairy) {
     showMycart: null
   }
 
+  this._origScriptSessionIdPattern = /dwr\.engine\.\_origScriptSessionId\s*\=\s*\"(.*)\"/
+
   this.fairy = fairy
 }
 
@@ -255,12 +257,38 @@ Stamp.$.extend(Panel.prototype, {
             cache.userType = data.result.userType
             cache.userId = data.result.userId
 
+            var mock = {
+              _origScriptSessionId: self._get_origScriptSessionId()
+            }
+
             ShoppingCartAction.addGoodsToShoppingCartLS(details.goodsId, count.val(), details.goodsAttrList[cache.specIndex].id, function (msg) {
               self.fairy.cart.addRecordsRender(msg)
-            })
+            }, mock)
           }
         })
     })
+  },
+
+  _get_origScriptSessionId: function () {
+    var self = this
+
+    var _origScriptSessionId = undefined
+
+    Stamp.$.ajax({
+      type: 'GET',
+      url: 'http://jiyou.biz.11185.cn/dwr/engine.js',
+      cache: false,
+      async: false,
+      success: function (content) {
+        var matches = self._origScriptSessionIdPattern.exec(content)
+        matches && matches.length == 2 && ( _origScriptSessionId = matches.pop() + Math.floor(Math.random() * 31793))
+      },
+      error: function () {
+        _origScriptSessionId = undefined
+      }
+    })
+
+    return _origScriptSessionId
   },
 
   showMyCartBind: function () {

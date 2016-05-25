@@ -321,7 +321,7 @@ myDwr.engine._createBatch = function (mock) {
   var mock = mock || {}
 
   var page = mock.pathname ? mock.pathname : (window.location.pathname + window.location.search)
-  var scriptSessionId = mock._origScriptSessionId ? mock._origScriptSessionId : myDwr.engine._getScriptSessionId()
+  var scriptSessionId = mock._origScriptSessionId
 
   var batch = {
     map: {

@@ -11,8 +11,11 @@ ShoppingCartAction.addGoodsToShoppingCartLS = function (p0, p1, p2, callback, mo
   }, 'ShoppingCartAction', 'addGoodsToShoppingCartLS', p0, p1, p2, callback);
 }
 
-ShoppingCartAction.checkShoppingCartTid = function (p0, callback) {
-  myDwr.engine._execute(ShoppingCartAction._path, 'ShoppingCartAction', 'checkShoppingCartTid', p0, callback);
+ShoppingCartAction.checkShoppingCartTid = function (p0, callback, mock) {
+  myDwr.engine._execute({
+    path: ShoppingCartAction._path,
+    mock: mock
+  }, 'ShoppingCartAction', 'checkShoppingCartTid', p0, callback);
 }
 
 ShoppingCartAction.removeDwrShoppingCart = function (p0, p1, callback) {

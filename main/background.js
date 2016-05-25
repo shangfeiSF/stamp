@@ -151,7 +151,9 @@ function Agent() {
         modifiers: [{
           name: 'Referer',
           handler: function (header, portCache) {
-            header.value = ['http://jiyou.biz.11185.cn/retail/ticketDetail_', portCache.goodsIds.shift(), '.html'].join('')
+            if (portCache.goodsIds.length) {
+              header.value = ['http://jiyou.biz.11185.cn/retail/ticketDetail_', portCache.goodsIds.shift(), '.html'].join('')
+            }
           }
         }]
       }
