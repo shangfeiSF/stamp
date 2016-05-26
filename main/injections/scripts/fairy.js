@@ -1,14 +1,41 @@
+var Panel = require('panel')
 var Dig = require('dig')
 
-var Panel = require('panel')
 var Rush = require('rush')
-var Order = require('order')
-var Cart = require('cart')
 
-var Loader = require('loader')
-var Settle = require('settle')
+var Base = require('base')
+var BaseSettle = require('baseSettle')
+
+var Cart = require('cart')
+var CartSettle = require('cartSettle')
+
+var Order = require('order')
 
 var fairy = {
+  layout: {
+    rushBlock: {
+      triggerText: '秒杀配置',
+      anchor: 'rush',
+      default: true
+    },
+    baseBlock: {
+      triggerText: '常规购买',
+      anchor: 'base'
+    },
+    baseSettleBlock: {
+      triggerText: '常规订单',
+      anchor: 'baseSettle'
+    },
+    cartBlock: {
+      triggerText: '购物车',
+      anchor: 'cart'
+    },
+    cartSettleBlock: {
+      triggerText: '购物车订单',
+      anchor: 'cartSettle'
+    }
+  },
+
   mobiles: [
     '17600808607',
     '18600808607'
@@ -49,13 +76,15 @@ var fairy = {
   settlefinalPostData: {}
 }
 
-new Rush()
+fairy.panel = new Panel(fairy) // init()
+fairy.dig = new Dig(fairy)  // init()
 
-fairy.dig = new Dig(fairy)
-fairy.loader = new Loader(fairy)
-fairy.settle = new Settle(fairy)
-fairy.order = new Order(fairy)
+fairy.rush = new Rush(fairy)  // boot() - init()
+
+fairy.base = new Base(fairy)  // init()
+fairy.baseSettle = new BaseSettle(fairy)
+
 fairy.cart = new Cart(fairy)
-fairy.panel = new Panel(fairy)
+fairy.cartSettle = new CartSettle(fairy)
 
-fairy.panel.init()
+fairy.order = new Order(fairy)

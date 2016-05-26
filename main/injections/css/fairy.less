@@ -1,15 +1,4 @@
 #_panel_ {
-  position: absolute;
-  display: block;
-  top: 1.5em;
-  left: 0.5em;
-  background: #31B0D5;
-  border: 2px solid #31B0D5;
-  font-size: 20px;
-  font-weight: bold;
-  font-family: "microsoft yahei";
-  z-index: 2147483647;
-
   label {
     cursor: pointer;
     font-weight: bold;
@@ -20,438 +9,587 @@
     color: #3AAD8B
   }
 
+  .scrollBar::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+    background-color: #F5F5F5;
+  }
+
+  .scrollBar::-webkit-scrollbar {
+    width: 6px;
+    background-color: #F5F5F5;
+  }
+
+  .scrollBar::-webkit-scrollbar-thumb {
+    background-color: #31B0D5;
+  }
+}
+
+#_panel_ {
+  display: block;
+  position: absolute;
+  top: 0em;
+  left: 0em;
+  width: 24em;
+  background: #31B0D5;
+  border: 2px solid #31B0D5;
+  font-weight: bold;
+  font-family: "microsoft yahei";
+  z-index: 2147483647;
+
   #_trigger_ {
+    font-size: 0.8em;
     width: 100%;
-    cursor: move;
     padding: 0.3em 0;
     color: #FFF;
-    font-size: 0.8em;
     line-height: 120%;
     text-align: center;
+    cursor: move;
+  }
+
+  #_tabs_ {
+    font-size: 15px;
+    width: 100%;
+    height: 2.6em;
+    padding: 0 0.4em;
+    color: #FFF;
+    background: #F8F8F8;
+    border-bottom: 2px solid #31B0D5;
+    font-weight: normal;
+    text-align: center;
+    cursor: pointer;
+
+    .tabBlockTrigger {
+      float: left;
+      width: 19%;
+      height: 1.8em;
+      line-height: 1.8em;
+      padding: 0 0.2em;
+      margin: 0.4em 1.25% 0.4em 0;
+      background: #5CB85C;
+      border-radius: 0.5em;
+
+      &:hover {
+        background-color: #449D44;
+        border-color: #398439;
+      }
+    }
+
+    .tabBlockTrigger:last-child {
+      margin-right: 0;
+    }
+
+    .selectedTabBlockTrigger {
+      background: #F0AD4F;
+
+      &:hover {
+        color: #FFF;
+        background-color: #EC971F;
+        border-color: #D58512;
+      }
+    }
   }
 
   #_container_ {
     position: relative;
     float: left;
+    width: 100%;
     background: #F8F8F8;
     font-weight: normal;
-    width: 16em;
-    padding: 0.5em 0 0 0.5em;
+    padding: 0 0 0 0.5em;
+  }
+}
 
-    .goodsRoot {
+#_panel_ #_container_ {
+  .rushRoot {
+    float: left;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 0.2em;
+
+    .section {
       float: left;
       width: 100%;
-      font-size: 14px;
-      margin-bottom: 0.5em;
+      margin-bottom: 0.4em;
 
-      .tip {
+      .title {
         float: left;
-        width: 100%;
-        color: #aaa;
-        line-height: 150%;
-        font-weight: normal;
-        padding: 0 0.5em 0.2em 0;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.4em;
+        border-bottom: 2px solid #31B0D5;
       }
 
-      .section {
+      input, select {
         float: left;
-        width: 100%;
-        margin-bottom: 0.2em;
-
-        .title {
-          float: left;
-          width: 25%;
-          font-weight: bold;
-          line-height: 175%;
-        }
-
-        .specs {
-          float: left;
-          width: 75%;
-          margin-bottom: 0.2em;
-
-          .spec {
-            float: left;
-            margin-right: 0.4em;
-
-            input {
-              position: relative;
-              top: 0.1em;
-              margin-right: 0.4em;
-            }
-
-            label {
-              margin: 0;
-              word-break: break-all;
-              word-wrap: break-word;
-            }
-          }
-        }
+        font-size: 14px;
+        margin-right: 0.4em;
       }
 
-      .purchaseSection, .add2MyCartSection, .showMyCartSection {
-        width: auto;
-        margin: 0 1em 0 0;
-        padding: 0.5em 0 0 0;
-
-        input[type='button'] {
-          width: 6.5em;
-          height: 2.5em;
-          padding: 0 0.4em;
-        }
+      input[type='button'] {
+        width: 7em;
+        height: 34px;
+        padding: 0 1em;
       }
 
-      .showMyCartSection {
-        margin: 0;
+      .state {
+        float: left;
+        position: relative;
+        font-size: 16px;
+        top: 0.5em;
+        width: 1em;
+        height: 1em;
+        border-radius: 0.5em;
+        background: #FF0000;
+      }
+
+      .fulfilled {
+        background: #3AAD8B;
+      }
+
+      .pending {
+        background: #F0AD4F;
       }
     }
 
-    .cartRoot {
-      float: left;
+    .targetsListSection {
       width: 100%;
-      margin-bottom: 0.5em;
+      float: left;
 
-      .notes {
-        font-size: 13px;
+      .targetsList {
         width: 95%;
-        overflow: hidden;
+        float: left;
+        font-size: 13px;
+        height: 15em;
+        border: 2px solid #31B0D5;
+        background: #FFF;
+        overflow: auto;
 
-        .title {
-          float: left;
-          width: 95%;
-          font-size: 15px;
-          font-weight: bold;
-          padding: 0 0 0.2em 0.4em;
-          margin-bottom: 0.2em;
-          border-bottom: 2px solid #31B0D5;
-        }
-
-        .note {
-          float: left;
+        .target {
           width: 100%;
-          margin-bottom: 0.2em;
+          float: left;
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+          padding: 0.2em 0;
 
-          .sequence {
-            font-weight: bold;
-          }
-
-          .success {
+          .goodTitle {
+            width: 100%;
+            float: left;
+            margin: 0 0 0.2em 0;
+            padding: 0 0 0 1em;
             color: #3AAD8B;
-            padding: 0 0 0 0.5em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
 
-          .failed {
-            color: #FF0000;
-            padding: 0 0 0 0.5em;
+          .goodName, .goodCount {
+            float: left;
+            padding: 0 0 0 1em;
+            color: #555;
           }
-        }
-      }
 
-      .shops {
-        font-size: 13px;
-        width: 95%;
-        overflow: hidden;
+          .goodEditAreaTrigger {
+            float: right;
+            position: relative;
+            top: 0.3em;
+            right: 0.5em;
+            width: 0;
+            height: 0;
+            cursor: pointer;
+            border-left: 0.7em solid transparent;
+            border-right: 0.7em solid transparent;
+            border-top: 0.7em solid #F0AD4F;
+          }
 
-        .title {
-          float: left;
-          width: 95%;
-          font-size: 15px;
-          font-weight: bold;
-          padding: 0 0 0.2em 0.4em;
-          margin-bottom: 0.2em;
-          border-bottom: 2px solid #31B0D5;
-        }
+          .goodEditAreaTriggerOpen {
+            border-top: 0;
+            border-bottom: 0.7em solid #F0AD4F;
+          }
 
-        .emptycart {
-          float: left;
-          width: 100%;
-          text-align: center;
-          font-size: 16px;
-          color: #FF0000;
-        }
-
-        .shopsList {
-          float: left;
-          width: 100%;
-          overflow: hidden;
-
-          .shop {
+          .goodEditArea {
+            display: none;
             float: left;
             width: 100%;
+            padding: 0.4em 1em 0.2em 1em;
+            border-top: 1px solid #ddd;
 
-            input {
-              position: relative;
-              top: 0.15em
+            .goodNumber, .goodModify, .goodRemove {
+              width: 3.5em;
+              height: 20px;
+              padding: 0 0.2em;
+              font-size: 12px;
             }
 
-            label {
-              width: 90%;
-              margin-left: 0.5em;
+            .goodModify {
+              width: 6em;
             }
 
-            .goodsList {
-              float: left;
-              display: none;
-              width: 100%;
-
-              .good {
-                padding: 0.2em 0;
-                margin: 0.2em 0 0.2em 1.6em;
-
-                .goodTiltle {
-                  color: #555;
-                  cursor: pointer;
-                  &:hover {
-                    color: #3AAD8B;
-                  }
-                }
-
-                div {
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                }
-
-                .moreInfos {
-                  color: #555;
-                  padding: 0.5em 0 0.5em 1.7em;
-                  border-bottom: 1px solid #aaa;
-
-                  em {
-                    font-weight: bold;
-                    font-style: normal;
-                    color: #3AAD8B;
-                  }
-                }
-              }
-            }
-
-            .shopTotal {
-              float: left;
-              font-weight: bold;
-              margin: 0 0 0 1.5em;
+            .goodRemove {
+              float: right;
+              margin: 0 4em 0 0;
+              width: 4em;
             }
           }
+        }
 
-          .selected .goodsList {
-            display: block;
+        .target:nth-child(2n) {
+          background: #F3F3F3
+        }
+
+        @-webkit-keyframes added {
+          0% {
+            background: red;
           }
+          100% {
+            background: green;
+          }
+        }
+        .added {
+          -webkit-animation: added 5s;
         }
       }
 
-      .settlement {
-        margin: 0.5em 0 0 0;
-
-        input[type='button'] {
-          width: 6.5em;
-          height: 2.5em;
-          padding: 0 0.4em;
-        }
-
-        .settleTotal {
-          margin: 0 0 0 1em;
-          font-size: 14px;
-          font-weight: bold;
-
-          span {
-            color: #3AAD8B;
-          }
-        }
+      .batch2MyCart {
+        margin: 0.4em 0 0 0;
       }
     }
 
-    .orderRoot {
-      float: left;
-      width: 100%;
-      font-size: 14px;
-      margin-bottom: 0.2em;
+    .add2TargetsListSection {
+      display: none;
 
-      .section {
+      .selectDetails {
+        width: 95%;
         float: left;
-        width: 100%;
-        margin-bottom: 0.4em;
 
-        .title {
-          float: left;
-          width: 95%;
-          font-size: 15px;
-          font-weight: bold;
-          padding: 0 0 0.2em 0.4em;
-          margin-bottom: 0.2em;
-          border-bottom: 2px solid #31B0D5;
-        }
-
-        input, select {
-          float: left;
-          font-size: 14px;
-          margin-right: 0.4em;
-        }
-
-        input[type='button'] {
-          width: 7em;
-          height: 34px;
-          padding: 0 1em;
-        }
-
-        .state {
-          float: left;
-          position: relative;
-          font-size: 16px;
-          top: 0.5em;
-          width: 1em;
-          height: 1em;
-          border-radius: 0.5em;
-          background: #FF0000;
-        }
-
-        .fulfilled {
-          background: #3AAD8B;
-        }
-
-        .tip {
-          float: left;
-          font-size: 14px;
-          line-height: 170%;
-          font-weight: normal;
-          padding: 0 0.5em 0 0;
-        }
-
-        .checkboxs {
-          float: left;
-          font-size: 18px;
+        .selectDetailsBlocks {
           width: 100%;
-
-          .position {
-            float: left;
-            width: 25%;
-            margin-top: 0.2em;
-          }
-
-          label {
-            float: left;
-            display: block;
-            width: 2.3em;
-            text-align: center;
-          }
-
-          input {
-            float: left;
-            font-size: 26px;
-            width: 1em;
-            height: 1em;
-            margin: 0;
-          }
-        }
-      }
-
-      .addressSection, .fareSection {
-        font-size: 12px;
-
-        .radioWrap {
           float: left;
-          width: 100%;
-          margin: 0 0 0.2em 0;
 
-          input {
-            position: relative;
-            top: -0.1em;
-          }
+          .selectDetailsBlock {
+            width: 100%;
+            float: left;
+            padding: 0 0 0.6em 0;
+            margin: 0 0 0.6em 0;
+            border-bottom: 1px solid #ddd;
 
-          label {
-            width: 90%;
-
-            div {
-              margin-bottom: 0.2em;
-            }
-          }
-        }
-      }
-
-      .shopsfareSection {
-        float: left;
-        width: 100%;
-        overflow: hidden;
-
-        .shopsfareList {
-          float: left;
-          width: 95%;
-
-          .shopfare {
-            padding-bottom: 0.6em;
-
-            .shopName {
-              width: 70%;
-              margin: 0 0 0 1em;
-              border-bottom: 1px solid #aaa;
-              padding: 0 0 0.2em 0;
+            .goodTitle {
+              width: 100%;
+              margin: 0 0 0.2em 0;
+              color: #3AAD8B;
+              font-weight: bold;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
 
-              &:hover {
-                color: #3AAD8B;
+              em {
+                font-style: normal;
+                color: #F0AD4F;
               }
             }
 
-            .goodsBill {
-              padding-left: 0.5em;
-
-              .good {
-                padding: 0.2em 0;
-
-                .goodTiltle {
-                  cursor: pointer;
-                  &:hover {
-                    color: #3AAD8B;
-                  }
-                }
-
-                div {
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                }
-
-                .moreInfos {
-                  color: #555;
-                  padding: 0.5em 0 0.5em 1.7em;
-                  border-bottom: 1px solid #aaa;
-
-                  em {
-                    font-weight: bold;
-                    font-style: normal;
-                    color: #3AAD8B;
-                  }
-                }
-              }
-            }
-
-            .fares {
-              height: 1.4em;
-
-              input {
-                float: left;
-                margin-right: 0.2em;
-              }
-
-              label {
-                float: left;
-                margin-right: 0.4em;
-              }
-            }
-
-            .subtotal {
+            .goodSpecs {
+              float: left;
               width: 100%;
-              height: 1.6em;
-              text-overflow: ellipsis;
-              white-space: nowrap;
+              padding: 0 0 0 5%;
+              margin-bottom: 0.2em;
 
-              .original, .fare, .withFare {
-                display: inline-block;
-                line-height: 200%;
-                width: 35%;
-                height: 100%;
-                padding: 0;
+              .goodSpec {
+                float: left;
+                margin: 0 0.4em 0.1em 0;
+
+                label {
+                  margin: 0;
+                  word-break: break-all;
+                  word-wrap: break-word;
+                }
+              }
+            }
+
+            .goodCount {
+              width: 4em;
+              margin: 0 0.4em 0 1em;
+            }
+
+            .goodLimit {
+              float: left;
+              width: 9.5em;
+              height: 24px;
+              line-height: 170%;
+              margin: 0 0.5em 0 0;
+              color: #aaa;
+            }
+
+            .goodAdd {
+              width: 5em;
+              height: 24px;
+              padding: 0;
+              margin: 0;
+            }
+          }
+        }
+      }
+
+      .addTargetRecords {
+        width: 95%;
+        float: left;
+        height: 15em;
+        border: 2px solid #31B0D5;
+        background: #FFF;
+        overflow: auto;
+
+        .record {
+          width: 100%;
+          float: left;
+          font-weight: bold;
+          padding: 0.2em 0;
+          border-bottom: 1px solid #aaa;
+
+          .recordTitle {
+            float: left;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .recordSpec {
+            float: left;
+            width: 35%;
+            margin: 0 0 0 1em;
+          }
+
+          .recordCount {
+            float: left;
+            width: 35%;
+            margin: 0 0 0 1em;
+          }
+
+          .recordState {
+            float: left;
+            width: 100%;
+            color: #FFF;
+            font-weight: bold;
+            margin: 0.2em 0 0 0;
+
+            .recordMessage, .recordAddRest {
+              float: left;
+              width: 100%;
+              padding: 0 0 0 0.5em;
+            }
+          }
+
+          .recordState200 {
+            background: #3AAD8B;
+          }
+
+          .recordState400 {
+            background: #F0AD4F;
+          }
+
+          .recordState500 {
+            background: #FF0000;
+          }
+        }
+
+        .record200 {
+          color: #3AAD8B;
+        }
+
+        .record400 {
+          color: #F0AD4F;
+        }
+
+        .record500 {
+          color: #FF0000;
+        }
+      }
+
+      .clearAllAddTargetRecords {
+        margin: 0.5em 0 0 0;
+      }
+    }
+  }
+
+  .baseRoot {
+    float: left;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 0.5em;
+
+    .tip {
+      float: left;
+      width: 100%;
+      color: #aaa;
+      line-height: 150%;
+      font-weight: normal;
+      padding: 0 0.5em 0.2em 0;
+    }
+
+    .section {
+      float: left;
+      width: 100%;
+      margin-bottom: 0.2em;
+
+      .title {
+        float: left;
+        width: 25%;
+        font-weight: bold;
+        line-height: 175%;
+      }
+
+      .specs {
+        float: left;
+        width: 75%;
+        margin-bottom: 0.2em;
+
+        .spec {
+          float: left;
+          margin-right: 0.4em;
+
+          input {
+            position: relative;
+            top: 0.1em;
+            margin-right: 0.4em;
+          }
+
+          label {
+            margin: 0;
+            word-break: break-all;
+            word-wrap: break-word;
+          }
+        }
+      }
+    }
+
+    .purchaseSection, .add2MyCartSection, .showMyCartSection {
+      width: auto;
+      margin: 0 1em 0 0;
+      padding: 0.5em 0 0 0;
+
+      input[type='button'] {
+        width: 6.5em;
+        height: 2.5em;
+        padding: 0 0.4em;
+      }
+    }
+
+    .showMyCartSection {
+      margin: 0;
+    }
+
+    .notes {
+      font-size: 13px;
+      width: 95%;
+      overflow: hidden;
+
+      .title {
+        float: left;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.2em;
+        border-bottom: 2px solid #31B0D5;
+      }
+
+      .note {
+        float: left;
+        width: 100%;
+        margin-bottom: 0.2em;
+
+        .sequence {
+          font-weight: bold;
+        }
+
+        .success {
+          color: #3AAD8B;
+          padding: 0 0 0 0.5em;
+        }
+
+        .failed {
+          color: #FF0000;
+          padding: 0 0 0 0.5em;
+        }
+      }
+    }
+  }
+
+  .cartRoot {
+    float: left;
+    width: 100%;
+    margin-bottom: 0.5em;
+
+    .shops {
+      font-size: 13px;
+      width: 95%;
+      overflow: hidden;
+
+      .title {
+        float: left;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.2em;
+        border-bottom: 2px solid #31B0D5;
+      }
+
+      .emptycart {
+        float: left;
+        width: 100%;
+        text-align: center;
+        font-size: 16px;
+        color: #FF0000;
+      }
+
+      .shopsList {
+        float: left;
+        width: 100%;
+        overflow: hidden;
+
+        .shop {
+          float: left;
+          width: 100%;
+
+          input {
+            position: relative;
+            top: 0.15em
+          }
+
+          label {
+            width: 90%;
+            margin-left: 0.5em;
+          }
+
+          .goodsList {
+            float: left;
+            display: none;
+            width: 100%;
+
+            .good {
+              padding: 0.2em 0;
+              margin: 0.2em 0 0.2em 1.6em;
+
+              .goodTiltle {
+                color: #555;
+                cursor: pointer;
+                &:hover {
+                  color: #3AAD8B;
+                }
+              }
+
+              div {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
+
+              .moreInfos {
+                color: #555;
+                padding: 0.5em 0 0.5em 1.7em;
+                border-bottom: 1px solid #aaa;
 
                 em {
                   font-weight: bold;
@@ -459,482 +597,349 @@
                   color: #3AAD8B;
                 }
               }
-
-              .fare {
-                width: 30%;
-              }
-            }
-          }
-        }
-      }
-
-      .detailSection {
-        font-size: 14px;
-
-        .details {
-          float: left;
-          width: 95%;
-
-          div {
-            margin: 0.2em 0 0 0;
-          }
-
-          .content {
-            color: #3AAD8B;
-            font-weight: bold;
-          }
-
-          .original, .fare, .withFare {
-            display: inline-block;
-            line-height: 200%;
-            width: 35%;
-            height: 100%;
-            padding: 0;
-
-            em {
-              font-weight: bold;
-              font-style: normal;
-              color: #3AAD8B;
             }
           }
 
-          .fare {
-            width: 30%;
-          }
-        }
-      }
-
-      .recordsSection {
-        font-size: 13px;
-        width: 95%;
-        overflow: hidden;
-
-        .title {
-          width: 100%;
-        }
-
-        .record {
-          float: left;
-          width: 49%;
-          background: #eee;
-          padding: 0 0 2% 0;
-          margin: 0 2% 2% 0;
-
-          .sequence {
+          .shopTotal {
+            float: left;
             font-weight: bold;
-            margin: 0 0 0.3em 0;
-          }
-
-          .success {
-            color: #3AAD8B;
-            padding: 0 0 0 1em;
-          }
-
-          .failed {
-            color: #FF0000;
-            padding: 0 0 0 1em;
+            margin: 0 0 0 1.5em;
           }
         }
 
-        .record:nth-child(2n+1) {
-          margin-right: 0;
+        .selected .goodsList {
+          display: block;
         }
       }
+    }
 
-      .orderInfoSection, .errorInfoSection {
+    .settlement {
+      margin: 0.5em 0 0 0;
+
+      input[type='button'] {
+        width: 6.5em;
+        height: 2.5em;
+        padding: 0 0.4em;
+      }
+
+      .settleTotal {
+        margin: 0 0 0 1em;
         font-size: 14px;
-        margin-bottom: 0;
+        font-weight: bold;
 
-        .info {
-          float: left;
-          width: 95%;
-          padding: 0;
-
-          .infotitle {
-            width: 100%;
-            font-size: 16px;
-          }
-
-          .orederNumber, .total {
-            width: 100%;
-            color: #3AAD8B;
-            font-weight: bold;
-            margin: 0.3em 0 0 0;
-            padding: 0 0 0 0.5em;
-          }
-
-          .err {
-            color: #FF0000;
-          }
+        span {
+          color: #3AAD8B;
         }
       }
     }
   }
-}
 
-#_rush_panel_ {
-  position: absolute;
-  display: block;
-  top: 1.5em;
-  left: 18em;
-  background: #31B0D5;
-  border: 2px solid #31B0D5;
-  font-size: 20px;
-  font-weight: bold;
-  font-family: "microsoft yahei";
-  z-index: 2147483647;
-
-  label {
-    cursor: pointer;
-    font-weight: bold;
-    margin-bottom: 0;
-  }
-
-  .selected {
-    color: #3AAD8B
-  }
-
-  #_rush_trigger_ {
-    width: 100%;
-    cursor: move;
-    padding: 0.3em 0;
-    color: #FFF;
-    font-size: 0.8em;
-    line-height: 120%;
-    text-align: center;
-  }
-
-  #_rush_container_ {
-    position: relative;
+  .baseSettleRoot, .cartSettleRoot {
     float: left;
-    background: #F8F8F8;
-    font-weight: normal;
-    width: 16em;
-    padding: 0.5em 0 0 0.5em;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 0.2em;
 
-    .presetRoot {
+    .section {
       float: left;
       width: 100%;
-      font-size: 14px;
-      margin-bottom: 0.2em;
+      margin-bottom: 0.4em;
 
-      .section {
+      .title {
         float: left;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.2em;
+        border-bottom: 2px solid #31B0D5;
+      }
+
+      input, select {
+        float: left;
+        font-size: 14px;
+        margin-right: 0.4em;
+      }
+
+      input[type='button'] {
+        width: 7em;
+        height: 34px;
+        padding: 0 1em;
+      }
+
+      .state {
+        float: left;
+        position: relative;
+        font-size: 16px;
+        top: 0.5em;
+        width: 1em;
+        height: 1em;
+        border-radius: 0.5em;
+        background: #FF0000;
+      }
+
+      .fulfilled {
+        background: #3AAD8B;
+      }
+
+      .tip {
+        float: left;
+        font-size: 14px;
+        line-height: 170%;
+        font-weight: normal;
+        padding: 0 0.5em 0 0;
+      }
+
+      .checkboxs {
+        float: left;
+        font-size: 18px;
         width: 100%;
-        margin-bottom: 0.4em;
 
-        .title {
+        .position {
           float: left;
-          width: 95%;
-          font-size: 15px;
-          font-weight: bold;
-          padding: 0 0 0.2em 0.4em;
-          margin-bottom: 0.4em;
-          border-bottom: 2px solid #31B0D5;
+          width: 25%;
+          margin-top: 0.2em;
         }
 
-        input, select {
+        label {
           float: left;
-          font-size: 14px;
-          margin-right: 0.4em;
+          display: block;
+          width: 2.3em;
+          text-align: center;
         }
 
-        input[type='button'] {
-          width: 7em;
-          height: 34px;
-          padding: 0 1em;
-        }
-
-        .state {
+        input {
           float: left;
-          position: relative;
-          font-size: 16px;
-          top: 0.5em;
+          font-size: 26px;
           width: 1em;
           height: 1em;
-          border-radius: 0.5em;
-          background: #FF0000;
-        }
-
-        .fulfilled {
-          background: #3AAD8B;
-        }
-
-        .pending {
-          background: #F0AD4F;
+          margin: 0;
         }
       }
+    }
 
-      .targetsListSection {
-        width: 100%;
+    .addressSection, .fareSection {
+      font-size: 12px;
+
+      .radioWrap {
         float: left;
+        width: 100%;
+        margin: 0 0 0.2em 0;
 
-        .targetsList {
-          width: 95%;
-          float: left;
-          font-size: 13px;
-          height: 15em;
-          border: 2px solid #31B0D5;
-          background: #FFF;
-          overflow: auto;
-
-          .target {
-            width: 100%;
-            float: left;
-            font-weight: bold;
-            border-bottom: 1px solid #ddd;
-            padding: 0.2em 0;
-
-            .goodTitle {
-              width: 100%;
-              float: left;
-              margin: 0 0 0.2em 0;
-              padding: 0 0 0 1em;
-              color: #3AAD8B;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-
-            .goodName, .goodCount {
-              float: left;
-              padding: 0 0 0 1em;
-              color: #555;
-            }
-
-            .goodEditAreaTrigger {
-              float: right;
-              position: relative;
-              top: 0.3em;
-              right: 0.5em;
-              width: 0;
-              height: 0;
-              cursor: pointer;
-              border-left: 0.7em solid transparent;
-              border-right: 0.7em solid transparent;
-              border-top: 0.7em solid #F0AD4F;
-            }
-
-            .goodEditAreaTriggerOpen {
-              border-top: 0;
-              border-bottom: 0.7em solid #F0AD4F;
-            }
-
-            .goodEditArea {
-              display: none;
-              float: left;
-              width: 100%;
-              padding: 0.4em 1em 0.2em 1em;
-              border-top: 1px solid #ddd;
-
-              .goodNumber, .goodModify, .goodRemove {
-                width: 3.5em;
-                height: 20px;
-                padding: 0 0.2em;
-                font-size: 12px;
-              }
-
-              .goodModify {
-                width: 6em;
-              }
-
-              .goodRemove {
-                float: right;
-                margin: 0 4em 0 0;
-                width: 4em;
-              }
-            }
-          }
-
-          .target:nth-child(2n) {
-            background: #F3F3F3
-          }
-
-          @-webkit-keyframes added {
-            0% {
-              background: red;
-            }
-            100% {
-              background: green;
-            }
-          }
-          .added {
-            -webkit-animation: added 5s;
-          }
+        input {
+          position: relative;
+          top: -0.1em;
         }
 
-        .batch2MyCart {
-          margin: 0.4em 0 0 0;
+        label {
+          width: 90%;
+
+          div {
+            margin-bottom: 0.2em;
+          }
         }
       }
+    }
 
-      .add2TargetsListSection {
-        display: none;
+    .shopsfareSection {
+      float: left;
+      width: 100%;
+      overflow: hidden;
 
-        .selectDetails {
-          width: 95%;
-          float: left;
+      .shopsfareList {
+        float: left;
+        width: 95%;
 
-          .selectDetailsBlocks {
-            width: 100%;
-            float: left;
+        .shopfare {
+          padding-bottom: 0.6em;
 
-            .selectDetailsBlock {
-              width: 100%;
-              float: left;
-              padding: 0 0 0.6em 0;
-              margin: 0 0 0.6em 0;
-              border-bottom: 1px solid #ddd;
+          .shopName {
+            width: 70%;
+            margin: 0 0 0 1em;
+            border-bottom: 1px solid #aaa;
+            padding: 0 0 0.2em 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
 
-              .goodTitle {
-                width: 100%;
-                margin: 0 0 0.2em 0;
-                color: #3AAD8B;
-                font-weight: bold;
+            &:hover {
+              color: #3AAD8B;
+            }
+          }
+
+          .goodsBill {
+            padding-left: 0.5em;
+
+            .good {
+              padding: 0.2em 0;
+
+              .goodTiltle {
+                cursor: pointer;
+                &:hover {
+                  color: #3AAD8B;
+                }
+              }
+
+              div {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+              }
+
+              .moreInfos {
+                color: #555;
+                padding: 0.5em 0 0.5em 1.7em;
+                border-bottom: 1px solid #aaa;
 
                 em {
+                  font-weight: bold;
                   font-style: normal;
-                  color: #F0AD4F;
+                  color: #3AAD8B;
                 }
               }
+            }
+          }
 
-              .goodSpecs {
-                float: left;
-                width: 100%;
-                padding: 0 0 0 5%;
-                margin-bottom: 0.2em;
+          .fares {
+            height: 1.4em;
 
-                .goodSpec {
-                  float: left;
-                  margin: 0 0.4em 0.1em 0;
+            input {
+              float: left;
+              margin-right: 0.2em;
+            }
 
-                  label {
-                    margin: 0;
-                    word-break: break-all;
-                    word-wrap: break-word;
-                  }
-                }
+            label {
+              float: left;
+              margin-right: 0.4em;
+            }
+          }
+
+          .subtotal {
+            width: 100%;
+            height: 1.6em;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            .original, .fare, .withFare {
+              display: inline-block;
+              line-height: 200%;
+              width: 35%;
+              height: 100%;
+              padding: 0;
+
+              em {
+                font-weight: bold;
+                font-style: normal;
+                color: #3AAD8B;
               }
+            }
 
-              .goodCount {
-                width: 4em;
-                margin: 0 0.4em 0 1em;
-              }
-
-              .goodLimit {
-                float: left;
-                width: 9.5em;
-                height: 24px;
-                line-height: 170%;
-                margin: 0 0.5em 0 0;
-                color: #aaa;
-              }
-
-              .goodAdd {
-                width: 5em;
-                height: 24px;
-                padding: 0;
-                margin: 0;
-              }
+            .fare {
+              width: 30%;
             }
           }
         }
+      }
+    }
 
-        .addTargetRecords {
-          width: 95%;
-          float: left;
-          height: 15em;
-          border: 2px solid #31B0D5;
-          background: #FFF;
-          overflow: auto;
+    .detailSection {
+      font-size: 14px;
 
-          .record {
-            width: 100%;
-            float: left;
+      .details {
+        float: left;
+        width: 95%;
+
+        div {
+          margin: 0.2em 0 0 0;
+        }
+
+        .content {
+          color: #3AAD8B;
+          font-weight: bold;
+        }
+
+        .original, .fare, .withFare {
+          display: inline-block;
+          line-height: 200%;
+          width: 35%;
+          height: 100%;
+          padding: 0;
+
+          em {
             font-weight: bold;
-            padding: 0.2em 0;
-            border-bottom: 1px solid #aaa;
-
-            .recordTitle {
-              float: left;
-              width: 100%;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-
-            .recordSpec {
-              float: left;
-              width: 35%;
-              margin: 0 0 0 1em;
-            }
-
-            .recordCount {
-              float: left;
-              width: 35%;
-              margin: 0 0 0 1em;
-            }
-
-            .recordState {
-              float: left;
-              width: 100%;
-              color: #FFF;
-              font-weight: bold;
-              margin: 0.2em 0 0 0;
-
-              .recordMessage, .recordAddRest {
-                float: left;
-                width: 100%;
-                padding: 0 0 0 0.5em;
-              }
-            }
-
-            .recordState200 {
-              background: #3AAD8B;
-            }
-
-            .recordState400 {
-              background: #F0AD4F;
-            }
-
-            .recordState500 {
-              background: #FF0000;
-            }
-          }
-
-          .record200 {
+            font-style: normal;
             color: #3AAD8B;
           }
-
-          .record400 {
-            color: #F0AD4F;
-          }
-
-          .record500 {
-            color: #FF0000;
-          }
         }
 
-        .clearAllAddTargetRecords {
-          margin: 0.5em 0 0 0;
+        .fare {
+          width: 30%;
+        }
+      }
+    }
+
+    .recordsSection {
+      font-size: 13px;
+      width: 95%;
+      overflow: hidden;
+
+      .title {
+        width: 100%;
+      }
+
+      .record {
+        float: left;
+        width: 49%;
+        background: #eee;
+        padding: 0 0 2% 0;
+        margin: 0 2% 2% 0;
+
+        .sequence {
+          font-weight: bold;
+          margin: 0 0 0.3em 0;
+        }
+
+        .success {
+          color: #3AAD8B;
+          padding: 0 0 0 1em;
+        }
+
+        .failed {
+          color: #FF0000;
+          padding: 0 0 0 1em;
         }
       }
 
-      .scrollBar::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
-        background-color: #F5F5F5;
+      .record:nth-child(2n+1) {
+        margin-right: 0;
       }
+    }
 
-      .scrollBar::-webkit-scrollbar {
-        width: 6px;
-        background-color: #F5F5F5;
-      }
+    .orderInfoSection, .errorInfoSection {
+      font-size: 14px;
+      margin-bottom: 0;
 
-      .scrollBar::-webkit-scrollbar-thumb {
-        background-color: #31B0D5;
+      .info {
+        float: left;
+        width: 95%;
+        padding: 0;
+
+        .infotitle {
+          width: 100%;
+          font-size: 16px;
+        }
+
+        .orederNumber, .total {
+          width: 100%;
+          color: #3AAD8B;
+          font-weight: bold;
+          margin: 0.3em 0 0 0;
+          padding: 0 0 0 0.5em;
+        }
+
+        .err {
+          color: #FF0000;
+        }
       }
     }
   }

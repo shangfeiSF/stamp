@@ -1,9 +1,7 @@
 function Cart(fairy) {
   this.nodes = {
-    /* render add */
     root: null,
 
-    notes: null,
     shops: null,
     settle: null,
     total: null
@@ -17,59 +15,24 @@ function Cart(fairy) {
 }
 
 Stamp.$.extend(Cart.prototype, {
-  gerRoot: function () {
+  getRoot: function () {
     var self = this
 
-    if (!self.nodes.root) {
-      self.nodes.root = Stamp.$('<div class="cartRoot">')
-      self.fairy.panel.nodes.root.after(self.nodes.root)
+    var root = self.nodes.root
+    if (!root) {
+      root = Stamp.$('<div class="cartRoot">')
+      self.nodes.root = root
+
+      self.fairy.panel.nodes.tabBlocks[self.fairy.layout.cartBlock.anchor].append(root)
     }
 
-    return self.nodes.root
-  },
-
-  addRecordsRender: function (msg) {
-    var self = this
-
-    var cache = self.fairy.cache
-    var details = self.fairy.details
-
-    var nodes = self.nodes
-    var root = self.gerRoot()
-
-    var notes = nodes.notes ? nodes.notes : Stamp.$('<div class="notes">')
-
-    var index = notes.children('.note').length + 1
-    var note = Stamp.$('<div>', {
-      id: ['_note_', index].join('')
-    }).addClass('note').append(Stamp.$('<span class="sequence"></span>').text(index + '. '))
-
-    var matches = msg.match(/^\[(.*)\]$/)
-    matches && matches.length == 2 && (matches = matches.pop())
-
-    var params = matches.split(',')
-    var klass = params[0] === "'true'" ? 'success' : 'failed'
-    var content = params[0] === "'true'" ?
-      [details.goodsAttrList[cache.specIndex].attrName, '（', self.fairy.panel.nodes.count.val(), '）'].join('') :
-      String(params[1]).slice(1, -1)
-
-    note.append(Stamp.$('<span>').addClass(klass).text(content))
-
-    notes.append(note)
-
-    if (!nodes.notes) {
-      notes.prepend(Stamp.$('<div class="title">加入购物车记录</div>'))
-
-      self.nodes.notes = notes
-
-      root.prepend(notes)
-    }
+    return root
   },
 
   render: function () {
     var self = this
 
-    self.parseShops()
+    self._parseShops()
 
     self.goodsInCartRender()
     self.settleRender()
@@ -78,7 +41,7 @@ Stamp.$.extend(Cart.prototype, {
     self.settleBind()
   },
 
-  parseShops: function () {
+  _parseShops: function () {
     var self = this
 
     var cache = self.fairy.cache
@@ -142,7 +105,7 @@ Stamp.$.extend(Cart.prototype, {
     var cache = self.fairy.cache
 
     var nodes = self.nodes
-    var root = self.gerRoot()
+    var root = self.getRoot()
 
     var shops = nodes.shops ? nodes.shops : Stamp.$('<div class="shops">')
 
@@ -233,7 +196,7 @@ Stamp.$.extend(Cart.prototype, {
     var self = this
 
     var nodes = self.nodes
-    var root = self.gerRoot()
+    var root = self.getRoot()
 
     if (!nodes.settle) {
       var total = Stamp.$('<span class="settleTotal">').text('总计：')
@@ -284,9 +247,6 @@ Stamp.$.extend(Cart.prototype, {
     var nodes = self.nodes
 
     nodes.settle.on('click', function () {
-      nodes.settle.off()
-      nodes.root.hide()
-
       var shoppingcartIds = []
 
       Stamp.$.each(nodes.shops.find('.shop.selected'), function (i, node) {
@@ -314,11 +274,10 @@ Stamp.$.extend(Cart.prototype, {
             cache.html4settle = html
 
             if (html.search('date_form') > -1 && html.search('gwc gwc2') > -1) {
-              nodes.settle.off()
 
               var needVerify = cache.html4settle.search('手机确认') > -1 ? true : false
-
-              self.fairy.settle.init(needVerify)
+              
+              self.fairy.cartSettle.init(needVerify)
             }
           },
           error: function () {
@@ -350,7 +309,7 @@ Stamp.$.extend(Cart.prototype, {
     })
 
     return _origScriptSessionId
-  }
+  },
 })
 
 module.exports = Cart

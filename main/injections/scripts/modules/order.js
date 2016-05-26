@@ -69,7 +69,7 @@ Stamp.$.extend(Order.prototype, {
   render: function (state, needVerify) {
     var self = this
 
-    self.entry = state === null ? 'settle' : 'loader'
+    self.entry = state === null ? 'cartSettle' : 'baseSettle'
 
     self.tipsRender(state)
     if (needVerify) {
@@ -405,9 +405,6 @@ Stamp.$.extend(Order.prototype, {
 
     var nodes = self.nodes
 
-    var root = Stamp.$('<div class="orderRoot"></div>')
-    nodes.root = root
-
     var sections = [
       'goodsSection',
       'sendSection',
@@ -451,11 +448,22 @@ Stamp.$.extend(Order.prototype, {
     sections[5].append(nodes.book)
     nodes.book.after(nodes.bookState)
 
+    var rootKlass = self.entry === 'cartSettle' ? 'cartSettleRoot' : 'baseSettleRoot'
+
+    var root = Stamp.$('<div>', {
+      class: rootKlass
+    })
     Stamp.$.each(sections, function (index, section) {
       root.append(section)
     })
 
-    self.fairy.panel.nodes.container.append(root)
+    nodes.root = root
+
+    if (self.entry === 'cartSettle') {
+      self.fairy.panel.nodes.tabBlocks[self.fairy.layout.cartSettleBlock.anchor].append(root)
+    } else {
+      self.fairy.panel.nodes.tabBlocks[self.fairy.layout.baseSettleBlock.anchor].append(root)
+    }
   }
 })
 

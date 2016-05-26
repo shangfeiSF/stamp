@@ -1,12 +1,7 @@
 var Dig = require('dig')
 var Storage = require('storage')
 
-var Order = require('order')
-var Cart = require('cart')
-
-var Settle = require('settle')
-
-function Rush() {
+function Rush(fairy) {
   this.mobiles = [
     '17600808607',
     '18600808607',
@@ -70,13 +65,11 @@ function Rush() {
   })
 
   this.nodes = {
-    panel: null,
-    trigger: null,
-    container: null,
-
     root: null,
     sections: []
   }
+
+  this.fairy = fairy
 
   this.boot()
 }
@@ -136,26 +129,6 @@ Stamp.$.extend(Rush.prototype, {
 
   init: function () {
     var self = this
-
-    var panelId = '_rush_panel_'
-    var triggerId = '_rush_trigger_'
-
-    var panel = Stamp.$('<div></div>').attr('id', panelId)
-    var trigger = Stamp.$('<div></div>').attr('id', triggerId).text('批量秒杀')
-    var container = Stamp.$('<div></div>').attr('id', '_rush_container_')
-
-    self.nodes.panel = panel
-    self.nodes.trigger = trigger
-    self.nodes.container = container
-
-    panel.append(trigger)
-    panel.append(container)
-    Stamp.$('body').append(panel)
-
-    new Draggable(panelId, {
-      handle: triggerId
-    })
-
     self.render()
   },
 
@@ -842,9 +815,6 @@ Stamp.$.extend(Rush.prototype, {
 
     var nodes = self.nodes
 
-    var root = Stamp.$('<div class="presetRoot"></div>')
-    nodes.root = root
-
     var sections = [
       'sendSection',
       'storeCodeSection',
@@ -884,11 +854,13 @@ Stamp.$.extend(Rush.prototype, {
     sections[4].append(nodes.addTargetRecords)
     sections[4].append(nodes.clearAllAddTargetRecords)
 
+    var root = Stamp.$('<div class="rushRoot"></div>')
     Stamp.$.each(sections, function (index, section) {
       root.append(section)
     })
 
-    self.nodes.container.append(root)
+    nodes.root = root
+    self.fairy.panel.nodes.tabBlocks[self.fairy.layout.rushBlock.anchor].append(root)
   }
 })
 
