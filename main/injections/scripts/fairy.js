@@ -9,8 +9,6 @@ var BaseSettle = require('baseSettle')
 var Cart = require('cart')
 var CartSettle = require('cartSettle')
 
-var Order = require('order')
-
 var fairy = {
   layout: {
     rushBlock: {
@@ -20,19 +18,24 @@ var fairy = {
     },
     baseBlock: {
       triggerText: '常规购买',
-      anchor: 'base'
+      anchor: 'base',
+      default: false
     },
     baseSettleBlock: {
       triggerText: '常规订单',
-      anchor: 'baseSettle'
+      anchor: 'baseSettle',
+      default: false
     },
     cartBlock: {
       triggerText: '购物车',
-      anchor: 'cart'
+      anchor: 'cart',
+      default: false
     },
     cartSettleBlock: {
       triggerText: '购物车订单',
-      anchor: 'cartSettle'
+      anchor: 'cartSettle',
+      default: false
+
     }
   },
 
@@ -86,5 +89,3 @@ fairy.baseSettle = new BaseSettle(fairy)
 
 fairy.cart = new Cart(fairy)
 fairy.cartSettle = new CartSettle(fairy)
-
-fairy.order = new Order(fairy)

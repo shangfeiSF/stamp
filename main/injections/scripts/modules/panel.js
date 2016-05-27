@@ -19,9 +19,7 @@ function Panel(fairy) {
   this.tabConfig = {
     tabBlock: 'tabBlock',
     tabBlockTrigger: 'tabBlockTrigger',
-
     selectedTabBlockTrigger: 'selectedTabBlockTrigger',
-
     tabBlocks: {},
     tabBlockTriggers: {},
   }
@@ -29,6 +27,7 @@ function Panel(fairy) {
   this.fairy = fairy
 
   this.boot()
+  
   this.init()
 }
 

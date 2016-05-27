@@ -193,8 +193,11 @@ Stamp.$.extend(Base.prototype, {
     var count = nodes.count
 
     purchase.on('click', function () {
-      self.fairy.panel.nodes.tabBlocks[self.fairy.layout.baseSettleBlock.anchor].empty()
-      self.fairy.panel.nodes.tabBlockTriggers[self.fairy.layout.baseSettleBlock.anchor].trigger('click')
+      var panelNodes = self.fairy.panel.nodes
+      var anchor = self.fairy.layout.baseSettleBlock.anchor
+
+      panelNodes.tabBlocks[anchor].empty()
+      panelNodes.tabBlockTriggers[anchor].trigger('click')
 
       var params = {
         'buyGoodsNowBean.goods_id': self.fairy.cache.goodsId,

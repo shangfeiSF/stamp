@@ -247,6 +247,12 @@ Stamp.$.extend(Cart.prototype, {
     var nodes = self.nodes
 
     nodes.settle.on('click', function () {
+      var panelNodes = self.fairy.panel.nodes
+      var anchor = self.fairy.layout.cartSettleBlock.anchor
+
+      panelNodes.tabBlocks[anchor].empty()
+      panelNodes.tabBlockTriggers[anchor].trigger('click')
+
       var shoppingcartIds = []
 
       Stamp.$.each(nodes.shops.find('.shop.selected'), function (i, node) {
@@ -276,7 +282,7 @@ Stamp.$.extend(Cart.prototype, {
             if (html.search('date_form') > -1 && html.search('gwc gwc2') > -1) {
 
               var needVerify = cache.html4settle.search('手机确认') > -1 ? true : false
-              
+
               self.fairy.cartSettle.init(needVerify)
             }
           },

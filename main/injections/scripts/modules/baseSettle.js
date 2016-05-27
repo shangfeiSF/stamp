@@ -1,5 +1,9 @@
+var Order = require('order')
+
 function baseSettle(fairy) {
   this.fairy = fairy
+
+  this.order = null
 
   this.postConfig = {
     common: {
@@ -126,7 +130,8 @@ Stamp.$.extend(baseSettle.prototype, {
       })
       .asCallback(function (error, data) {
         if (data.textStatus === 'success') {
-          self.fairy.order.render(data.result, needVerify)
+          self.order = new Order(self.fairy)
+          self.order.render(data.result, needVerify)
         }
       })
       .then(function () {
@@ -138,7 +143,7 @@ Stamp.$.extend(baseSettle.prototype, {
     var self = this
     var cache = self.fairy.cache
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     Stamp.probe.execute('getSid', {}, function (message) {
       cache.sid = message.data.sid
@@ -214,7 +219,7 @@ Stamp.$.extend(baseSettle.prototype, {
 
     var cache = self.fairy.cache
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     var params = {
       buyer_user_id: cache.userId
@@ -313,7 +318,7 @@ Stamp.$.extend(baseSettle.prototype, {
 
     var cache = self.fairy.cache
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     if (!cache.canGetFare) return null
 
@@ -442,7 +447,7 @@ Stamp.$.extend(baseSettle.prototype, {
 
     var cache = self.fairy.cache
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     var original = Number(cache.goodPrice)
     var fare = Number(fareFee)
@@ -581,7 +586,7 @@ Stamp.$.extend(baseSettle.prototype, {
   success: function (wrap, callback) {
     var self = this
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     callback && callback()
     var wrap = Stamp.$(wrap.pop())
@@ -613,7 +618,7 @@ Stamp.$.extend(baseSettle.prototype, {
   failed: function (wrap) {
     var self = this
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     var wrap = Stamp.$(wrap.pop())
 

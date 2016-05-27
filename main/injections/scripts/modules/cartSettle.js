@@ -1,5 +1,9 @@
+var Order = require('order')
+
 function cartSettle(fairy) {
   this.fairy = fairy
+
+  this.order = null
 
   this.postConfig = {
     common: {
@@ -97,7 +101,8 @@ Stamp.$.extend(cartSettle.prototype, {
           cache.userType = data.result.userType
           cache.userId = data.result.userId
 
-          self.fairy.order.render(null, needVerify)
+          self.order = new Order(self.fairy)
+          self.order.render(null, needVerify)
         }
       })
       .then(function () {
@@ -109,11 +114,10 @@ Stamp.$.extend(cartSettle.prototype, {
     var self = this
     var cache = self.fairy.cache
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     Stamp.probe.execute('getSid', {}, function (message) {
       cache.sid = message.data.sid
-
 
       var image = Stamp.$('<img>', {
           src: message.data.image
@@ -203,7 +207,7 @@ Stamp.$.extend(cartSettle.prototype, {
 
     var cache = self.fairy.cache
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     var params = {
       buyer_user_id: cache.userId
@@ -302,7 +306,7 @@ Stamp.$.extend(cartSettle.prototype, {
 
     var cache = self.fairy.cache
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     var selected = Stamp.$.grep(cache.address, function (address) {
       return address.id === Number(cache.addressId)
@@ -521,7 +525,7 @@ Stamp.$.extend(cartSettle.prototype, {
   _calculate: function (shop, subtotal, fareFee) {
     var self = this
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     var original = shop.goods.reduce(function (pre, next) {
       return pre + Number(next.price) * Number(next.count)
@@ -684,7 +688,7 @@ Stamp.$.extend(cartSettle.prototype, {
   success: function (wrap, callback) {
     var self = this
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     callback && callback()
     var wrap = Stamp.$(wrap.pop())
@@ -716,7 +720,7 @@ Stamp.$.extend(cartSettle.prototype, {
   failed: function (wrap) {
     var self = this
 
-    var nodes = self.fairy.order.nodes
+    var nodes = self.order.nodes
 
     var wrap = Stamp.$(wrap.pop())
 
