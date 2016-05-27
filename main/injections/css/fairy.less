@@ -573,12 +573,17 @@
           }
 
           label {
-            width: 90%;
+            width: 50%;
             margin-left: 0.5em;
+
+            div {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
           }
 
           .goodsList {
-            float: left;
             display: none;
             width: 100%;
 
@@ -615,7 +620,6 @@
           }
 
           .shopTotal {
-            float: left;
             font-weight: bold;
             margin: 0 0 0 1.5em;
           }
@@ -634,10 +638,10 @@
         width: 6.5em;
         height: 2.5em;
         padding: 0 0.4em;
+        margin: 0 1em 0 0;
       }
 
       .settleTotal {
-        margin: 0 0 0 1em;
         font-size: 14px;
         font-weight: bold;
 

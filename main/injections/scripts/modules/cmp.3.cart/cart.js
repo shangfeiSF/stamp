@@ -13,6 +13,8 @@ function Cart(fairy) {
     settle: null,
     total: null
   }
+
+  this._triggerListener()
 }
 
 Stamp.$.extend(
@@ -31,13 +33,20 @@ Stamp.$.extend(
       nodes.shops.append(Stamp.$('<div class="shopsList"></div>'))
 
       nodes.settlement = Stamp.$('<div class="settlement">')
+      nodes.refresh = Stamp.$('<input>', {
+        type: 'button',
+        value: '刷新'
+      }).addClass('btn btn-info')
       nodes.settle = Stamp.$('<input>', {
         type: 'button',
-        value: '结算购物车'
+        value: '结算'
       }).addClass('btn btn-success')
-      nodes.total = Stamp.$('<span class="settleTotal">').text('总计：')
+      nodes.total = Stamp.$('<span class="settleTotal">')
 
-      nodes.settlement.append(nodes.settle).append(nodes.total)
+      nodes.settlement
+        .append(nodes.refresh)
+        .append(nodes.settle)
+        .append(nodes.total)
 
       root.append(nodes.shops)
       root.append(nodes.settlement)
@@ -54,7 +63,10 @@ Stamp.$.extend(
         return Stamp.$(dom).hasClass('gwc')
       })
 
-      if (!main.length) return null
+      if (!main.length) {
+        cache.shops = []
+        return false
+      }
 
       var shops = []
       main = Stamp.$(main.pop())
@@ -101,24 +113,64 @@ Stamp.$.extend(
       })
 
       cache.shops = shops
+      return true
+    },
+
+    _getShowPage: function () {
+      var self = this
+
+      var cache = self.fairy.cache
+
+      Stamp.$.ajax({
+        tupe: 'GET',
+        url: 'http://jiyou.biz.11185.cn/u/show.html?message=',
+        success: function (html) {
+          cache.html4cart = html
+          self.fairy.cart.init(true)
+        },
+        error: function () {
+          cache.html4cart = ''
+          self.fairy.cart.init(false)
+        },
+        dataType: 'html'
+      })
+    },
+
+    _triggerListener: function () {
+      var self = this
+
+      var anchor = self.fairy.layout.cartBlock.anchor
+      var tabBlockTriggers = self.fairy.panel.nodes.tabBlockTriggers
+
+      tabBlockTriggers[anchor].on('click', function () {
+        self.booted && self.nodes.root.hide()
+        self._getShowPage()
+      })
     }
   },
   {
-    init: function () {
+    init: function (state) {
       var self = this
 
       var current = self.booted ? true : false
-
       !current && self.boot()
 
-      self._parseShops()
-
-      self.goodsInCart_render()
-      self.settle_render()
+      if (state) {
+        if (self._parseShops()) {
+          self.goodsInCart_render()
+          self.settle_render()
+          self.nodes.root.show('slow')
+        } else {
+          alert('解析购物车失败！')
+        }
+      } else {
+        alert('同步购物车失败！')
+      }
 
       if (!current) {
         self.goodsInCart_bind()
         self.settle_bind()
+        self.refresh_bind()
         self.append()
       }
     },
@@ -224,7 +276,7 @@ Stamp.$.extend(
         totalPrice += +Stamp.$(span).text() * 100
       })
 
-      total.append(Stamp.$('<span>').text(parseFloat(totalPrice / 100).toFixed(2)))
+      total.text('总计：').append(Stamp.$('<span>').text(parseFloat(totalPrice / 100).toFixed(2)))
     }
   },
   {
@@ -296,6 +348,16 @@ Stamp.$.extend(
             dataType: 'html'
           })
         }, mock)
+      })
+    },
+
+    refresh_bind: function () {
+      var self = this
+      var nodes = self.nodes
+
+      nodes.refresh.on('click', function () {
+        nodes.root.hide()
+        self._getShowPage()
       })
     }
   }

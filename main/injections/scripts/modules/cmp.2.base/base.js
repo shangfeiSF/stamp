@@ -314,8 +314,6 @@ Stamp.$.extend(
     showMyCart_bind: function () {
       var self = this
 
-      var cache = self.fairy.cache
-
       var nodes = self.nodes
       var showMyCart = nodes.showMyCart
 
@@ -324,19 +322,7 @@ Stamp.$.extend(
         var anchor = self.fairy.layout.cartBlock.anchor
 
         panelNodes.tabBlockTriggers[anchor].trigger('click')
-
-        Stamp.$.ajax({
-          tupe: 'GET',
-          url: 'http://jiyou.biz.11185.cn/u/show.html',
-          success: function (html) {
-            cache.html4cart = html
-            self.fairy.cart.init()
-          },
-          error: function () {
-            cache.html4cart = ''
-          },
-          dataType: 'html'
-        })
+        self.fairy.cart._getShowPage()
       })
     },
   }
