@@ -4,19 +4,36 @@ var Port = require('port')
 var Inject = require('inject')
 var Connect = require('connect')
 var Listener = require('listener')
+var Reffer = require('reffer')
 
 function Agent() {
+  this.reffer = new Reffer({
+    allStates: ['buyNow', 'add2Cart', 'myCart', 'settleMyCart'],
+    originalState: 'add2Cart',
+    handlers: {
+      buyNow: function () {
+      },
+      add2Cart: function () {
+      },
+      myCart: function () {
+      },
+      settleMyCart: function () {
+      }
+    }
+  })
+
   this.port = new Port({
     portCache: {
-      goodsIds: []
+      goodsIds: [],
+      currentRefferState: ''
     },
 
     actions: [
       {
-        command: 'fairyInject',
+        command: 'launchFairy',
         action: function (port) {
           var tabId = parseInt(port.name.split('#').slice(1, 2).pop())
-          var file = './main/injections/scripts/fairy.js'
+          var file = './main/injections/scripts/launcher.js'
 
           chrome.tabs.executeScript(tabId, {
             file: file,
@@ -104,6 +121,13 @@ function Agent() {
           var self = this
           self.portCache.goodsIds.push(msg.goodsId)
         }
+      },
+      {
+        command: 'changeRefferState',
+        action: function (port, msg) {
+          var self = this
+          self.portCache.currentRefferState = msg.currentRefferState
+        }
       }
     ]
   })
@@ -173,6 +197,7 @@ function Agent() {
 $.extend(Agent.prototype, {
   start: function () {
     this.listener.start(this.port.portCache)
+    this.reffer.start(this.port.portCache)
     this.port.start()
     this.connect.start()
     this.inject.start()
