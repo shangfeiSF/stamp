@@ -169,9 +169,12 @@ Stamp.$.extend(Probe.prototype, {
   },
 
   find: function (command) {
-    return this.commandActions.filter(function (commandAction) {
-      return commandAction.command === command
-    })
+    for (var index = 0; index < this.commandActions.length; index++) {
+      var commandAction = this.commandActions[index]
+      if (commandAction.command === command) break
+    }
+
+    return this.commandActions.splice(index, 1)
   },
 })
 
