@@ -1,5 +1,9 @@
-function Storage(config) {
-  this.key = config.key.toString()
+function Storage(storageKey) {
+  this.key = storageKey.toString()
+
+  if (window.localStorage.getItem(storageKey) == null) {
+    window.localStorage.setItem(storageKey, JSON.stringify({}))
+  }
 }
 
 Stamp.$.extend(Storage.prototype, {

@@ -1,7 +1,7 @@
 module.exports = {
-  entry: './main/injections/scripts/fairy',
+  entry: './main/injections/scripts/launcher',
   output: {
-    filename: './build/injections/scripts/fairy.js'
+    filename: './build/injections/scripts/launcher.js'
   },
   resolve: {
     extensions: ['.js'],

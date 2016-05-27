@@ -118,7 +118,7 @@ Stamp.$.extend(Probe.prototype, {
 
     this.port.postMessage({
       portName: self.port.name,
-      command: 'fairyInject',
+      command: 'launchFairy',
     })
   },
 
