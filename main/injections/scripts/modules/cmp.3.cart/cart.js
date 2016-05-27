@@ -116,7 +116,7 @@ Stamp.$.extend(
       return true
     },
 
-    _getShowPage: function () {
+    _getShowPage: function (callback) {
       var self = this
 
       var cache = self.fairy.cache
@@ -127,6 +127,7 @@ Stamp.$.extend(
         success: function (html) {
           cache.html4cart = html
           self.fairy.cart.init(true)
+          callback && callback(self.fairy.cart)
         },
         error: function () {
           cache.html4cart = ''
@@ -159,7 +160,7 @@ Stamp.$.extend(
         if (self._parseShops()) {
           self.goodsInCart_render()
           self.settle_render()
-          self.nodes.root.show('slow')
+          self.nodes.root.show()
         } else {
           alert('解析购物车失败！')
         }
@@ -307,6 +308,7 @@ Stamp.$.extend(
         var anchor = self.fairy.layout.cartSettleBlock.anchor
 
         panelNodes.tabBlocks[anchor].empty()
+        panelNodes.tabBlocks[anchor].append(Stamp.$('<div class="loading">').text('生成订单中...'))
         panelNodes.tabBlockTriggers[anchor].trigger('click')
 
         var shoppingcartIds = []

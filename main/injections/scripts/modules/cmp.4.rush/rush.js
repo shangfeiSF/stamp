@@ -354,6 +354,8 @@ Stamp.$.extend(
       nodes.batch2MyCart.on('click', function () {
         var targets = self.fairy.storage.get('targets')
 
+        var targetsCount = nodes.targetsList.find('.target').length
+
         targets.forEach(function (target) {
           target.specs.forEach(function () {
             Stamp.probe.execute('storeGoodsId', {
@@ -380,8 +382,40 @@ Stamp.$.extend(
 
             (function (params, targetNode, mock) {
               ShoppingCartAction.addGoodsToShoppingCartLS(params.goodId, params.count, params.specId, function (msg) {
-                targetNode.addClass('added')
-                console.log(msg)
+                var matches = msg.match(/^\[(.*)\]$/)
+                matches && matches.length == 2 && (matches = matches.pop())
+
+                var params = matches.split(',')
+
+                if (params[0] === "'true'") {
+
+                  if (--targetsCount == 0) {
+                    self.fairy.cart._getShowPage(function (cart) {
+                      cart.nodes.settle.trigger('click')
+                    })
+                  }
+
+                  var IDS = targetNode.attr('id').split('#')
+                  var targets = self.fairy.storage.get('targets')
+
+                  var matchGoods = targets.filter(function (target) {
+                    return target.id == IDS[0]
+                  })
+                  matchGoods[0].specs = matchGoods[0].specs.filter(function (spec) {
+                    return spec.id != IDS[1]
+                  })
+                  if (!matchGoods[0].specs.length) {
+                    targets = targets.filter(function (target) {
+                      return target.id != matchGoods[0].id
+                    })
+                  }
+
+                  self.fairy.storage.update('targets', targets)
+
+                  targetNode.fadeOut(800, 'linear', function () {
+                    targetNode.remove()
+                  })
+                }
               }, mock)
             })(params, targetNode, mock)
           })

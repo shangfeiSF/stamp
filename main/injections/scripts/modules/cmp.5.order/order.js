@@ -159,8 +159,10 @@ Stamp.$.extend(
       nodes.root = root
 
       if (self.entry === 'cartSettle') {
+        self.fairy.panel.nodes.tabBlocks[self.fairy.layout.cartSettleBlock.anchor].find('.loading').remove()
         self.fairy.panel.nodes.tabBlocks[self.fairy.layout.cartSettleBlock.anchor].append(root)
       } else {
+        self.fairy.panel.nodes.tabBlocks[self.fairy.layout.baseSettleBlock.anchor].find('.loading').remove()
         self.fairy.panel.nodes.tabBlocks[self.fairy.layout.baseSettleBlock.anchor].append(root)
       }
     }

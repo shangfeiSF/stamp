@@ -223,6 +223,7 @@ Stamp.$.extend(
         var anchor = self.fairy.layout.baseSettleBlock.anchor
 
         panelNodes.tabBlocks[anchor].empty()
+        panelNodes.tabBlocks[anchor].append(Stamp.$('<div class="loading">').text('生成订单中...'))
         panelNodes.tabBlockTriggers[anchor].trigger('click')
 
         var params = {

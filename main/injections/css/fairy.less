@@ -95,7 +95,16 @@
     width: 100%;
     background: #F8F8F8;
     font-weight: normal;
-    padding: 0 0 0 0.5em;
+
+    .tabBlock {
+      .loading {
+        width: 96%;
+        margin: 0.2em auto;
+        color: #FFF;
+        background: #5CB85C;
+        text-align: center;
+      }
+    }
   }
 }
 
@@ -104,7 +113,7 @@
     float: left;
     width: 100%;
     font-size: 14px;
-    margin-bottom: 0.2em;
+    margin: 0 0 0.5em 0.5em;
 
     .section {
       float: left;
@@ -236,18 +245,6 @@
 
         .target:nth-child(2n) {
           background: #F3F3F3
-        }
-
-        @-webkit-keyframes added {
-          0% {
-            background: red;
-          }
-          100% {
-            background: green;
-          }
-        }
-        .added {
-          -webkit-animation: added 5s;
         }
       }
 
@@ -416,7 +413,7 @@
     float: left;
     width: 100%;
     font-size: 14px;
-    margin-bottom: 0.5em;
+    margin: 0 0 0.5em 0.5em;
 
     .tip {
       float: left;
@@ -532,8 +529,7 @@
 
   .cartRoot {
     float: left;
-    width: 100%;
-    margin-bottom: 0.5em;
+    margin: 0 0 0.5em 0.5em;
 
     .shops {
       font-size: 13px;
@@ -656,7 +652,7 @@
     float: left;
     width: 100%;
     font-size: 14px;
-    margin-bottom: 0.2em;
+    margin: 0 0 0.5em 0.5em;
 
     .section {
       float: left;
