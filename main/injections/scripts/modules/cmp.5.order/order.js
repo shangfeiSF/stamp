@@ -219,6 +219,7 @@ Stamp.$.extend(
         value: '获取验证码'
       }).addClass('btn btn-info')
       var sendState = Stamp.$('<span class="state">')
+      self.fairy.storage.exist('message') && sendState.addClass('fulfilled')
 
       self.nodes.phone = phone
       self.nodes.send = send
@@ -228,10 +229,13 @@ Stamp.$.extend(
     verify_render: function () {
       var self = this
 
+      var codeInStorage = self.fairy.storage.exist('message') ?
+        self.fairy.storage.get('message') : ''
+
       var code = Stamp.$('<input>', {
         type: 'text',
         id: '_code_',
-        value: '',
+        value: codeInStorage,
         style: 'width: 11em;'
       }).addClass('form-control')
       var verify = Stamp.$('<input>', {

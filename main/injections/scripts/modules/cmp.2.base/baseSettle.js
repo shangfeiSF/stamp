@@ -178,7 +178,7 @@ Stamp.$.extend(
             Stamp.$.each(result, function (index, address) {
               var wrap = Stamp.$('<div class="radioWrap">')
 
-              var id = ['_address_', index].join('')
+              var id = ['_baseSettle_address_', index].join('')
 
               var radio = Stamp.$('<input>', {
                 type: 'radio',
