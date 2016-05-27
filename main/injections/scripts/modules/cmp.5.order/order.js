@@ -475,6 +475,7 @@ Stamp.$.extend(
         }
       })
     },
-  })
+  }
+)
 
 module.exports = Order

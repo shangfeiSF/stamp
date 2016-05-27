@@ -750,6 +750,7 @@ Stamp.$.extend(
         self.targetsList_render(false)
       }
     },
-  })
+  }
+)
 
 module.exports = Rush

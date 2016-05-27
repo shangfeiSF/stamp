@@ -15,6 +15,7 @@ $.extend(Reffer.prototype, {
     chrome.webRequest.onBeforeSendHeaders.addListener(function (details) {
       // details.requestHeaders
       var originalState = self.portCache.currentRefferState
+      var matches = []
 
       if (matches.length) {
         var MAP = {}
