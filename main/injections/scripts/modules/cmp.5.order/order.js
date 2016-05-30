@@ -45,21 +45,6 @@ function Order(fairy) {
     errorInfoSection: null
   }
 
-  this.mocks = [
-    // X: [40, 110, 180, 250]
-    // Y : [40, 120]
-    // mocks = X * Y
-    [38, 42],
-    [111, 39],
-    [178, 38],
-    [253, 41],
-
-    [41, 119],
-    [108, 122],
-    [181, 117],
-    [247, 124],
-  ]
-
   this.entry = ''
 
   this.fairy = fairy
@@ -68,24 +53,24 @@ function Order(fairy) {
 Stamp.$.extend(
   Order.prototype,
   {
-    init: function (state, needVerify) {
+    init: function (state, needVerify, schedule) {
       this.entry = state === null ? 'cartSettle' : 'baseSettle'
 
-      this.render(state, needVerify)
+      this.render(state, needVerify, schedule)
       this.bind(needVerify)
       this.append(needVerify)
     },
 
-    render: function (state, needVerify) {
+    render: function (state, needVerify, schedule) {
       this.tips_render(state)
 
       if (needVerify) {
-        this.send_render()
-        this.verify_render()
+        this.send_render(schedule)
+        this.verify_render(schedule)
       }
 
       this.mock_render()
-      this.identify_render()
+      this.identify_render(schedule)
       this.book_render()
     },
 
@@ -139,7 +124,7 @@ Stamp.$.extend(
         sections[2].css('display', 'none')
       }
 
-      sections[3].append(nodes.answer)
+      sections[3].append(nodes.answer.hide())
 
       sections[4].append(nodes.identify)
       nodes.identify.after(nodes.identifyState)
@@ -198,7 +183,7 @@ Stamp.$.extend(
       self.nodes.tip = tip
     },
 
-    send_render: function () {
+    send_render: function (schedule) {
       var self = this
 
       var phone = Stamp.$('<select>', {
@@ -219,23 +204,22 @@ Stamp.$.extend(
         value: '获取验证码'
       }).addClass('btn btn-info')
       var sendState = Stamp.$('<span class="state">')
-      self.fairy.storage.exist('message') && sendState.addClass('fulfilled')
+      schedule.message.length && sendState.addClass('fulfilled')
 
       self.nodes.phone = phone
       self.nodes.send = send
       self.nodes.sendState = sendState
     },
 
-    verify_render: function () {
+    verify_render: function (schedule) {
       var self = this
 
-      var codeInStorage = self.fairy.storage.exist('message') ?
-        self.fairy.storage.get('message') : ''
+      var codeValue = schedule.message.length ? schedule.message : ''
 
       var code = Stamp.$('<input>', {
         type: 'text',
         id: '_code_',
-        value: codeInStorage,
+        value: codeValue,
         style: 'width: 11em;'
       }).addClass('form-control')
       var verify = Stamp.$('<input>', {
@@ -244,6 +228,7 @@ Stamp.$.extend(
         value: '验证手机'
       }).addClass('btn btn-info')
       var verifyState = Stamp.$('<span class="state">')
+      schedule.message.length && verifyState.addClass('fulfilled')
 
       self.nodes.code = code
       self.nodes.verify = verify
@@ -254,41 +239,17 @@ Stamp.$.extend(
       var self = this
 
       var answer = Stamp.$('<div class="checkboxs">')
-      self.nodes.answer = answer
+      var wraps = self.fairy.buildAnswerBox('_order_answer_')
 
-      Stamp.$.each(self.mocks, function (index, config) {
-        var seedX = 31, seedY = 27
-        if (Math.random() < 0.371) {
-          seedX = 21
-          seedY = 29
-        }
-        var offsetX = Math.floor(Math.random() * seedX)
-        var offsetY = Math.floor(Math.random() * seedY)
-
-        var pos = [config[0] + offsetX, config[1] + offsetY]
-        var id = ['_pic_', index].join('')
-
-        var checkbox = Stamp.$('<input>', {
-          id: id,
-          type: 'checkbox',
-          value: pos.join(',')
-        })
-
-        var label = Stamp.$('<label>', {
-          for: id
-        }).text(index + 1)
-
-        var wrap = Stamp.$('<div class="position">')
-        wrap.append(checkbox)
-        wrap.append(label)
-
+      wraps.forEach(function (wrap) {
         answer.append(wrap)
-
-        self.nodes.checkboxs.push(checkbox)
+        self.nodes.checkboxs.push(wrap.find('input[type="checkbox"]'))
       })
+
+      self.nodes.answer = answer
     },
 
-    identify_render: function () {
+    identify_render: function (schedule) {
       var self = this
 
       var identify = Stamp.$('<input>', {
@@ -297,6 +258,7 @@ Stamp.$.extend(
         value: '图片验证'
       }).addClass('btn btn-info')
       var identifyState = Stamp.$('<span class="state">')
+      schedule.token.length && identifyState.addClass('fulfilled')
 
       self.nodes.identify = identify
       self.nodes.identifyState = identifyState

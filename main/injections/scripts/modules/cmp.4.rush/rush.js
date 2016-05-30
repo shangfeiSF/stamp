@@ -5,7 +5,15 @@ function Rush(fairy) {
 
   this.nodes = {
     root: null,
-    sections: []
+    sections: [],
+    checkboxs: [],
+    image: null
+  }
+
+  this.schedule = {
+    message: '',
+    sid: '',
+    token: ''
   }
 
   this.boot()
@@ -44,6 +52,7 @@ Stamp.$.extend(
     render: function () {
       this.send_render()
       this.storeCode_render()
+      this.imageVerification_render()
       this.targetsList_render(true)
       this.fetchGoodsDetails_render()
       this.add2TargetsList_render()
@@ -52,6 +61,7 @@ Stamp.$.extend(
     bind: function () {
       this.send_bind()
       this.storeCode_bind()
+      this.imageVerification_bind()
       this.targetsList_bind()
       this.fetchGoodsDetails_bind()
       this.add2TargetsList_bind()
@@ -65,6 +75,7 @@ Stamp.$.extend(
       var sections = [
         'sendSection',
         'storeCodeSection',
+        'imageVerificationSection',
         'targetsListSection',
         'fetchGoodsDetailsSection',
         'add2TargetsListSection'
@@ -87,19 +98,27 @@ Stamp.$.extend(
       sections[1].append(nodes.storeCode)
       nodes.storeCode.after(nodes.storeCodeState)
 
-      sections[2].append(Stamp.$('<div class="title">').text('秒杀任务清单'))
-      sections[2].append(nodes.targetsList)
-      sections[2].append(nodes.batch2MyCart)
+      sections[2].append(Stamp.$('<div class="title">').text('验证图片'))
+      sections[2].append(nodes.image)
+      sections[2].append(nodes.answer)
 
-      sections[3].append(Stamp.$('<div class="title">').text('商品详情'))
-      sections[3].append(nodes.goodIds)
-      sections[3].append(nodes.fetchDetails)
+      sections[3].append(Stamp.$('<div class="title">').text('秒杀任务清单'))
+      sections[3].append(nodes.targetsList)
+      sections[3].append(nodes.verify)
+      sections[3].append(nodes.verifyState)
+      sections[3].append(nodes.identify)
+      sections[3].append(nodes.identifyState)
+      sections[3].append(nodes.batch2MyCart)
+
+      sections[4].append(Stamp.$('<div class="title">').text('商品详情'))
+      sections[4].append(nodes.goodIds)
+      sections[4].append(nodes.fetchDetails)
       nodes.fetchDetails.after(nodes.fetchDetailsState)
 
-      sections[4].append(Stamp.$('<div class="title">').text('新添秒杀任务'))
-      sections[4].append(nodes.selectDetails)
-      sections[4].append(nodes.addTargetRecords)
-      sections[4].append(nodes.clearAllAddTargetRecords)
+      sections[5].append(Stamp.$('<div class="title">').text('新添秒杀任务'))
+      sections[5].append(nodes.selectDetails)
+      sections[5].append(nodes.addTargetRecords)
+      sections[5].append(nodes.clearAllAddTargetRecords)
 
       var root = Stamp.$('<div class="rushRoot"></div>')
       Stamp.$.each(sections, function (index, section) {
@@ -115,7 +134,6 @@ Stamp.$.extend(
       var self = this
 
       var phone = Stamp.$('<select>', {
-        id: '_ruhs_phone_',
         style: 'width: 11em;'
       }).addClass('form-control')
       Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
@@ -128,7 +146,6 @@ Stamp.$.extend(
 
       var send = Stamp.$('<input>', {
         type: 'button',
-        id: '_rush_send_',
         value: '获取验证码'
       }).addClass('btn btn-info')
       var sendState = Stamp.$('<span class="state">')
@@ -144,22 +161,46 @@ Stamp.$.extend(
       var storedMessage = self.fairy.storage.get('message')
       var code = Stamp.$('<input>', {
         type: 'text',
-        id: '_rush_code_',
         value: storedMessage !== undefined ? storedMessage : '',
         style: 'width: 11em;'
       }).addClass('form-control')
       var storeCode = Stamp.$('<input>', {
         type: 'button',
-        id: '_rush_storeCode_',
         value: '配置验证码'
       }).addClass('btn btn-info')
-      var storeCodeState = Stamp.$('<span>', {
-        class: storedMessage !== undefined ? 'state fulfilled' : 'state'
-      })
+      var storeCodeState = Stamp.$('<span class="state">')
 
       self.nodes.code = code
       self.nodes.storeCode = storeCode
       self.nodes.storeCodeState = storeCodeState
+    },
+
+    imageVerification_render: function () {
+      var self = this
+
+      var nodes = self.nodes
+
+      var image = Stamp.$('<img class="verifyImage">')
+
+      Stamp.probe.execute('getSid', {}, function (message) {
+        self.schedule.sid = message.data.sid
+
+        nodes.image.attr('src', [self.fairy.imageBase, "&sid=", message.data.sid, "&", Math.random()].join(''))
+        Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
+          Stamp.$(checkbox).attr('checked', false)
+        })
+      }.bind(self))
+
+      var answer = Stamp.$('<div class="checkboxs">')
+      var wraps = self.fairy.buildAnswerBox('_rush_answer_')
+
+      wraps.forEach(function (wrap) {
+        nodes.checkboxs.push(wrap.find('input[type="checkbox"]'))
+        answer.append(wrap)
+      })
+
+      nodes.image = image
+      nodes.answer = answer
     },
 
     targetsList_render: function (init) {
@@ -167,20 +208,48 @@ Stamp.$.extend(
 
       var nodes = self.nodes
 
-      var targetsList = null, batch2MyCart = null
+      var targetsList = null
       if (init) {
         targetsList = Stamp.$('<div class="targetsList">').addClass('scrollBar')
-        batch2MyCart = Stamp.$('<input>', {
-          type: 'button',
-          class: 'batch2MyCart',
-          value: '一键加购'
-        }).addClass('btn btn-warning')
 
         if (!self.fairy.storage.exist('targets')) {
           self.fairy.storage.update('targets', [])
         }
 
+        var verify = Stamp.$('<input>', {
+          type: 'button',
+          class: 'verify',
+          value: '验证验证码'
+        }).addClass('btn btn-warning')
+        var verifyState = Stamp.$('<span class="state">').css({
+          top: '0.9em',
+          margin: '0 0.5em'
+        })
+
+        var identify = Stamp.$('<input>', {
+          type: 'button',
+          class: 'identify',
+          value: '验证图片'
+        }).addClass('btn btn-warning')
+        var identifyState = Stamp.$('<span class="state">').css({
+          top: '0.9em',
+          margin: '0 0.5em'
+        })
+
+        var batch2MyCart = Stamp.$('<input>', {
+          type: 'button',
+          class: 'batch2MyCart',
+          value: '一键加购'
+        }).addClass('btn btn-warning')
+
         nodes.targetsList = targetsList
+
+        self.nodes.verify = verify
+        self.nodes.verifyState = verifyState
+
+        nodes.identify = identify
+        nodes.identifyState = identifyState
+
         nodes.batch2MyCart = batch2MyCart
       }
       else {
@@ -278,6 +347,7 @@ Stamp.$.extend(
       var phone = self.nodes.phone
       var send = self.nodes.send
       var sendState = self.nodes.sendState
+      var code = self.nodes.code
 
       send.on('click', function () {
         sendState.removeClass('fulfilled')
@@ -286,6 +356,9 @@ Stamp.$.extend(
           mobileNum: phone.val(),
           smsType: '4'
         }
+
+        self.fairy.storage.remove('mobile')
+        code.val('')
 
         self.fairy.post('code', params)
           .then(function (data) {
@@ -297,6 +370,7 @@ Stamp.$.extend(
 
               self.fairy.storage.update('mobile', phone.val())
             } else {
+              sendState.removeClass('pending')
               alert(data.result)
             }
           })
@@ -325,6 +399,20 @@ Stamp.$.extend(
       })
     },
 
+    imageVerification_bind: function () {
+      var self = this
+
+      var nodes = self.nodes
+
+      nodes.image.on('dblclick', function () {
+          nodes.image.attr('src', [self.fairy.imageBase, "&sid=", self.schedule.sid, "&", Math.random()].join(''))
+          Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
+            Stamp.$(checkbox).attr('checked', false)
+          })
+        }
+      )
+    },
+
     targetsList_bind: function () {
       var self = this
 
@@ -351,7 +439,85 @@ Stamp.$.extend(
         }
       })
 
+      nodes.verify.on('click', function () {
+        var mobileInStore = self.fairy.storage.get('mobile')
+        var messageInStore = self.fairy.storage.get('message')
+
+        if (mobileInStore && messageInStore) {
+          var verifyState = nodes.verifyState
+
+          verifyState.removeClass('fulfilled')
+          verifyState.addClass('pending')
+
+          var params = {
+            mobile: mobileInStore,
+            message: messageInStore
+          }
+
+          self.fairy.post('check', params)
+            .then(function (data) {
+              if (data.result.status == '1') {
+                setTimeout(function () {
+                  verifyState.removeClass('pending')
+                  verifyState.addClass('fulfilled')
+                }, 500)
+
+                self.schedule.message = data.result.random_code
+              } else {
+                verifyState.removeClass('pending')
+                alert(data.result.msg)
+              }
+            })
+        }
+      })
+
+      nodes.identify.on('click', function () {
+        if (self.schedule.sid.length === 0) return false
+
+        nodes.identifyState.removeClass('fulfilled')
+        nodes.identifyState.addClass('pending')
+
+        var checked = Stamp.$.grep(nodes.checkboxs, function (checkbox) {
+          return Stamp.$(checkbox).attr('checked') === 'checked'
+        })
+        var postions = Stamp.$.map(checked, function (checkbox) {
+          return Stamp.$(checkbox).val()
+        })
+
+        var verifyURL = 'http://jiyou.11185.cn/l/verify.html?'
+        var params = {
+          wid: '3be16628-c630-437b-b443-c4d9f18602ed',
+          answer: postions.join(','),
+          sid: self.schedule.sid,
+          checkCode: encodeURIComponent('user=zhangsan&stamp_id=123'),
+        }
+
+        Stamp.$.each(params, function (key, value) {
+          verifyURL += [key, '=', value].join('') + '&'
+        })
+
+        Stamp.probe.execute('getToken', {
+          verifyURL: verifyURL + Math.random()
+        }, function (message) {
+          if (message.data.token !== 'ERROR') {
+            setTimeout(function () {
+              nodes.identifyState.removeClass('pending')
+              nodes.identifyState.addClass('fulfilled')
+            }, 500)
+
+            self.schedule.token = message.data.token
+          } else {
+            nodes.identifyState.removeClass('pending')
+            nodes.image.trigger('dblclick')
+          }
+        }.bind(self))
+      })
+
       nodes.batch2MyCart.on('click', function () {
+        if (!self.schedule.token.length || !self.schedule.message.length) {
+          return false
+        }
+
         var targets = self.fairy.storage.get('targets')
 
         var targetsCount = nodes.targetsList.find('.target').length
@@ -391,7 +557,8 @@ Stamp.$.extend(
 
                   if (--targetsCount == 0) {
                     self.fairy.cart._getShowPage(function (cart) {
-                      cart.nodes.settle.trigger('click')
+                      cart.nodes.settle.trigger('click', self._copyAndCleanSchedule())
+                      self._reset()
                     })
                   }
 
@@ -483,6 +650,50 @@ Stamp.$.extend(
     }
   },
   {
+    _copyAndCleanSchedule: function () {
+      var self = this
+
+      var schedule = {
+        userType: self.fairy.storage.get('userType'),
+        userId: self.fairy.storage.get('userId'),
+        message: self.schedule.message,
+        sid: self.schedule.sid,
+        token: self.schedule.token
+      }
+
+      self.schedule = {
+        message: '',
+        sid: '',
+        token: ''
+      }
+
+      return schedule
+    },
+
+    _reset: function () {
+      var self = this
+
+      var nodes = self.nodes
+
+      self.fairy.storage.remove('mobile')
+      self.fairy.storage.remove('message')
+
+      nodes.code.val('')
+
+      nodes.verifyState.removeClass('fulfilled')
+      nodes.identifyState.removeClass('fulfilled')
+
+      Stamp.probe.execute('getSid', {}, function (message) {
+        self.schedule.sid = message.data.sid
+
+        nodes.image.attr('src', [self.fairy.imageBase, "&sid=", message.data.sid, "&", Math.random()].join(''))
+      }.bind(self))
+
+      Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
+        Stamp.$(checkbox).attr('checked', false)
+      })
+    },
+
     _editAreaListener: function (index, number, type, infoNode) {
       var self = this
 

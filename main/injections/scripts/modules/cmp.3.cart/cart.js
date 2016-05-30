@@ -303,7 +303,7 @@ Stamp.$.extend(
       var cache = self.fairy.cache
       var nodes = self.nodes
 
-      nodes.settle.on('click', function () {
+      nodes.settle.on('click', function (e, schedule) {
         var panelNodes = self.fairy.panel.nodes
         var anchor = self.fairy.layout.cartSettleBlock.anchor
 
@@ -341,7 +341,7 @@ Stamp.$.extend(
 
                 var needVerify = cache.html4settle.search('手机确认') > -1 ? true : false
 
-                self.fairy.cartSettle.init(needVerify)
+                self.fairy.cartSettle.init(needVerify, schedule)
               }
             },
             error: function () {

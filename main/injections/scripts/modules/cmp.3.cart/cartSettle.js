@@ -11,25 +11,43 @@ function cartSettle(fairy) {
 Stamp.$.extend(
   cartSettle.prototype,
   {
-    init: function (needVerify) {
+    init: function (needVerify, schedule) {
       var self = this
       var cache = self.fairy.cache
 
       self.needVerify = needVerify
 
-      self.fairy.post('user')
-        .asCallback(function (error, data) {
-          if (data.textStatus === 'success') {
-            cache.userType = data.result.userType
-            cache.userId = data.result.userId
+      if (schedule) {
+        self.autoBook = true
 
-            self.order = new Order(self.fairy)
-            self.order.init(null, needVerify)
-          }
-        })
-        .then(function () {
-          self.getSid()
-        })
+        self.fairy.cache.userType = schedule.userType
+        self.fairy.cache.userId = schedule.userId
+        self.fairy.cache.message = schedule.message
+        self.fairy.cache.sid = schedule.sid
+        self.fairy.cache.token = schedule.token
+
+        self.order = new Order(self.fairy)
+        self.order.init(null, needVerify, schedule)
+
+        self.shortCut()
+      }
+      else {
+        self.autoBook = false
+
+        self.fairy.post('user')
+          .asCallback(function (error, data) {
+            if (data.textStatus === 'success') {
+              cache.userType = data.result.userType
+              cache.userId = data.result.userId
+
+              self.order = new Order(self.fairy)
+              self.order.init(null, needVerify)
+            }
+          })
+          .then(function () {
+            self.getSid()
+          })
+      }
     }
   },
   {
@@ -54,6 +72,7 @@ Stamp.$.extend(
 
         nodes.image = image
         nodes.answer.prepend(image)
+        nodes.answer.show()
 
         self.shortCut()
       }.bind(self))
@@ -441,7 +460,15 @@ Stamp.$.extend(
 
       self.fairy.post('fee', params)
         .then(function (data) {
-          data.textStatus === 'success' && self._calculate(shop, subtotal, data.result)
+          if (data.textStatus === 'success') {
+            if (self.autoBook) {
+              setTimeout(function () {
+                self.order.nodes.book.trigger('click')
+              }, 300)
+            } else {
+              self._calculate(shop, subtotal, data.result)
+            }
+          }
         })
     },
 

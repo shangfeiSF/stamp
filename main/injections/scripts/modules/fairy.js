@@ -97,6 +97,21 @@ function Fairy(config) {
 
   this.imageBase = 'http://jiyou.11185.cn/l/captcha.html?wid=3be16628-c630-437b-b443-c4d9f18602ed'
 
+  this.mocks = [
+    // X: [40, 110, 180, 250]
+    // Y : [40, 120]
+    // mocks = X * Y
+    [38, 42],
+    [111, 39],
+    [178, 38],
+    [253, 41],
+
+    [41, 119],
+    [108, 122],
+    [181, 117],
+    [247, 124],
+  ]
+
   this._origScriptSessionIdPattern = /dwr\.engine\.\_origScriptSessionId\s*\=\s*\"(.*)\"/
 
   this.details = {
@@ -188,6 +203,37 @@ Stamp.$.extend(Fairy.prototype, {
     })
 
     return _origScriptSessionId
+  },
+
+  buildAnswerBox: function (prefix) {
+    return this.mocks.map(function (config, index) {
+      var seedX = 31, seedY = 27
+      if (Math.random() < 0.371) {
+        seedX = 21
+        seedY = 29
+      }
+      var offsetX = Math.floor(Math.random() * seedX)
+      var offsetY = Math.floor(Math.random() * seedY)
+
+      var pos = [config[0] + offsetX, config[1] + offsetY]
+      var id = [prefix, index].join('')
+
+      var checkbox = Stamp.$('<input>', {
+        id: id,
+        type: 'checkbox',
+        value: pos.join(',')
+      })
+
+      var label = Stamp.$('<label>', {
+        for: id
+      }).text(index + 1)
+
+      var wrap = Stamp.$('<div class="position">')
+      wrap.append(checkbox)
+      wrap.append(label)
+      
+      return wrap
+    })
   },
 
   start: function () {

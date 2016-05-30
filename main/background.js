@@ -108,7 +108,7 @@ function Agent() {
                 }
               })
 
-              var messageToken = ['%c[Get token by command]---', sid].join('')
+              var messageToken = ['%c[Get token by command]---', token].join('')
               console.log(messageToken, 'color: #ff0062; font-weight: bold;')
             },
             dataType: 'html'
