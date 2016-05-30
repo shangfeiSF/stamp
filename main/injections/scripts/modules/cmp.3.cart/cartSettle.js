@@ -464,7 +464,7 @@ Stamp.$.extend(
             if (self.autoBook) {
               setTimeout(function () {
                 self.order.nodes.book.trigger('click')
-              }, 300)
+              }, 1000)
             } else {
               self._calculate(shop, subtotal, data.result)
             }
@@ -626,6 +626,8 @@ Stamp.$.extend(
             var errorWrap = Stamp.$.grep(dom, function (node) {
               return Stamp.$(node).hasClass('smrz') && Stamp.$(node).hasClass('zccgym')
             })
+
+            self.fairy.rush._reset()
 
             if (infoWrap.length) {
               self.success(infoWrap, callback)

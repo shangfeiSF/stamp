@@ -514,7 +514,7 @@ Stamp.$.extend(
       })
 
       nodes.batch2MyCart.on('click', function () {
-        if (!self.schedule.token.length || !self.schedule.message.length) {
+        if (!self.schedule.message.length || !self.schedule.token.length) {
           return false
         }
 
@@ -558,7 +558,6 @@ Stamp.$.extend(
                   if (--targetsCount == 0) {
                     self.fairy.cart._getShowPage(function (cart) {
                       cart.nodes.settle.trigger('click', self._copyAndCleanSchedule())
-                      self._reset()
                     })
                   }
 
@@ -656,6 +655,7 @@ Stamp.$.extend(
       var schedule = {
         userType: self.fairy.storage.get('userType'),
         userId: self.fairy.storage.get('userId'),
+        code: self.fairy.storage.get('message'),
         message: self.schedule.message,
         sid: self.schedule.sid,
         token: self.schedule.token

@@ -1,0 +1,336 @@
+#_panel_ #_container_ {
+  .rushRoot {
+    float: left;
+    width: 98%;
+    font-size: 14px;
+    margin: 0 0 0.5em 2%;
+
+    .section {
+      float: left;
+      width: 100%;
+      margin-bottom: 0.4em;
+
+      .title {
+        float: left;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.4em;
+        border-bottom: 2px solid #31B0D5;
+      }
+
+      input, select {
+        float: left;
+        font-size: 14px;
+        margin-right: 0.4em;
+      }
+
+      input[type='button'] {
+        width: 7em;
+        height: 34px;
+        padding: 0 1em;
+      }
+
+      .state {
+        float: left;
+        position: relative;
+        font-size: 16px;
+        top: 0.5em;
+        width: 1em;
+        height: 1em;
+        border-radius: 0.5em;
+        background: #FF0000;
+      }
+
+      .fulfilled {
+        background: #3AAD8B;
+      }
+
+      .pending {
+        background: #F0AD4F;
+      }
+    }
+
+    .imageVerificationSection {
+      .verifyImage {
+        display: block;
+        width: 293px;
+        height: 190px;
+      }
+
+      .checkboxs {
+        float: left;
+        font-size: 18px;
+        width: 293px;
+
+        .position {
+          float: left;
+          width: 25%;
+          margin-top: 0.2em;
+        }
+
+        label {
+          float: left;
+          display: block;
+          width: 2.3em;
+          text-align: center;
+        }
+
+        input {
+          float: left;
+          font-size: 26px;
+          width: 1em;
+          height: 1em;
+          margin: 0;
+        }
+      }
+    }
+
+    .targetsListSection {
+      width: 100%;
+      float: left;
+
+      .targetsList {
+        width: 95%;
+        float: left;
+        font-size: 13px;
+        height: 15em;
+        border: 2px solid #31B0D5;
+        background: #FFF;
+        overflow: auto;
+
+        .target {
+          width: 100%;
+          float: left;
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+          padding: 0.2em 0;
+
+          .goodTitle {
+            width: 100%;
+            float: left;
+            margin: 0 0 0.2em 0;
+            padding: 0 0 0 1em;
+            color: #3AAD8B;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .goodName, .goodCount {
+            float: left;
+            padding: 0 0 0 1em;
+            color: #555;
+          }
+
+          .goodEditAreaTrigger {
+            float: right;
+            position: relative;
+            top: 0.3em;
+            right: 0.5em;
+            width: 0;
+            height: 0;
+            cursor: pointer;
+            border-left: 0.7em solid transparent;
+            border-right: 0.7em solid transparent;
+            border-top: 0.7em solid #F0AD4F;
+          }
+
+          .goodEditAreaTriggerOpen {
+            border-top: 0;
+            border-bottom: 0.7em solid #F0AD4F;
+          }
+
+          .goodEditArea {
+            display: none;
+            float: left;
+            width: 100%;
+            padding: 0.4em 1em 0.2em 1em;
+            border-top: 1px solid #ddd;
+
+            .goodNumber, .goodModify, .goodRemove {
+              width: 3.5em;
+              height: 20px;
+              padding: 0 0.2em;
+              font-size: 12px;
+            }
+
+            .goodModify {
+              width: 6em;
+            }
+
+            .goodRemove {
+              float: right;
+              margin: 0 4em 0 0;
+              width: 4em;
+            }
+          }
+        }
+
+        .target:nth-child(2n) {
+          background: #F3F3F3
+        }
+      }
+
+      .verify, .identify, .batch2MyCart {
+        margin: 0.4em 0 0 0;
+      }
+    }
+
+    .add2TargetsListSection {
+      display: none;
+
+      .selectDetails {
+        width: 95%;
+        float: left;
+
+        .selectDetailsBlocks {
+          width: 100%;
+          float: left;
+
+          .selectDetailsBlock {
+            width: 100%;
+            float: left;
+            padding: 0 0 0.6em 0;
+            margin: 0 0 0.6em 0;
+            border-bottom: 1px solid #ddd;
+
+            .goodTitle {
+              width: 100%;
+              margin: 0 0 0.2em 0;
+              color: #3AAD8B;
+              font-weight: bold;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+
+              em {
+                font-style: normal;
+                color: #F0AD4F;
+              }
+            }
+
+            .goodSpecs {
+              float: left;
+              width: 100%;
+              padding: 0 0 0 5%;
+              margin-bottom: 0.2em;
+
+              .goodSpec {
+                float: left;
+                margin: 0 0.4em 0.1em 0;
+
+                label {
+                  margin: 0;
+                  word-break: break-all;
+                  word-wrap: break-word;
+                }
+              }
+            }
+
+            .goodCount {
+              width: 4em;
+              margin: 0 0.4em 0 1em;
+            }
+
+            .goodLimit {
+              float: left;
+              width: 9.5em;
+              height: 24px;
+              line-height: 170%;
+              margin: 0 0.5em 0 0;
+              color: #aaa;
+            }
+
+            .goodAdd {
+              width: 5em;
+              height: 24px;
+              padding: 0;
+              margin: 0;
+            }
+          }
+        }
+      }
+
+      .addTargetRecords {
+        width: 95%;
+        float: left;
+        height: 15em;
+        border: 2px solid #31B0D5;
+        background: #FFF;
+        overflow: auto;
+
+        .record {
+          width: 100%;
+          float: left;
+          font-weight: bold;
+          padding: 0.2em 0;
+          border-bottom: 1px solid #aaa;
+
+          .recordTitle {
+            float: left;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .recordSpec {
+            float: left;
+            width: 35%;
+            margin: 0 0 0 1em;
+          }
+
+          .recordCount {
+            float: left;
+            width: 35%;
+            margin: 0 0 0 1em;
+          }
+
+          .recordState {
+            float: left;
+            width: 100%;
+            color: #FFF;
+            font-weight: bold;
+            margin: 0.2em 0 0 0;
+
+            .recordMessage, .recordAddRest {
+              float: left;
+              width: 100%;
+              padding: 0 0 0 0.5em;
+            }
+          }
+
+          .recordState200 {
+            background: #3AAD8B;
+          }
+
+          .recordState400 {
+            background: #F0AD4F;
+          }
+
+          .recordState500 {
+            background: #FF0000;
+          }
+        }
+
+        .record200 {
+          color: #3AAD8B;
+        }
+
+        .record400 {
+          color: #F0AD4F;
+        }
+
+        .record500 {
+          color: #FF0000;
+        }
+      }
+
+      .clearAllAddTargetRecords {
+        margin: 0.5em 0 0 0;
+      }
+    }
+  }
+}

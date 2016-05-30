@@ -1,0 +1,124 @@
+#_panel_ #_container_ {
+  .cartRoot {
+    float: left;
+    width: 98%;
+    font-size: 14px;
+    margin: 0 0 0.5em 2%;
+
+    .shops {
+      font-size: 13px;
+      width: 95%;
+      overflow: hidden;
+
+      .title {
+        float: left;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.2em;
+        border-bottom: 2px solid #31B0D5;
+      }
+
+      .emptycart {
+        float: left;
+        width: 100%;
+        text-align: center;
+        font-size: 16px;
+        color: #FF0000;
+      }
+
+      .shopsList {
+        float: left;
+        width: 100%;
+        overflow: hidden;
+
+        .shop {
+          float: left;
+          width: 100%;
+
+          input {
+            position: relative;
+            top: 0.15em
+          }
+
+          label {
+            width: 50%;
+            margin-left: 0.5em;
+
+            div {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+          }
+
+          .goodsList {
+            display: none;
+            width: 100%;
+
+            .good {
+              padding: 0.2em 0;
+              margin: 0.2em 0 0.2em 1.6em;
+
+              .goodTiltle {
+                color: #555;
+                cursor: pointer;
+                &:hover {
+                  color: #3AAD8B;
+                }
+              }
+
+              div {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
+
+              .moreInfos {
+                color: #555;
+                padding: 0.5em 0 0.5em 1.7em;
+                border-bottom: 1px solid #aaa;
+
+                em {
+                  font-weight: bold;
+                  font-style: normal;
+                  color: #3AAD8B;
+                }
+              }
+            }
+          }
+
+          .shopTotal {
+            font-weight: bold;
+            margin: 0 0 0 1.5em;
+          }
+        }
+
+        .selected .goodsList {
+          display: block;
+        }
+      }
+    }
+
+    .settlement {
+      margin: 0.5em 0 0 0;
+
+      input[type='button'] {
+        width: 6.5em;
+        height: 2.5em;
+        padding: 0 0.4em;
+        margin: 0 1em 0 0;
+      }
+
+      .settleTotal {
+        font-size: 14px;
+        font-weight: bold;
+
+        span {
+          color: #3AAD8B;
+        }
+      }
+    }
+  }
+}

@@ -214,7 +214,7 @@ Stamp.$.extend(
     verify_render: function (schedule) {
       var self = this
 
-      var codeValue = schedule && schedule.message.length ? schedule.message : ''
+      var codeValue = schedule && schedule.code.length ? schedule.code : ''
 
       var code = Stamp.$('<input>', {
         type: 'text',

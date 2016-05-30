@@ -1,0 +1,119 @@
+#_panel_ #_container_ {
+  .baseRoot {
+    float: left;
+    width: 98%;
+    font-size: 14px;
+    margin: 0 0 0.5em 2%;
+
+    .tip {
+      float: left;
+      width: 100%;
+      color: #aaa;
+      line-height: 150%;
+      font-weight: normal;
+      padding: 0 0.5em 0.2em 0;
+    }
+
+    .section {
+      float: left;
+      width: 100%;
+      margin-bottom: 0.2em;
+
+      .title {
+        float: left;
+        width: 25%;
+        font-weight: bold;
+        line-height: 175%;
+      }
+
+      .specs {
+        float: left;
+        width: 75%;
+        margin-bottom: 0.2em;
+
+        .spec {
+          float: left;
+          margin-right: 0.4em;
+
+          input {
+            position: relative;
+            top: 0.1em;
+            margin-right: 0.4em;
+          }
+
+          label {
+            margin: 0;
+            word-break: break-all;
+            word-wrap: break-word;
+          }
+        }
+      }
+    }
+
+    .specsSection {
+    }
+
+    .countSection {
+      input[type="number"] {
+        width: 4em;
+        margin: 0 0.5em 0 0;
+        text-align: center;
+      }
+      span {
+        color: #aaa;
+      }
+    }
+
+    .purchaseSection, .add2MyCartSection, .showMyCartSection {
+      width: auto;
+      margin: 0 1em 0 0;
+      padding: 0.5em 0 0 0;
+
+      input[type='button'] {
+        width: 6.5em;
+        height: 2.5em;
+        padding: 0 0.4em;
+      }
+    }
+
+    .showMyCartSection {
+      margin: 0;
+    }
+
+    .notes {
+      font-size: 13px;
+      width: 95%;
+      overflow: hidden;
+
+      .title {
+        float: left;
+        width: 95%;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.2em;
+        border-bottom: 2px solid #31B0D5;
+      }
+
+      .note {
+        float: left;
+        width: 100%;
+        margin-bottom: 0.2em;
+
+        .sequence {
+          font-weight: bold;
+        }
+
+        .success {
+          color: #3AAD8B;
+          padding: 0 0 0 0.5em;
+        }
+
+        .failed {
+          color: #FF0000;
+          padding: 0 0 0 0.5em;
+        }
+      }
+    }
+  }
+}
