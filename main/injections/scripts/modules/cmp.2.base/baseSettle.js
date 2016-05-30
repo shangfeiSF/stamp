@@ -83,6 +83,7 @@ Stamp.$.extend(
 
         nodes.image = image
         nodes.answer.prepend(image)
+        nodes.answer.show()
 
         self.shortCut()
       }.bind(self))

@@ -204,7 +204,7 @@ Stamp.$.extend(
         value: '获取验证码'
       }).addClass('btn btn-info')
       var sendState = Stamp.$('<span class="state">')
-      schedule.message.length && sendState.addClass('fulfilled')
+      schedule && schedule.message.length && sendState.addClass('fulfilled')
 
       self.nodes.phone = phone
       self.nodes.send = send
@@ -214,7 +214,7 @@ Stamp.$.extend(
     verify_render: function (schedule) {
       var self = this
 
-      var codeValue = schedule.message.length ? schedule.message : ''
+      var codeValue = schedule && schedule.message.length ? schedule.message : ''
 
       var code = Stamp.$('<input>', {
         type: 'text',
@@ -228,7 +228,7 @@ Stamp.$.extend(
         value: '验证手机'
       }).addClass('btn btn-info')
       var verifyState = Stamp.$('<span class="state">')
-      schedule.message.length && verifyState.addClass('fulfilled')
+      schedule && schedule.message.length && verifyState.addClass('fulfilled')
 
       self.nodes.code = code
       self.nodes.verify = verify
@@ -258,7 +258,7 @@ Stamp.$.extend(
         value: '图片验证'
       }).addClass('btn btn-info')
       var identifyState = Stamp.$('<span class="state">')
-      schedule.token.length && identifyState.addClass('fulfilled')
+      schedule && schedule.token.length && identifyState.addClass('fulfilled')
 
       self.nodes.identify = identify
       self.nodes.identifyState = identifyState
