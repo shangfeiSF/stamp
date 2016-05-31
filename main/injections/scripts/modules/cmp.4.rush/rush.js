@@ -239,8 +239,8 @@ Stamp.$.extend(
         var batch2MyCart = Stamp.$('<input>', {
           type: 'button',
           class: 'batch2MyCart',
-          value: '一键加购'
-        }).addClass('btn btn-warning')
+          value: '一键购买'
+        }).addClass('btn btn-info')
 
         nodes.targetsList = targetsList
 
@@ -656,6 +656,7 @@ Stamp.$.extend(
         userType: self.fairy.storage.get('userType'),
         userId: self.fairy.storage.get('userId'),
         code: self.fairy.storage.get('message'),
+        mobile: self.fairy.storage.get('mobile'),
         message: self.schedule.message,
         sid: self.schedule.sid,
         token: self.schedule.token
@@ -794,7 +795,7 @@ Stamp.$.extend(
         type: 'button',
         class: 'goodAdd',
         value: '加入列表'
-      }).addClass('btn btn-warning')
+      }).addClass('btn btn-success')
 
       var block = Stamp.$('<div class="selectDetailsBlock">')
         .attr('data-goodsId', details.goodsId)

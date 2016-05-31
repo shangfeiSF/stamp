@@ -5,6 +5,8 @@ function Base(fairy) {
     /* render add */
     root: null,
 
+    checkboxs: [],
+
     count: null,
     specs: null,
 
@@ -13,6 +15,12 @@ function Base(fairy) {
     showMyCart: null,
 
     notes: null
+  }
+
+  this.schedule = {
+    message: '',
+    sid: '',
+    token: ''
   }
 
   this.init()
@@ -28,6 +36,11 @@ Stamp.$.extend(
     },
 
     render: function () {
+      this.send_render()
+      this.storeCode_render()
+      this.imageVerification_render()
+      this.schedule_render()
+
       this.count_render()
       this.specs_render()
       this.purchase_render()
@@ -36,6 +49,11 @@ Stamp.$.extend(
     },
 
     bind: function () {
+      this.send_bind()
+      this.storeCode_bind()
+      this.imageVerification_bind()
+      this.schedule_bind()
+
       this.count_bind()
       this.specs_binde()
       this.purchase_bind()
@@ -48,11 +66,13 @@ Stamp.$.extend(
       var nodes = self.nodes
 
       var sections = [
+        'sendSection',
+        'storeCodeSection',
+        'imageVerificationSection',
         'specsSection',
         'countSection',
-        'purchaseSection',
-        'add2MyCartSection',
-        'showMyCartSection'
+        'scheduleSection',
+        'normalSection'
       ]
 
       sections = Stamp.$.map(sections, function (klass) {
@@ -61,11 +81,34 @@ Stamp.$.extend(
         })
       })
 
-      sections[0].append(nodes.specs)
-      sections[1].append(nodes.count)
-      sections[2].append(nodes.purchase)
-      sections[3].append(nodes.add2MyCart)
-      sections[4].append(nodes.showMyCart)
+      sections[0].append(Stamp.$('<div class="title">').text('配置验证码'))
+      sections[0].append(nodes.phone)
+      sections[0].append(nodes.send)
+      nodes.send.after(nodes.sendState)
+
+      sections[1].append(nodes.code)
+      sections[1].append(nodes.storeCode)
+      nodes.storeCode.after(nodes.storeCodeState)
+
+      sections[2].append(Stamp.$('<div class="title">').text('验证图片'))
+      sections[2].append(nodes.image)
+      sections[2].append(nodes.answer)
+
+      sections[3].append(Stamp.$('<div class="title">').text('选择规格和数量'))
+      sections[3].append(nodes.specs)
+      sections[4].append(nodes.count)
+
+      sections[5].append(Stamp.$('<div class="title">').text('秒杀步骤'))
+      sections[5].append(nodes.verify)
+      sections[5].append(nodes.verifyState)
+      sections[5].append(nodes.identify)
+      sections[5].append(nodes.identifyState)
+      sections[5].append(nodes.rushPurchase)
+
+      sections[6].append(Stamp.$('<div class="title">').text('常规购买'))
+      sections[6].append(nodes.purchase)
+      sections[6].append(nodes.add2MyCart)
+      sections[6].append(nodes.showMyCart)
 
       var root = Stamp.$('<div class="baseRoot"></div>')
       Stamp.$.each(sections, function (index, section) {
@@ -79,6 +122,119 @@ Stamp.$.extend(
     }
   },
   {
+    send_render: function () {
+      var self = this
+
+      var phone = Stamp.$('<select>', {
+        style: 'width: 11em;'
+      }).addClass('form-control')
+      Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
+        var optionConfig = {
+          value: mobile
+        }
+        index === 0 && (optionConfig.selected = 'selected')
+        phone.append(Stamp.$('<option>', optionConfig).text(mobile))
+      })
+
+      var send = Stamp.$('<input>', {
+        type: 'button',
+        value: '获取验证码'
+      }).addClass('btn btn-info')
+      var sendState = Stamp.$('<span class="state">')
+
+      self.nodes.phone = phone
+      self.nodes.send = send
+      self.nodes.sendState = sendState
+    },
+
+    storeCode_render: function () {
+      var self = this
+
+      var storedMessage = self.fairy.storage.get('message')
+      var code = Stamp.$('<input>', {
+        type: 'text',
+        value: storedMessage !== undefined ? storedMessage : '',
+        style: 'width: 11em;'
+      }).addClass('form-control')
+      var storeCode = Stamp.$('<input>', {
+        type: 'button',
+        value: '配置验证码'
+      }).addClass('btn btn-info')
+      var storeCodeState = Stamp.$('<span class="state">')
+
+      self.nodes.code = code
+      self.nodes.storeCode = storeCode
+      self.nodes.storeCodeState = storeCodeState
+    },
+
+    imageVerification_render: function () {
+      var self = this
+
+      var nodes = self.nodes
+
+      var image = Stamp.$('<img class="verifyImage">')
+
+      Stamp.probe.execute('getSid', {}, function (message) {
+        self.schedule.sid = message.data.sid
+
+        nodes.image.attr('src', [self.fairy.imageBase, "&sid=", message.data.sid, "&", Math.random()].join(''))
+        Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
+          Stamp.$(checkbox).attr('checked', false)
+        })
+      }.bind(self))
+
+      var answer = Stamp.$('<div class="checkboxs">')
+      var wraps = self.fairy.buildAnswerBox('_rush_answer_')
+
+      wraps.forEach(function (wrap) {
+        nodes.checkboxs.push(wrap.find('input[type="checkbox"]'))
+        answer.append(wrap)
+      })
+
+      nodes.image = image
+      nodes.answer = answer
+    },
+
+    schedule_render: function () {
+      var self = this
+
+      var nodes = self.nodes
+
+      var verify = Stamp.$('<input>', {
+        type: 'button',
+        class: 'verify',
+        value: '验证验证码'
+      }).addClass('btn btn-warning')
+      var verifyState = Stamp.$('<span class="state">').css({
+        top: '0.9em',
+        margin: '0 0.5em'
+      })
+
+      var identify = Stamp.$('<input>', {
+        type: 'button',
+        class: 'identify',
+        value: '验证图片'
+      }).addClass('btn btn-warning')
+      var identifyState = Stamp.$('<span class="state">').css({
+        top: '0.9em',
+        margin: '0 0.5em'
+      })
+
+      var rushPurchase = Stamp.$('<input>', {
+        type: 'button',
+        class: 'batch2MyCart',
+        value: '一键购买'
+      }).addClass('btn btn-info')
+
+      self.nodes.verify = verify
+      self.nodes.verifyState = verifyState
+
+      nodes.identify = identify
+      nodes.identifyState = identifyState
+
+      nodes.rushPurchase = rushPurchase
+    },
+
     count_render: function () {
       var self = this
 
@@ -155,7 +311,7 @@ Stamp.$.extend(
       var add2MyCart = Stamp.$('<input>', {
         type: 'button',
         value: '加入购物车'
-      }).addClass('btn btn-warning')
+      }).addClass('btn btn-success')
 
       self.nodes.add2MyCart = add2MyCart
     },
@@ -172,6 +328,165 @@ Stamp.$.extend(
     },
   },
   {
+    send_bind: function () {
+      var self = this
+
+      var phone = self.nodes.phone
+      var send = self.nodes.send
+      var sendState = self.nodes.sendState
+      var code = self.nodes.code
+
+      send.on('click', function () {
+        sendState.removeClass('fulfilled')
+        sendState.addClass('pending')
+        var params = {
+          mobileNum: phone.val(),
+          smsType: '4'
+        }
+
+        self.fairy.storage.remove('mobile')
+        code.val('')
+
+        self.fairy.post('code', params)
+          .then(function (data) {
+            if (data.result == "sended") {
+              setTimeout(function () {
+                sendState.removeClass('pending')
+                sendState.addClass('fulfilled')
+              }, 500)
+
+              self.fairy.storage.update('mobile', phone.val())
+            } else {
+              sendState.removeClass('pending')
+              alert(data.result)
+            }
+          })
+      })
+    },
+
+    storeCode_bind: function () {
+      var self = this
+
+      var code = self.nodes.code
+      var storeCode = self.nodes.storeCode
+      var storeCodeState = self.nodes.storeCodeState
+
+      storeCode.on('click', function () {
+        if (code.val().length) {
+          storeCodeState.removeClass('fulfilled')
+          storeCodeState.addClass('pending')
+
+          self.fairy.storage.update('message', code.val())
+
+          setTimeout(function () {
+            storeCodeState.removeClass('pending')
+            storeCodeState.addClass('fulfilled')
+          }, 500)
+        }
+      })
+    },
+
+    imageVerification_bind: function () {
+      var self = this
+
+      var nodes = self.nodes
+
+      nodes.image.on('dblclick', function () {
+          nodes.image.attr('src', [self.fairy.imageBase, "&sid=", self.schedule.sid, "&", Math.random()].join(''))
+          Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
+            Stamp.$(checkbox).attr('checked', false)
+          })
+        }
+      )
+    },
+
+    schedule_bind: function () {
+      var self = this
+
+      var nodes = self.nodes
+
+      nodes.verify.on('click', function () {
+        var mobileInStore = self.fairy.storage.get('mobile')
+        var messageInStore = self.fairy.storage.get('message')
+
+        if (mobileInStore && messageInStore) {
+          var verifyState = nodes.verifyState
+
+          verifyState.removeClass('fulfilled')
+          verifyState.addClass('pending')
+
+          var params = {
+            mobile: mobileInStore,
+            message: messageInStore
+          }
+
+          self.fairy.post('check', params)
+            .then(function (data) {
+              if (data.result.status == '1') {
+                setTimeout(function () {
+                  verifyState.removeClass('pending')
+                  verifyState.addClass('fulfilled')
+                }, 500)
+
+                self.schedule.message = data.result.random_code
+              } else {
+                verifyState.removeClass('pending')
+                alert(data.result.msg)
+              }
+            })
+        }
+      })
+
+      nodes.identify.on('click', function () {
+        if (self.schedule.sid.length === 0) return false
+
+        nodes.identifyState.removeClass('fulfilled')
+        nodes.identifyState.addClass('pending')
+
+        var checked = Stamp.$.grep(nodes.checkboxs, function (checkbox) {
+          return Stamp.$(checkbox).attr('checked') === 'checked'
+        })
+        var postions = Stamp.$.map(checked, function (checkbox) {
+          return Stamp.$(checkbox).val()
+        })
+
+        var verifyURL = 'http://jiyou.11185.cn/l/verify.html?'
+        var params = {
+          wid: '3be16628-c630-437b-b443-c4d9f18602ed',
+          answer: postions.join(','),
+          sid: self.schedule.sid,
+          checkCode: encodeURIComponent('user=zhangsan&stamp_id=123'),
+        }
+
+        Stamp.$.each(params, function (key, value) {
+          verifyURL += [key, '=', value].join('') + '&'
+        })
+
+        Stamp.probe.execute('getToken', {
+          verifyURL: verifyURL + Math.random()
+        }, function (message) {
+          if (message.data.token !== 'ERROR') {
+            setTimeout(function () {
+              nodes.identifyState.removeClass('pending')
+              nodes.identifyState.addClass('fulfilled')
+            }, 500)
+
+            self.schedule.token = message.data.token
+          } else {
+            nodes.identifyState.removeClass('pending')
+            nodes.image.trigger('dblclick')
+          }
+        }.bind(self))
+      })
+
+      nodes.rushPurchase.on('click', function () {
+        if (!self.schedule.message.length || !self.schedule.token.length) {
+          return false
+        }
+        self.nodes.purchase.trigger('click', self._copyAndCleanSchedule())
+      })
+    },
+
     count_bind: function () {
       var self = this
 
@@ -218,7 +533,7 @@ Stamp.$.extend(
       var purchase = nodes.purchase
       var count = nodes.count
 
-      purchase.on('click', function () {
+      purchase.on('click', function (e, schedule) {
         var panelNodes = self.fairy.panel.nodes
         var anchor = self.fairy.layout.baseSettleBlock.anchor
 
@@ -241,7 +556,7 @@ Stamp.$.extend(
               cache.count = count.val()
 
               var needVerify = data.result.search('手机确认') > -1 ? true : false
-              self.fairy.baseSettle.init(needVerify)
+              self.fairy.baseSettle.init(needVerify, schedule)
             }
           })
       })
@@ -276,6 +591,22 @@ Stamp.$.extend(
       })
     },
 
+    showMyCart_bind: function () {
+      var self = this
+
+      var nodes = self.nodes
+      var showMyCart = nodes.showMyCart
+
+      showMyCart.on('click', function () {
+        var panelNodes = self.fairy.panel.nodes
+        var anchor = self.fairy.layout.cartBlock.anchor
+
+        panelNodes.tabBlockTriggers[anchor].trigger('click')
+        self.fairy.cart._getShowPage()
+      })
+    },
+  },
+  {
     _addRecords: function (msg) {
       var self = this
 
@@ -312,18 +643,49 @@ Stamp.$.extend(
       }
     },
 
-    showMyCart_bind: function () {
+    _copyAndCleanSchedule: function () {
+      var self = this
+
+      var schedule = {
+        userType: self.fairy.storage.get('userType'),
+        userId: self.fairy.storage.get('userId'),
+        code: self.fairy.storage.get('message'),
+        mobile: self.fairy.storage.get('mobile'),
+        message: self.schedule.message,
+        sid: self.schedule.sid,
+        token: self.schedule.token
+      }
+
+      self.schedule = {
+        message: '',
+        sid: '',
+        token: ''
+      }
+
+      return schedule
+    },
+
+    _reset: function () {
       var self = this
 
       var nodes = self.nodes
-      var showMyCart = nodes.showMyCart
 
-      showMyCart.on('click', function () {
-        var panelNodes = self.fairy.panel.nodes
-        var anchor = self.fairy.layout.cartBlock.anchor
+      self.fairy.storage.remove('mobile')
+      self.fairy.storage.remove('message')
 
-        panelNodes.tabBlockTriggers[anchor].trigger('click')
-        self.fairy.cart._getShowPage()
+      nodes.code.val('')
+
+      nodes.verifyState.removeClass('fulfilled')
+      nodes.identifyState.removeClass('fulfilled')
+
+      Stamp.probe.execute('getSid', {}, function (message) {
+        self.schedule.sid = message.data.sid
+
+        nodes.image.attr('src', [self.fairy.imageBase, "&sid=", message.data.sid, "&", Math.random()].join(''))
+      }.bind(self))
+
+      Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
+        Stamp.$(checkbox).attr('checked', false)
       })
     },
   }

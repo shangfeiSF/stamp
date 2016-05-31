@@ -57,7 +57,7 @@ Stamp.$.extend(
       this.entry = state === null ? 'cartSettle' : 'baseSettle'
 
       this.render(state, needVerify, schedule)
-      this.bind(needVerify)
+      this.bind(needVerify, schedule)
       this.append(needVerify)
     },
 
@@ -74,13 +74,13 @@ Stamp.$.extend(
       this.book_render()
     },
 
-    bind: function (needVerify) {
+    bind: function (needVerify, schedule) {
       if (needVerify) {
-        this.send_bind()
-        this.verify_bind()
+        this.send_bind(schedule)
+        this.verify_bind(schedule)
       }
 
-      this.identify_bind()
+      this.identify_bind(schedule)
       this.book_bind()
     },
 
@@ -307,7 +307,8 @@ Stamp.$.extend(
     }
   },
   {
-    send_bind: function () {
+    send_bind: function (schedule) {
+      if (schedule) return false
       var self = this
 
       var cache = self.fairy.cache
@@ -338,7 +339,8 @@ Stamp.$.extend(
       })
     },
 
-    verify_bind: function () {
+    verify_bind: function (schedule) {
+      if (schedule) return false
       var self = this
 
       var cache = self.fairy.cache
@@ -370,7 +372,8 @@ Stamp.$.extend(
       })
     },
 
-    identify_bind: function () {
+    identify_bind: function (schedule) {
+      if (schedule) return false
       var self = this
 
       var cache = self.fairy.cache

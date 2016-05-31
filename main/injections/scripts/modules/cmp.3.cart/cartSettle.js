@@ -22,6 +22,7 @@ Stamp.$.extend(
 
         self.fairy.cache.userType = schedule.userType
         self.fairy.cache.userId = schedule.userId
+        self.fairy.cache.mobile = schedule.mobile
         self.fairy.cache.message = schedule.message
         self.fairy.cache.sid = schedule.sid
         self.fairy.cache.token = schedule.token
@@ -618,6 +619,7 @@ Stamp.$.extend(
       self.fairy.post('book', settlefinalPostData)
         .then(function (data) {
           if (data.textStatus === 'success') {
+            self.order.nodes.book.off('click')
             var dom = Stamp.$(data.result)
 
             var infoWrap = Stamp.$.grep(dom, function (node) {

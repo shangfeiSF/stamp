@@ -17,15 +17,92 @@
     .section {
       float: left;
       width: 100%;
-      margin-bottom: 0.2em;
+      margin-bottom: 0.4em;
 
       .title {
         float: left;
-        width: 25%;
+        width: 95%;
+        font-size: 15px;
         font-weight: bold;
-        line-height: 175%;
+        padding: 0 0 0.2em 0.4em;
+        margin-bottom: 0.4em;
+        border-bottom: 2px solid #31B0D5;
       }
 
+      input, select {
+        float: left;
+        font-size: 14px;
+        margin-right: 0.4em;
+      }
+
+      input[type='button'] {
+        width: 8em;
+        height: 34px;
+        padding: 0 1em;
+      }
+
+      .state {
+        float: left;
+        position: relative;
+        font-size: 16px;
+        top: 0.5em;
+        width: 1em;
+        height: 1em;
+        border-radius: 0.5em;
+        background: #FF0000;
+      }
+
+      .fulfilled {
+        background: #3AAD8B;
+      }
+
+      .pending {
+        background: #F0AD4F;
+      }
+    }
+
+    .scheduleSection {
+      .verify, .identify, .batch2MyCart {
+        margin: 0.4em 0 0 0;
+      }
+    }
+
+    .imageVerificationSection {
+      .verifyImage {
+        display: block;
+        width: 293px;
+        height: 190px;
+      }
+
+      .checkboxs {
+        float: left;
+        font-size: 18px;
+        width: 293px;
+
+        .position {
+          float: left;
+          width: 25%;
+          margin-top: 0.2em;
+        }
+
+        label {
+          float: left;
+          display: block;
+          width: 2.3em;
+          text-align: center;
+        }
+
+        input {
+          float: left;
+          font-size: 26px;
+          width: 1em;
+          height: 1em;
+          margin: 0;
+        }
+      }
+    }
+
+    .specsSection {
       .specs {
         float: left;
         width: 75%;
@@ -36,8 +113,6 @@
           margin-right: 0.4em;
 
           input {
-            position: relative;
-            top: 0.1em;
             margin-right: 0.4em;
           }
 
@@ -48,9 +123,6 @@
           }
         }
       }
-    }
-
-    .specsSection {
     }
 
     .countSection {
@@ -64,20 +136,13 @@
       }
     }
 
-    .purchaseSection, .add2MyCartSection, .showMyCartSection {
-      width: auto;
-      margin: 0 1em 0 0;
-      padding: 0.5em 0 0 0;
-
+    .normalSection {
       input[type='button'] {
         width: 6.5em;
         height: 2.5em;
         padding: 0 0.4em;
+        margin: 0 2.5em 0 0;
       }
-    }
-
-    .showMyCartSection {
-      margin: 0;
     }
 
     .notes {

@@ -11,7 +11,7 @@ function baseSettle(fairy) {
 Stamp.$.extend(
   baseSettle.prototype,
   {
-    init: function (needVerify) {
+    init: function (needVerify, schedule) {
       var self = this
 
       var cache = self.fairy.cache
@@ -19,46 +19,74 @@ Stamp.$.extend(
 
       self.needVerify = needVerify
 
-      self.fairy.post('user')
-        .asCallback(function (error, data) {
-          if (data.textStatus === 'success') {
-            cache.userType = data.result.userType
-            cache.userId = data.result.userId
-          }
-        })
-        .then(function () {
-          var params = {
-            ticketAttr: details.goodsAttrList[cache.specIndex].id,
-            userId: cache.userId,
-            ticketId: details.goodsShowInfo.id
-          }
+      if (schedule) {
+        self.autoBook = true
 
-          return self.fairy.post('limit', params)
-        })
-        .asCallback(function (error, data) {
-          if (data.textStatus === 'success') {
-            var result = JSON.parse(data.result)
+        self.fairy.cache.userType = schedule.userType
+        self.fairy.cache.userId = schedule.userId
+        self.fairy.cache.mobile = schedule.mobile
+        self.fairy.cache.message = schedule.message
+        self.fairy.cache.sid = schedule.sid
+        self.fairy.cache.token = schedule.token
 
-            details.goodsAttrList[cache.specIndex].buyLimit = result.buyLimit
-          }
-        })
-        .then(function () {
-          var params = {
-            ticketAttr: details.goodsAttrList[cache.specIndex].id,
-            goodsNum: cache.count
-          }
+        var params = {
+          ticketAttr: details.goodsAttrList[cache.specIndex].id,
+          goodsNum: cache.count
+        }
 
-          return self.fairy.post('message', params)
-        })
-        .asCallback(function (error, data) {
-          if (data.textStatus === 'success') {
-            self.order = new Order(self.fairy)
-            self.order.init(data.result, needVerify)
-          }
-        })
-        .then(function () {
-          self.getSid()
-        })
+        self.fairy.post('message', params)
+          .asCallback(function (error, data) {
+            if (data.textStatus === 'success') {
+              self.order = new Order(self.fairy)
+              self.order.init(data.result, needVerify, schedule)
+
+              self.shortCut()
+            }
+          })
+      } else {
+        self.autoBook = false
+
+        self.fairy.post('user')
+          .asCallback(function (error, data) {
+            if (data.textStatus === 'success') {
+              cache.userType = data.result.userType
+              cache.userId = data.result.userId
+            }
+          })
+          .then(function () {
+            var params = {
+              ticketAttr: details.goodsAttrList[cache.specIndex].id,
+              userId: cache.userId,
+              ticketId: details.goodsShowInfo.id
+            }
+
+            return self.fairy.post('limit', params)
+          })
+          .asCallback(function (error, data) {
+            if (data.textStatus === 'success') {
+              var result = JSON.parse(data.result)
+
+              details.goodsAttrList[cache.specIndex].buyLimit = result.buyLimit
+            }
+          })
+          .then(function () {
+            var params = {
+              ticketAttr: details.goodsAttrList[cache.specIndex].id,
+              goodsNum: cache.count
+            }
+
+            return self.fairy.post('message', params)
+          })
+          .asCallback(function (error, data) {
+            if (data.textStatus === 'success') {
+              self.order = new Order(self.fairy)
+              self.order.init(data.result, needVerify)
+            }
+          })
+          .then(function () {
+            self.getSid()
+          })
+      }
     }
   },
   {
@@ -362,7 +390,15 @@ Stamp.$.extend(
 
       self.fairy.post('fee', params)
         .then(function (data) {
-          data.textStatus === 'success' && self._calculate(cache.goodsListIndex, data.result)
+          if (data.textStatus === 'success') {
+            if (self.autoBook) {
+              setTimeout(function () {
+                self.order.nodes.book.trigger('click')
+              }, 1000)
+            } else {
+              self._calculate(cache.goodsListIndex, data.result)
+            }
+          }
         })
     },
 
@@ -490,6 +526,7 @@ Stamp.$.extend(
       self.fairy.post('book', finalPostData)
         .then(function (data) {
           if (data.textStatus === 'success') {
+            self.order.nodes.book.off('click')
             var dom = Stamp.$(data.result)
 
             var infoWrap = Stamp.$.grep(dom, function (node) {
@@ -498,6 +535,8 @@ Stamp.$.extend(
             var errorWrap = Stamp.$.grep(dom, function (node) {
               return Stamp.$(node).hasClass('smrz') && Stamp.$(node).hasClass('zccgym')
             })
+
+            self.fairy.base._reset()
 
             if (infoWrap.length) {
               self.success(infoWrap, callback)
