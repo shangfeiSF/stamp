@@ -1,6 +1,4 @@
 .idea/
-build/
+bundle/
 node_modules/
 npm-debug.log
-main/background.webpack.js
-chromeUsers/

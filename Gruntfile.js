@@ -2,43 +2,37 @@ module.exports = function (grunt) {
   grunt.file.defaultEncoding = 'utf-8'
 
   grunt.initConfig({
-    replace: {
-      tmp: {
-        src: ["./main/background.js"],
-        dest: ["./main/background.webpack.js"],
-        replacements: [
-          {
-            from: "./main/",
-            to: "./build/"
-          }
-        ]
-      }
-    },
-
     copy: {
       static: {
         files: [
           {
             cwd: 'main/',
-            src: ['background.html', 'icon.png'],
-            dest: 'build/',
+            src: ['background.html', 'icon.png', 'manifest.json'],
+            dest: 'bundle/',
+            expand: true
+          },
+          {
+            cwd: 'main/lib/',
+            src: '*',
+            dest: 'bundle/lib/',
             expand: true
           },
           {
             cwd: 'main/popup/',
             src: '*',
-            dest: 'build/popup/',
+            dest: 'bundle/popup/',
             expand: true
           },
           {
             cwd: 'main/injections/scripts/',
             src: ['probe.js'],
-            dest: 'build/injections/scripts/',
+            dest: 'bundle/injections/scripts/',
             expand: true
-          }, {
+          },
+          {
             cwd: 'main/injections/scripts/dwr/',
-            src: ['init.js', 'engine.js', 'utils.js', 'shoppingCartAction.js'],
-            dest: 'build/injections/scripts/dwr/',
+            src: '*',
+            dest: 'bundle/injections/scripts/dwr/',
             expand: true
           }]
       }
@@ -50,7 +44,7 @@ module.exports = function (grunt) {
           {
             cwd: 'main/injections/css/',
             src: '*.less',
-            dest: 'build/injections/css/',
+            dest: 'bundle/injections/css/',
             ext: '.css',
             expand: true
           }
@@ -59,8 +53,7 @@ module.exports = function (grunt) {
     },
 
     clean: {
-      buildDir: ['build'],
-      tmp: './main/background.webpack.js'
+      bundleDir: ['bundle']
     }
   })
 
@@ -69,21 +62,12 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-less')
   grunt.loadNpmTasks('grunt-contrib-clean')
 
-  grunt.registerTask('build', [
-    'replace:tmp',
-    'copy:static',
-    'less:compiled'
-  ])
-  grunt.registerTask('clear', [
-    'clean:tmp'
-  ])
   grunt.registerTask('reset', [
-    'clean:buildDir'
+    'clean:bundleDir'
   ])
 
   grunt.registerTask('default', [
-    'replace:tmp',
     'copy:static',
-    'less:compiled'
+    'less:compiled',
   ])
 }
