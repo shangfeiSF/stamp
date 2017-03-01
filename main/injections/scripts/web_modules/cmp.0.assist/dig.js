@@ -1,6 +1,6 @@
 function Dig(fairy, url, callback) {
   this.patterns = {
-    href: /http:\/\/jiyou\.biz\.11185\.cn\/retail\/ticketDetail\_(\d+)\.html/,
+    href: /http:\/\/jiyou\.retail\.11185\.cn\/retail\/ticketDetail\_(\d+)\.html/,
     part: /jQuery\(\"\#data\"\)/,
     original: /.*jQuery\(\"\#data\"\)\.data\(\"(.*?)\"\,\"?(.*?)\"?\)$/
   }

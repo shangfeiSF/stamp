@@ -55,7 +55,7 @@ Stamp.$.extend(
       this.schedule_bind()
 
       this.count_bind()
-      this.specs_binde()
+      this.specs_bind()
       this.purchase_bind()
       this.add2MyCart_bind()
       this.showMyCart_bind()
@@ -115,8 +115,6 @@ Stamp.$.extend(
         root.append(section)
       })
 
-      root.prepend(Stamp.$('<span class="tip">').text('提示：选择规格和数量后生成快速订单'))
-
       nodes.root = root
       self.fairy.panel.nodes.tabBlocks[self.fairy.layout.baseBlock.anchor].append(root)
     }
@@ -125,16 +123,20 @@ Stamp.$.extend(
     send_render: function () {
       var self = this
 
-      var phone = Stamp.$('<select>', {
+      // var phone = Stamp.$('<select>', {
+      //   style: 'width: 11em;'
+      // }).addClass('form-control')
+      // Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
+      //   var optionConfig = {
+      //     value: mobile
+      //   }
+      //   index === 0 && (optionConfig.selected = 'selected')
+      //   phone.append(Stamp.$('<option>', optionConfig).text(mobile))
+      // })
+
+      var phone = Stamp.$('<input>', {
         style: 'width: 11em;'
       }).addClass('form-control')
-      Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
-        var optionConfig = {
-          value: mobile
-        }
-        index === 0 && (optionConfig.selected = 'selected')
-        phone.append(Stamp.$('<option>', optionConfig).text(mobile))
-      })
 
       var send = Stamp.$('<input>', {
         type: 'button',
@@ -337,6 +339,8 @@ Stamp.$.extend(
       var code = self.nodes.code
 
       send.on('click', function () {
+        self._changeReffer('buyNow')
+
         sendState.removeClass('fulfilled')
         sendState.addClass('pending')
         var params = {
@@ -392,6 +396,7 @@ Stamp.$.extend(
       var nodes = self.nodes
 
       nodes.image.on('dblclick', function () {
+          self._changeReffer('buyNow')
           nodes.image.attr('src', [self.fairy.imageBase, "&sid=", self.schedule.sid, "&", Math.random()].join(''))
           Stamp.$.each(nodes.checkboxs, function (index, checkbox) {
             Stamp.$(checkbox).attr('checked', false)
@@ -419,6 +424,8 @@ Stamp.$.extend(
             mobile: mobileInStore,
             message: messageInStore
           }
+
+          self._changeReffer('buyNow')
 
           self.fairy.post('check', params)
             .then(function (data) {
@@ -462,6 +469,7 @@ Stamp.$.extend(
           verifyURL += [key, '=', value].join('') + '&'
         })
 
+        self._changeReffer('buyNow')
         Stamp.probe.execute('getToken', {
           verifyURL: verifyURL + Math.random()
         }, function (message) {
@@ -498,7 +506,7 @@ Stamp.$.extend(
       })
     },
 
-    specs_binde: function () {
+    specs_bind: function () {
       var self = this
 
       var cache = self.fairy.cache
@@ -534,6 +542,8 @@ Stamp.$.extend(
       var count = nodes.count
 
       purchase.on('click', function (e, schedule) {
+        self._changeReffer('ticketDetail')
+
         var panelNodes = self.fairy.panel.nodes
         var anchor = self.fairy.layout.baseSettleBlock.anchor
 
@@ -556,6 +566,8 @@ Stamp.$.extend(
               cache.count = count.val()
 
               var needVerify = data.result.search('手机确认') > -1 ? true : false
+
+              self._changeReffer('buyNow')
               self.fairy.baseSettle.init(needVerify, schedule)
             }
           })
@@ -573,6 +585,8 @@ Stamp.$.extend(
       var add2MyCart = nodes.add2MyCart
 
       add2MyCart.on('click', function () {
+        self._changeReffer('ticketDetail')
+
         self.fairy.post('user')
           .asCallback(function (error, data) {
             if (data.textStatus === 'success') {
@@ -598,6 +612,8 @@ Stamp.$.extend(
       var showMyCart = nodes.showMyCart
 
       showMyCart.on('click', function () {
+        self._changeReffer('ticketDetail')
+
         var panelNodes = self.fairy.panel.nodes
         var anchor = self.fairy.layout.cartBlock.anchor
 
@@ -607,6 +623,16 @@ Stamp.$.extend(
     },
   },
   {
+    _changeReffer: function (state) {
+      var MAP = {
+        'ticketDetail': window.location.href,
+        'buyNow': 'http://jiyou.retail.11185.cn/retail/initPageForBuyNow.html'
+      }
+      Stamp.probe.execute('changeReffer', {
+        currentReffer: MAP[state]
+      })
+    },
+
     _addRecords: function (msg) {
       var self = this
 

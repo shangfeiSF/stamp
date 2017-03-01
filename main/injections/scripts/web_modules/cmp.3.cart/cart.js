@@ -3,7 +3,7 @@ function Cart(fairy) {
 
   this.booted = false
 
-  this.settleURL = 'http://jiyou.biz.11185.cn/retail/initPageAfterMyShopcart.html?shoppingcartIds='
+  this.settleURL = 'http://jiyou.retail.11185.cn/retail/initPageAfterMyShopcart.html?shoppingcartIds='
 
   this.nodes = {
     root: null,
@@ -52,6 +52,18 @@ Stamp.$.extend(
       root.append(nodes.settlement)
 
       self.booted = true
+    },
+
+    _changeReffer: function (state, shoppingcartIds) {
+      var self = this
+
+      var MAP = {
+        'cart': 'http://jiyou.retail.11185.cn/u/show.html?message=',
+        'cartSettle': self.settleURL + shoppingcartIds.join(';') + ';&fg=3',
+      }
+      Stamp.probe.execute('changeReffer', {
+        currentReffer: MAP[state]
+      })
     },
 
     _parseShops: function () {
@@ -123,9 +135,12 @@ Stamp.$.extend(
 
       Stamp.$.ajax({
         tupe: 'GET',
-        url: 'http://jiyou.biz.11185.cn/u/show.html?message=',
+        url: 'http://jiyou.retail.11185.cn/u/show.html?message=',
         success: function (html) {
           cache.html4cart = html
+
+          self._changeReffer('cart', [])
+
           self.fairy.cart.init(true)
           callback && callback(self.fairy.cart)
         },
@@ -304,13 +319,6 @@ Stamp.$.extend(
       var nodes = self.nodes
 
       nodes.settle.on('click', function (e, schedule) {
-        var panelNodes = self.fairy.panel.nodes
-        var anchor = self.fairy.layout.cartSettleBlock.anchor
-
-        panelNodes.tabBlocks[anchor].empty()
-        panelNodes.tabBlocks[anchor].append(Stamp.$('<div class="loading">').text('生成订单中...'))
-        panelNodes.tabBlockTriggers[anchor].trigger('click')
-
         var shoppingcartIds = []
 
         Stamp.$.each(nodes.shops.find('.shop.selected'), function (i, node) {
@@ -320,6 +328,13 @@ Stamp.$.extend(
         })
 
         if (!shoppingcartIds.length) return false
+
+        var panelNodes = self.fairy.panel.nodes
+        var anchor = self.fairy.layout.cartSettleBlock.anchor
+
+        panelNodes.tabBlocks[anchor].empty()
+        panelNodes.tabBlocks[anchor].append(Stamp.$('<div class="loading">').text('生成订单中...'))
+        panelNodes.tabBlockTriggers[anchor].trigger('click')
 
         var mock = {
           _origScriptSessionId: self.fairy.get_origScriptSessionId()
@@ -331,9 +346,11 @@ Stamp.$.extend(
 
           if (msgType !== 'true') return false
 
+          self._changeReffer('cart', [])
+
           Stamp.$.ajax({
             tupe: 'GET',
-            url: self.settleURL + shoppingcartIds.join(';') + '&fg=3',
+            url: self.settleURL + shoppingcartIds.join(';') + ';&fg=3',
             success: function (html) {
               cache.html4settle = html
 
@@ -341,6 +358,7 @@ Stamp.$.extend(
 
                 var needVerify = cache.html4settle.search('手机确认') > -1 ? true : false
 
+                self._changeReffer('cartSettle', shoppingcartIds)
                 self.fairy.cartSettle.init(needVerify, schedule)
               }
             },
@@ -358,6 +376,7 @@ Stamp.$.extend(
       var nodes = self.nodes
 
       nodes.refresh.on('click', function () {
+        self._changeReffer('cart', [])
         nodes.root.hide()
         self._getShowPage()
       })

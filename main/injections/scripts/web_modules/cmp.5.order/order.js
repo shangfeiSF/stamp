@@ -186,17 +186,21 @@ Stamp.$.extend(
     send_render: function (schedule) {
       var self = this
 
-      var phone = Stamp.$('<select>', {
-        id: '_phone_',
+      // var phone = Stamp.$('<select>', {
+      //   id: '_phone_',
+      //   style: 'width: 11em;'
+      // }).addClass('form-control')
+      // Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
+      //   var optionConfig = {
+      //     value: mobile
+      //   }
+      //   index === 0 && (optionConfig.selected = 'selected')
+      //   phone.append(Stamp.$('<option>', optionConfig).text(mobile))
+      // })
+
+      var phone = Stamp.$('<input>', {
         style: 'width: 11em;'
       }).addClass('form-control')
-      Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
-        var optionConfig = {
-          value: mobile
-        }
-        index === 0 && (optionConfig.selected = 'selected')
-        phone.append(Stamp.$('<option>', optionConfig).text(mobile))
-      })
 
       var send = Stamp.$('<input>', {
         type: 'button',

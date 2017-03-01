@@ -1,11 +1,6 @@
 var $ = require('jquery')
 
-function Reffer(config) {
-  var config = config || {}
-
-  this.allStates = config.allStates || []
-  this.originalState = config.originalState || ''
-  this.handlers = config.handlers || {}
+function Reffer() {
 }
 
 $.extend(Reffer.prototype, {
@@ -13,22 +8,15 @@ $.extend(Reffer.prototype, {
     var self = this
 
     chrome.webRequest.onBeforeSendHeaders.addListener(function (details) {
-      // details.requestHeaders
-      var originalState = self.portCache.currentRefferState
-      var matches = []
+      var currentReffer = self.portCache.currentReffer
 
-      if (matches.length) {
+      if (currentReffer != null) {
         var MAP = {}
 
         details.requestHeaders.forEach(function (header) {
           MAP[header.name] = header
         })
-
-        matches.forEach(function (match) {
-          match.modifiers.forEach(function (modifier) {
-            modifier.handler(MAP[modifier.name], self.portCache)
-          })
-        })
+        MAP['Referer'] && (MAP['Referer'].value = currentReffer)
       }
 
       return {
@@ -40,12 +28,9 @@ $.extend(Reffer.prototype, {
   },
 
   start: function (portCache) {
-    if (this.allStates.length || this.originalState.length) {
-      this.portCache = portCache
-      this.portCache.currentRefferState = this.originalState
+    this.portCache = portCache
 
-      this.onBeforeSendHeaders()
-    }
+    this.onBeforeSendHeaders()
   }
 })
 

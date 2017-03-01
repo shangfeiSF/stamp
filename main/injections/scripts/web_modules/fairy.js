@@ -1,15 +1,15 @@
-var Panel = require('panel')
+var Panel = require('./cmp.1.panel/panel')
 
-var Storage = require('storage')
-var Dig = require('dig')
+var Storage = require('./cmp.0.assist/storage')
+var Dig = require('./cmp.0.assist/dig')
 
-var Rush = require('rush')
+var Rush = require('./cmp.4.rush/rush')
 
-var Base = require('base')
-var BaseSettle = require('baseSettle')
+var Base = require('./cmp.2.base/base')
+var BaseSettle = require('./cmp.2.base/baseSettle')
 
-var Cart = require('cart')
-var CartSettle = require('cartSettle')
+var Cart = require('./cmp.3.cart/cart')
+var CartSettle = require('./cmp.3.cart/cartSettle')
 
 function Fairy(config) {
   var config = config || {}
@@ -44,11 +44,7 @@ function Fairy(config) {
       }
     }
 
-  this.mobiles = config.mobile || [
-      '17600808607',
-      '18600808607',
-      '18612697359'
-    ]
+  this.mobiles = config.mobile || []
 
   this.postConfig = {
     common: {
@@ -190,7 +186,7 @@ Stamp.$.extend(Fairy.prototype, {
 
     Stamp.$.ajax({
       type: 'GET',
-      url: 'http://jiyou.biz.11185.cn/dwr/engine.js',
+      url: 'http://jiyou.retail.11185.cn/dwr/engine.js',
       cache: false,
       async: false,
       success: function (content) {
@@ -231,7 +227,7 @@ Stamp.$.extend(Fairy.prototype, {
       var wrap = Stamp.$('<div class="position">')
       wrap.append(checkbox)
       wrap.append(label)
-      
+
       return wrap
     })
   },

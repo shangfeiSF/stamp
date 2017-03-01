@@ -1,4 +1,4 @@
-var Order = require('order')
+var Order = require('../cmp.5.order/order')
 
 function baseSettle(fairy) {
   this.fairy = fairy
@@ -100,8 +100,8 @@ Stamp.$.extend(
         cache.sid = message.data.sid
 
         var image = Stamp.$('<img>', {
-            src: message.data.image
-          })
+          src: message.data.image
+        })
           .on('dblclick', function () {
             nodes.image.attr('src', [self.fairy.imageBase, "&sid=", cache.sid, "&", Math.random()].join(''))
             Stamp.$.each(nodes.checkboxs, function (index, checkbox) {

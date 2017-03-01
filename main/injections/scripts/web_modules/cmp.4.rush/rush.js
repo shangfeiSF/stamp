@@ -1,4 +1,4 @@
-var Dig = require('dig')
+var Dig = require('../cmp.0.assist/dig')
 
 function Rush(fairy) {
   this.fairy = fairy
@@ -133,16 +133,20 @@ Stamp.$.extend(
     send_render: function () {
       var self = this
 
-      var phone = Stamp.$('<select>', {
+      // var phone = Stamp.$('<select>', {
+      //   style: 'width: 11em;'
+      // }).addClass('form-control')
+      // Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
+      //   var optionConfig = {
+      //     value: mobile
+      //   }
+      //   index === 0 && (optionConfig.selected = 'selected')
+      //   phone.append(Stamp.$('<option>', optionConfig).text(mobile))
+      // })
+
+      var phone = Stamp.$('<input>', {
         style: 'width: 11em;'
       }).addClass('form-control')
-      Stamp.$.each(self.fairy.mobiles, function (index, mobile) {
-        var optionConfig = {
-          value: mobile
-        }
-        index === 0 && (optionConfig.selected = 'selected')
-        phone.append(Stamp.$('<option>', optionConfig).text(mobile))
-      })
 
       var send = Stamp.$('<input>', {
         type: 'button',
@@ -611,7 +615,7 @@ Stamp.$.extend(
         }
         else {
           urls = ids.map(function (id) {
-            return 'http://jiyou.biz.11185.cn/retail/ticketDetail_' + Stamp.$.trim(id) + '.html'
+            return 'http://jiyou.retail.11185.cn/retail/ticketDetail_' + Stamp.$.trim(id) + '.html'
           })
         }
 

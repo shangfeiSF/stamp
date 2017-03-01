@@ -72,7 +72,7 @@ $.extend(Inject.prototype, {
     chrome.webNavigation.onCommitted.addListener(function (details) {
       if (details.frameId !== 0) return null
 
-      var match = details.url.match(/http:\/\/jiyou\.biz\.11185\.cn\/retail\/ticketDetail\_(\d+)\.html/)
+      var match = details.url.match(/http:\/\/jiyou\.retail\.11185\.cn\/retail\/ticketDetail\_(\d+)\.html/)
       if (!(match && match.length == 2)) return null
 
       self.syncCss(details.tabId)

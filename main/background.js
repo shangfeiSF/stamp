@@ -7,25 +7,12 @@ var Listener = require('listener')
 var Reffer = require('reffer')
 
 function Agent() {
-  this.reffer = new Reffer({
-    allStates: ['buyNow', 'add2Cart', 'myCart', 'settleMyCart'],
-    originalState: 'add2Cart',
-    handlers: {
-      buyNow: function () {
-      },
-      add2Cart: function () {
-      },
-      myCart: function () {
-      },
-      settleMyCart: function () {
-      }
-    }
-  })
+  this.reffer = new Reffer()
 
   this.port = new Port({
     portCache: {
       goodsIds: [],
-      currentRefferState: ''
+      currentReffer: null
     },
 
     actions: [
@@ -33,7 +20,7 @@ function Agent() {
         command: 'launchFairy',
         action: function (port) {
           var tabId = parseInt(port.name.split('#').slice(1, 2).pop())
-          var file = './main/injections/scripts/launcher.js'
+          var file = './injections/scripts/launcher.js'
 
           chrome.tabs.executeScript(tabId, {
             file: file,
@@ -123,10 +110,10 @@ function Agent() {
         }
       },
       {
-        command: 'changeRefferState',
+        command: 'changeReffer',
         action: function (port, msg) {
           var self = this
-          self.portCache.currentRefferState = msg.currentRefferState
+          self.portCache.currentReffer = msg.currentReffer
         }
       }
     ]
@@ -150,19 +137,19 @@ function Agent() {
       ],
 
       syncScripts: [
-        {file: './main/injections/scripts/dwr/init.js'},
-        {file: './main/injections/scripts/dwr/engine.js'},
-        {file: './main/injections/scripts/dwr/utils.js'},
-        {file: './main/injections/scripts/dwr/shoppingCartAction.js'},
+        {file: './injections/scripts/dwr/init.js'},
+        {file: './injections/scripts/dwr/engine.js'},
+        {file: './injections/scripts/dwr/utils.js'},
+        {file: './injections/scripts/dwr/shoppingCartAction.js'},
         {file: './lib/jquery.min.js',},
-        {file: './main/injections/scripts/probe.js',},
+        {file: './injections/scripts/probe.js',},
         {file: './lib/drag.min.js',}
       ],
 
       ayncCss: [],
 
       syncCss: [
-        {file: './main/injections/css/fairy.css',},
+        {file: './injections/css/fairy.css',},
         {file: './lib/bootstrap.min.css',}
       ]
     }
@@ -176,7 +163,7 @@ function Agent() {
           name: 'Referer',
           handler: function (header, portCache) {
             if (portCache.goodsIds.length) {
-              header.value = ['http://jiyou.biz.11185.cn/retail/ticketDetail_', portCache.goodsIds.shift(), '.html'].join('')
+              header.value = ['http://jiyou.retail.11185.cn/retail/ticketDetail_', portCache.goodsIds.shift(), '.html'].join('')
             }
           }
         }]
