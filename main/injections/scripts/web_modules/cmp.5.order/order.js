@@ -199,7 +199,8 @@ Stamp.$.extend(
       // })
 
       var phone = Stamp.$('<input>', {
-        style: 'width: 11em;'
+        style: 'width: 11em;',
+        value: schedule ? schedule.mobile : ''
       }).addClass('form-control')
 
       var send = Stamp.$('<input>', {

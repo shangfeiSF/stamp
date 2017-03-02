@@ -1,6 +1,8 @@
 var webpack = require('webpack')
 
 module.exports = {
+  devtool: 'inline-source-map',
+
   entry: {
     'background': __dirname + '/main/background.js',
     '/injections/scripts/launcher': __dirname + '/main/injections/scripts/launcher.js',
