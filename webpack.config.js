@@ -20,8 +20,6 @@ fs.readdirSync(injectiotnsModules)
     return alias
   }, resolve.alias)
 
-console.log(resolve)
-
 module.exports = {
   devtool: 'inline-source-map',
 
