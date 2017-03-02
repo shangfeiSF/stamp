@@ -1,15 +1,15 @@
-var Panel = require('./cmp.1.panel/panel')
+var Panel = require('panel')
 
-var Storage = require('./cmp.0.assist/storage')
-var Dig = require('./cmp.0.assist/dig')
+var Storage = require('storage')
+var Dig = require('dig')
 
-var Rush = require('./cmp.4.rush/rush')
+var Rush = require('rush')
 
-var Base = require('./cmp.2.base/base')
-var BaseSettle = require('./cmp.2.base/baseSettle')
+var Base = require('base')
+var BaseSettle = require('baseSettle')
 
-var Cart = require('./cmp.3.cart/cart')
-var CartSettle = require('./cmp.3.cart/cartSettle')
+var Cart = require('cart')
+var CartSettle = require('cartSettle')
 
 function Fairy(config) {
   var config = config || {}

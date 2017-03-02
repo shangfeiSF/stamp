@@ -1,4 +1,4 @@
-var Dig = require('../cmp.0.assist/dig')
+var Dig = require('dig')
 
 function Rush(fairy) {
   this.fairy = fairy

@@ -1,4 +1,4 @@
-var Order = require('../cmp.5.order/order')
+var Order = require('order')
 
 function baseSettle(fairy) {
   this.fairy = fairy
